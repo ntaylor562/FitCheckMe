@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3"
 
 services:
   backend:
@@ -15,4 +15,6 @@ services:
     env_file:
       - .env
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
+volumes:
+  db:

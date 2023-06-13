@@ -3,17 +3,19 @@ CREATE SCHEMA community;
 
 CREATE TABLE IF NOT EXISTS community.user(
 	user_id BIGSERIAL PRIMARY KEY,
-	username VARCHAR(25) NOT NULL,
+	username VARCHAR(25) UNIQUE NOT NULL,
 	bio TEXT
 );
+CR
 
 CREATE TABLE IF NOT EXISTS app.tag(
 	tag_id SERIAL PRIMARY KEY,
-	tag_name VARCHAR(20)
+	tag_name VARCHAR(30) UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS app.outfit(
 	outfit_id BIGSERIAL PRIMARY KEY,
+	user_id BIGINT REFERENCES community.user(user_id),
 	outfit_name VARCHAR(50) NOT NULL,
 	outfit_desc TEXT,
 	outfit_creation_date TIMESTAMP WITH TIME ZONE NOT NULL

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fitcheckme.FitCheckMe.models.Outfit;
-import com.fitcheckme.FitCheckMe.repositories.OutfitRepository;
+import com.fitcheckme.FitCheckMe.services.OutfitService;
 
 import jakarta.validation.Valid;
 
@@ -27,48 +27,50 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*")
 public class OutfitController {
 	@Autowired
-	private OutfitRepository repository;
+	private OutfitService outfitService;
 
 	//Retrieve all outfits
 	@GetMapping("")
 	public List<Outfit> findAll() {
-		return this.repository.findAll();
+		return this.outfitService.getAll();
 	}
 
-	// //Retrieve an outfit by ID
-	// @GetMapping("{id}")
-	// public Outfit findById(@PathVariable Integer id) {
-	// 	return this.repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of outfit not found, could not get"));
-	// }
+	//Retrieve an outfit by ID
+	@GetMapping("{id}")
+	public Outfit findById(@PathVariable Long id) {
+		return this.outfitService.getOutfitById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of outfit not found, could not get"));
+	}
 
-	// //Create an outfit
-	// @PostMapping("")
-	// @ResponseStatus(HttpStatus.CREATED)
-	// public void createOutfit(@Valid @RequestBody Outfit outfit) {
-	// 	this.repository.createOutfit(outfit);
-	// }
+	//Create an outfit
+	@PostMapping("")
+	@ResponseStatus(HttpStatus.CREATED)
+	public void createOutfit(@Valid @RequestBody Outfit outfit) {
+		this.outfitService.createOutfit(outfit);
+	}
 
-	// //Updating an outfit
-	// @PutMapping("")
-	// @ResponseStatus(HttpStatus.ACCEPTED)
-	// public void updateOutfit(@RequestBody Outfit outfit) {
-	// 	Optional<Outfit> repoOutfit = this.repository.findById(outfit.id());
-	// 	if(!repoOutfit.isPresent()) {
-	// 		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of outfit not found, could not update");
-	// 	}
+	//Updating an outfit
+	@PutMapping("")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void updateOutfit(@RequestBody Outfit outfit) {
+		//TODO Move this logic to the service and return the response exceptions from here after catching exceptions from the service
+		Optional<Outfit> repoOutfit = this.outfitService.getOutfitById(outfit.getId());
+		if(!repoOutfit.isPresent()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of outfit not found, could not update");
+		}
 		
-	// 	this.repository.updateOutfit(outfit);
-	// }
+		this.outfitService.updateOutfit(outfit);
+	}
 
-	// //Remove an outfit
-	// @DeleteMapping("{id}")
-	// @ResponseStatus(HttpStatus.ACCEPTED)
-	// public void removeOutfit(@PathVariable Integer id) {
-	// 	Optional<Outfit> outfit = this.repository.findById(id);
-	// 	if(!outfit.isPresent()) {
-	// 		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of outfit not found, could not update");
-	// 	}
+	//Remove an outfit
+	@DeleteMapping("{id}")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void removeOutfit(@PathVariable Long id) {
+		//TODO Move this logic to the service and return the response exceptions from here after catching exceptions from the service
+		Optional<Outfit> outfit = this.outfitService.getOutfitById(id);
+		if(!outfit.isPresent()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of outfit not found, could not update");
+		}
 		
-	// 	this.repository.removeOutfit(id);
-	// }
+		this.outfitService.deleteOutfit(id);
+	}
 }

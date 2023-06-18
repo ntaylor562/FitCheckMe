@@ -2,22 +2,64 @@ package com.fitcheckme.FitCheckMe.models;
 
 import java.util.List;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
-@Table(name = "garment")
-public record Garment(
+@Table(name = "garment", schema = "app")
+public class Garment {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "garment_id")
-	Integer garmentId,
+	private Long garmentId;
 
-	@ManyToMany(mappedBy = "outfit_id")
-	List<Outfit> outfits
-) {}
+	@NotBlank
+	@Column(name = "garment_name")
+	private String garmentName;
+
+	@ManyToMany(mappedBy = "garments")
+	private List<Outfit> outfits;
+
+	@ElementCollection
+	@CollectionTable(name = "garment_url")
+	@Column(name = "garment_url")
+	private List<String> urls;
+
+	@ManyToMany
+	@JoinTable(
+		name = "garment_tag",
+		joinColumns = @JoinColumn(name = "garment_id", nullable = false),
+		inverseJoinColumns = @JoinColumn(name = "tag_id", nullable = false)
+	)
+	private List<Tag> garmentTags;
+
+	public Long getId() {
+		return this.garmentId;
+	}
+
+	public String getName() {
+		return this.garmentName;
+	}
+
+	public List<Outfit> getOutfits() {
+		return this.outfits;
+	}
+
+	public List<String> getURLs() {
+		return this.urls;
+	}
+
+	public List<Tag> getTags() {
+		return this.garmentTags;
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"GET": {
+		"/api/users": {},
+		"/api/users/1": {}
+	},
+	"PUT": {
+		"/api/users": {
+			"userId": 1,
+			"username": "bender2",
+			"bio": "update test1"
+		}
+	},
+	"POST": {
+		"/api/users": {
+			"username": "bender",
+			"bio": "test bio1"
+		}
+	}
+}

@@ -1,7 +1,9 @@
-package com.fitcheckme.FitCheckMe.DTOs;
+package com.fitcheckme.FitCheckMe.DTOs.Outfit;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
 
 public class OutfitRequestDTO {
 	private Long outfitId;
@@ -9,9 +11,9 @@ public class OutfitRequestDTO {
 	private String outfitName;
 	private String outfitDesc;
 	private LocalDateTime creationDate;
-	private List<GarmentRequestDTO>garments;
+	private List<GarmentCreateRequestDTO>garments;
 
-	public OutfitRequestDTO(Long outfitId, Long userId, String outfitName, String outfitDesc, LocalDateTime creationDate, List<GarmentRequestDTO> garments) {
+	public OutfitRequestDTO(Long outfitId, Long userId, String outfitName, String outfitDesc, LocalDateTime creationDate, List<GarmentCreateRequestDTO> garments) {
 		this.outfitId = outfitId;
 		this.userId = userId;
 		this.outfitName = outfitName;
@@ -40,7 +42,7 @@ public class OutfitRequestDTO {
 		return this.creationDate;
 	}
 
-	public List<GarmentRequestDTO> getGarments() {
+	public List<GarmentCreateRequestDTO> getGarments() {
 		return this.garments;
 	}
 }

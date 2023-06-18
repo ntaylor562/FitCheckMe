@@ -1,12 +1,18 @@
-CREATE SCHEMA app;
-CREATE SCHEMA community;
+CREATE SCHEMA IF NOT EXISTS app;
+CREATE SCHEMA IF NOT EXISTS community;
 
 CREATE TABLE IF NOT EXISTS community.user(
 	user_id BIGSERIAL PRIMARY KEY,
 	username VARCHAR(25) UNIQUE NOT NULL,
 	bio TEXT
 );
-CR
+
+CREATE TABLE IF NOT EXISTS community.following(
+	follower_id BIGSERIAL,
+	followee_id BIGSERIAL,
+	follow_date TIMESTAMP WITH TIME ZONE NOT NULL,
+	PRIMARY KEY(follower_id, followee_id)
+);
 
 CREATE TABLE IF NOT EXISTS app.tag(
 	tag_id SERIAL PRIMARY KEY,
@@ -28,7 +34,13 @@ CREATE TABLE IF NOT EXISTS app.outfit_tag(
 );
 
 CREATE TABLE IF NOT EXISTS app.garment(
-	garment_id BIGSERIAL PRIMARY KEY
+	garment_id BIGSERIAL PRIMARY KEY,
+	garment_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS app.garment_url(
+	garment_id BIGINT REFERENCES app.garment(garment_id),
+	garment_url TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS app.garment_tag(
@@ -36,13 +48,4 @@ CREATE TABLE IF NOT EXISTS app.garment_tag(
 	tag_id INTEGER REFERENCES app.tag(tag_id),
 	PRIMARY KEY(garment_id, tag_id)
 );
-
-CREATE TABLE IF NOT EXISTS app.color(
-	color_id SERIAL PRIMARY KEY,
-	color_name VARCHAR(20) NOT NULL,
-	color_r SMALLINT NOT NULL,
-	color_g SMALLINT NOT NULL,
-	color_b SMALLINT NOT NULL
-);
-
 

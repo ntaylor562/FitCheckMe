@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "garment", schema = "app")
@@ -23,7 +22,6 @@ public class Garment {
 	@Column(name = "garment_id")
 	private Long garmentId;
 
-	@NotBlank
 	@Column(name = "garment_name")
 	private String garmentName;
 
@@ -31,17 +29,32 @@ public class Garment {
 	private List<Outfit> outfits;
 
 	@ElementCollection
-	@CollectionTable(name = "garment_url")
+	@CollectionTable(
+		name = "garment_url",
+		schema = "app",
+		joinColumns = @JoinColumn(name = "garment_id")
+	)
 	@Column(name = "garment_url")
 	private List<String> urls;
 
 	@ManyToMany
 	@JoinTable(
 		name = "garment_tag",
+		schema = "app",
 		joinColumns = @JoinColumn(name = "garment_id", nullable = false),
 		inverseJoinColumns = @JoinColumn(name = "tag_id", nullable = false)
 	)
 	private List<Tag> garmentTags;
+
+	public Garment() {
+
+	}
+
+	public Garment(String garmentName, List<String> urls, List<Tag> tags) {
+		this.garmentName = garmentName;
+		this.urls = urls;
+		this.garmentTags = tags;
+	}
 
 	public Long getId() {
 		return this.garmentId;

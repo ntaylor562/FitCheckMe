@@ -33,7 +33,7 @@ public class UserService {
 		return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
 	}
 
-	public void createUser(UserCreateRequestDTO user) {
+	public User createUser(UserCreateRequestDTO user) {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
 		}
@@ -41,10 +41,12 @@ public class UserService {
 			throw new IllegalArgumentException(String.format("User bio must be at most %d characters", this.maxBioLength));
 		}
 		//Checking if username already exists
-		if(userRepository.existsByUsername(user.username())) {
+		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
-		this.userRepository.save(new User(user.username(), user.bio()));
+		User newUser = new User(user.username().toLowerCase(), user.bio());
+		this.userRepository.save(newUser);
+		return newUser;
 	}
 
 	public void updateUser(UserUpdateRequestDTO user) {
@@ -55,11 +57,11 @@ public class UserService {
 			throw new IllegalArgumentException(String.format("User bio must be at most %d characters", this.maxBioLength));
 		}
 		//Checking if username already exists
-		if(userRepository.existsByUsername(user.username())) {
+		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
 		User currentUser = userRepository.findById(user.userId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(user.userId()))));
-		currentUser.setUsername(user.username());
+		currentUser.setUsername(user.username().toLowerCase());
 		currentUser.setBio(user.bio());
 		
 		this.userRepository.save(currentUser);

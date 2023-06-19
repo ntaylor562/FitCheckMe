@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,10 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.services.UserService;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 
 //TODO implement permissions for this service
 @RestController
@@ -29,13 +33,11 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 
-	//Retrieve all users
 	@GetMapping("")
 	public List<User> findAll() {
 		return this.userService.getAll();
 	}
 
-	//Retrieve a user by ID
 	@GetMapping("{id}")
 	public User findById(@PathVariable Long id) {
 		try {
@@ -46,18 +48,41 @@ public class UserController {
 		}
 	}
 
-	//Create a user
+	//TODO add auth
 	@PostMapping("")
 	@ResponseStatus(HttpStatus.CREATED)
-	public void createUser(@RequestBody UserCreateRequestDTO user) {
+	public void createUser(@Valid @RequestBody UserCreateRequestDTO user) {
 		try {
 			this.userService.createUser(user);
 		}
 		catch(DataIntegrityViolationException e) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, "ID of user not found, could not get");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
 		}
 	}
 
-	//Update a user
-	//TODO Make sure to use a try catch for both exception types on this one
+	//TODO add auth
+	@PutMapping("")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void updateUser(@Valid @RequestBody UserUpdateRequestDTO user) {
+		try {
+			userService.updateUser(user);
+		}
+		catch(IllegalArgumentException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
+		catch(DataIntegrityViolationException e) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+		}
+	}
+
+	//TODO add auth
+	@DeleteMapping("{id}")
+	public void deleteUser(@PathVariable Long id) {
+		try {
+			userService.deleteUser(id);
+		}
+		catch(Exception e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
+	}
 }

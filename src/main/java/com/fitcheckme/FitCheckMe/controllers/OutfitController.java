@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.services.OutfitService;
@@ -31,43 +32,43 @@ public class OutfitController {
 	@Autowired
 	private OutfitService outfitService;
 
-	//Retrieve all outfits
 	@GetMapping("")
-	public List<Outfit> findAll() {
+	public List<OutfitRequestDTO> findAll() {
 		return this.outfitService.getAll();
 	}
 
-	//Retrieve an outfit by ID
 	@GetMapping("{id}")
 	public Outfit findById(@PathVariable Long id) {
 		try {
 			return this.outfitService.getById(id);
 		}
 		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of outfit not found, could not get");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
 		}
 	}
 
-	//Create an outfit
 	@PostMapping("")
 	@ResponseStatus(HttpStatus.CREATED)
 	public void createOutfit(@Valid @RequestBody OutfitCreateRequestDTO outfit) {
-		this.outfitService.createOutfit(outfit);
+		try {
+			this.outfitService.createOutfit(outfit);
+		}
+		catch(IllegalArgumentException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
 	}
 
-	//Updating an outfit
 	@PutMapping("")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void updateOutfit(@RequestBody OutfitUpdateRequestDTO outfit) {
+	public void updateOutfit(@Valid @RequestBody OutfitUpdateRequestDTO outfit) {
 		try {
 			this.outfitService.updateOutfit(outfit);
 		}
 		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of outfit not found, could not update");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
 		}
 	}
 
-	//Remove an outfit
 	@DeleteMapping("{id}")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void removeOutfit(@PathVariable Long id) {
@@ -75,7 +76,7 @@ public class OutfitController {
 			this.outfitService.deleteOutfit(id);
 		}
 		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of outfit not found, could not delete");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
 		}
 	}
 }

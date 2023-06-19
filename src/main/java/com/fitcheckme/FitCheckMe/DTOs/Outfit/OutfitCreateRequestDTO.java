@@ -8,5 +8,7 @@ public record OutfitCreateRequestDTO (
 	Long userId,
 	String outfitName,
 	String outfitDesc,
-	List<GarmentCreateRequestDTO> garments
+	List<Integer> outfitTags,
+	List<GarmentCreateRequestDTO> garments,
+	List<Long> existingGarments
 ) {}

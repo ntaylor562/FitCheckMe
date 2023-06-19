@@ -27,6 +27,12 @@ CREATE TABLE IF NOT EXISTS app.outfit(
 	outfit_creation_date TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS app.outfit_garment(
+	outfit_id BIGINT NOT NULL,
+	garment_id BIGINT NOT NULL,
+	PRIMARY KEY(outfit_id, garment_id)
+);
+
 CREATE TABLE IF NOT EXISTS app.outfit_tag(
 	outfit_id BIGINT REFERENCES app.outfit(outfit_id),
 	tag_id INTEGER REFERENCES app.tag(tag_id),

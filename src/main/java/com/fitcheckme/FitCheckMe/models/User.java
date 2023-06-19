@@ -23,7 +23,7 @@ public class User {
 	private Long userId;
 
 	@NotBlank
-	@Column(name = "username")
+	@Column(name = "username", nullable = false)
 	private String username;
 
 	@Column(name = "bio")

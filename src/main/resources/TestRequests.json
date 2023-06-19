@@ -1,19 +1,44 @@
 {
 	"GET": {
-		"/api/users": {},
-		"/api/users/1": {}
+		"/api/user": {},
+		"/api/user/1": {},
+
+		"/api/outfit": {},
+		"/api/outfit/1": {}
 	},
 	"PUT": {
-		"/api/users": {
+		"/api/user": {
 			"userId": 1,
 			"username": "bender2",
 			"bio": "update test1"
+		},
+		"/api/outfit": {
+			"outfitId": 1,
+			"outfitName": "update outfit name test1",
+			"outfitDesc": "update outfit desc test1"
 		}
 	},
 	"POST": {
-		"/api/users": {
+		"/api/user": {
 			"username": "bender",
 			"bio": "test bio1"
+		},
+
+		"/api/tag": {
+			"tagName": "green"
+		},
+
+		"/api/outfit": {
+			"userId": 1,
+			"outfitName": "test outfit",
+			"outfitDesc": "test description",
+			"garments": [
+				{
+					"garmentName": "garment1",
+					"garmentURLs": ["url1", "url2"],
+					"garmentTags": [1, 2]
+				}
+			]
 		}
 	}
 }

@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -20,10 +21,14 @@ public class Garment {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "garment_id")
-	private Long garmentId;
+	private Integer garmentId;
 
 	@Column(name = "garment_name")
 	private String garmentName;
+
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
 	@ManyToMany(mappedBy = "garments")
 	private List<Outfit> outfits;
@@ -50,18 +55,23 @@ public class Garment {
 
 	}
 
-	public Garment(String garmentName, List<String> urls, List<Tag> tags) {
+	public Garment(String garmentName, User user, List<String> urls, List<Tag> tags) {
 		this.garmentName = garmentName;
+		this.user = user;
 		this.urls = urls;
 		this.garmentTags = tags;
 	}
 
-	public Long getId() {
+	public Integer getId() {
 		return this.garmentId;
 	}
 
 	public String getName() {
 		return this.garmentName;
+	}
+
+	public User getUser() {
+		return this.user;
 	}
 
 	public List<Outfit> getOutfits() {

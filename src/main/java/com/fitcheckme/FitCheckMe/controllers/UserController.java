@@ -39,7 +39,7 @@ public class UserController {
 	}
 
 	@GetMapping("{id}")
-	public User findById(@PathVariable Long id) {
+	public User findById(@PathVariable Integer id) {
 		try {
 			return this.userService.getById(id);
 		}
@@ -77,7 +77,7 @@ public class UserController {
 
 	//TODO add auth
 	@DeleteMapping("{id}")
-	public void deleteUser(@PathVariable Long id) {
+	public void deleteUser(@PathVariable Integer id) {
 		try {
 			userService.deleteUser(id);
 		}

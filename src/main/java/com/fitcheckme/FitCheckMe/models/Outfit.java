@@ -21,7 +21,7 @@ public class Outfit {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "outfit_id")
-	private Long outfitId;
+	private Integer outfitId;
 	
 	@ManyToOne
 	@JoinColumn(name = "user_id", nullable = false)
@@ -68,7 +68,7 @@ public class Outfit {
 		this.outfitTags = tags;
 	}
 
-	public Long getId() {
+	public Integer getId() {
 		return this.outfitId;
 	}
 

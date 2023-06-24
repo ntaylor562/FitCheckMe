@@ -31,15 +31,19 @@ public class GarmentService {
 	@Autowired
 	private TagService tagService;
 
+	@Autowired
+	private UserService userService;
+
 	public List<Garment> getAll() {
 		return garmentRepository.findAll();
 	}
 
-	public Garment getById(Long id) {
+	public Garment getById(Integer id) {
 		return garmentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(id))));
 	}
 
-	public List<Garment> getById(List<Long> ids) {
+	@Transactional
+	public List<Garment> getById(List<Integer> ids) {
 		if(ids.isEmpty()) {
 			return new ArrayList<Garment>();
 		}
@@ -54,6 +58,7 @@ public class GarmentService {
 		return garmentRepository.findAllById(ids);
 	}
 
+	@Transactional
 	public Garment createGarment(GarmentCreateRequestDTO garment) {
 		if(garment.garmentName().length() > maxGarmentNameLength) {
 			throw new IllegalArgumentException(String.format("Garment name too long, must be at most %d characters", maxGarmentNameLength));
@@ -67,8 +72,11 @@ public class GarmentService {
 			throw new IllegalArgumentException(String.format("Garment URL too long, must be at most %d characters", maxGarmentURLLength));
 		}
 
+		System.out.println("USER ID:");
+		System.out.println(garment.userId());
+
 		//TODO think about performing security checks on URLs
-		Garment newGarment = new Garment(garment.garmentName(), garment.garmentURLs(), tagService.getById(garment.garmentTagIds()));
+		Garment newGarment = new Garment(garment.garmentName(), userService.getById(garment.userId()), garment.garmentURLs(), tagService.getById(garment.garmentTagIds()));
 		garmentRepository.save(newGarment);
 		return newGarment;
 	}

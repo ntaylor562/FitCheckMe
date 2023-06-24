@@ -19,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
-import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.services.OutfitService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -34,13 +33,13 @@ public class OutfitController {
 
 	@GetMapping("")
 	public List<OutfitRequestDTO> findAll() {
-		return this.outfitService.getAll();
+		return outfitService.getAll().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
 	@GetMapping("{id}")
-	public Outfit findById(@PathVariable Long id) {
+	public OutfitRequestDTO findById(@PathVariable Integer id) {
 		try {
-			return this.outfitService.getById(id);
+			return OutfitRequestDTO.toDTO(this.outfitService.getById(id));
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -71,7 +70,7 @@ public class OutfitController {
 
 	@DeleteMapping("{id}")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void removeOutfit(@PathVariable Long id) {
+	public void removeOutfit(@PathVariable Integer id) {
 		try {
 			this.outfitService.deleteOutfit(id);
 		}

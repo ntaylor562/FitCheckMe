@@ -5,10 +5,11 @@ import java.util.List;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagRequestDTO;
 
 public record GarmentRequestDTO(
-	Long garmentId,
+	Integer garmentId,
 	String garmentName,
 	
-	List<Long> outfitIds,
+	Integer userId,
+	List<Integer> outfitIds,
 	List<String> urls,
 	List<TagRequestDTO> garmentTags
 ) {}

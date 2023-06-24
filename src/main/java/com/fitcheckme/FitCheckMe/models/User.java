@@ -20,7 +20,7 @@ public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_id")
-	private Long userId;
+	private Integer userId;
 
 	@NotBlank
 	@Column(name = "username", nullable = false)
@@ -31,6 +31,9 @@ public class User {
 
 	@OneToMany(mappedBy = "user")
 	private List<Outfit> outfits;
+
+	@OneToMany(mappedBy = "user")
+	private List<Garment> garments;
 
 	@OneToMany(mappedBy = "follower")
 	private List<Following> followers;
@@ -47,7 +50,7 @@ public class User {
 		this.bio = bio;
 	}
 
-	public Long getId() {
+	public Integer getId() {
 		return this.userId;
 	}
 
@@ -61,6 +64,10 @@ public class User {
 
 	public List<Outfit> getOutfits() {
 		return this.outfits;
+	}
+
+	public List<Garment> getGarments() {
+		return this.garments;
 	}
 
 	public List<Following> getFollowers() {

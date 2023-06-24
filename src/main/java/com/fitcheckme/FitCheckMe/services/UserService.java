@@ -13,6 +13,7 @@ import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
@@ -25,14 +26,22 @@ public class UserService {
 	@Autowired
 	private UserRepository userRepository;
 
+	@Transactional
 	public List<User> getAll() {
 		return userRepository.findAll();
 	}
 
-	public User getById(Long id) {
+	@Transactional
+	public User getById(Integer id) {
 		return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
 	}
 
+	@Transactional
+	public User getByUsername(String username) {
+		return userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username))));
+	}
+
+	@Transactional
 	public User createUser(UserCreateRequestDTO user) {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
@@ -49,6 +58,7 @@ public class UserService {
 		return newUser;
 	}
 
+	@Transactional
 	public void updateUser(UserUpdateRequestDTO user) {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
@@ -67,7 +77,8 @@ public class UserService {
 		this.userRepository.save(currentUser);
 	}
 
-	public void deleteUser(Long id) {
+	@Transactional
+	public void deleteUser(Integer id) {
 		userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
 		this.userRepository.deleteById(id);
 	}

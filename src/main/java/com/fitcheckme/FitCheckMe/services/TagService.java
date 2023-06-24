@@ -46,7 +46,7 @@ public class TagService {
 		if(tagRepository.existsByTagNameIgnoreCase(tag.tagName())) {
 			throw new DataIntegrityViolationException(String.format("Tagname '%s' is already used", tag.tagName()));
 		}
-		Tag newTag = new Tag(tag.tagName());
+		Tag newTag = new Tag(tag.tagName().toLowerCase());
 		this.tagRepository.save(newTag);
 		return newTag;
 	}

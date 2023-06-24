@@ -7,11 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.Tag.TagRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.models.Tag;
@@ -41,23 +38,12 @@ public class OutfitService {
 	@Autowired
 	private TagService tagService;
 
-	public List<OutfitRequestDTO> getAll() {
-		return outfitRepository.findAll().stream().map(outfit -> new OutfitRequestDTO(
-			outfit.getId(),
-			outfit.getUser().getId(),
-			outfit.getName(), outfit.getDesc(),
-			outfit.getCreationDate(),
-			outfit.getGarments().stream().map(garment -> new GarmentRequestDTO(
-				garment.getId(),
-				garment.getName(),
-				garment.getOutfits().stream().map(o -> o.getId()).toList(),
-				garment.getURLs(),
-				garment.getTags().stream().map(t -> new TagRequestDTO(t.getId(), t.getTagName())).toList()
-			)).toList()
-		)).toList();
+	@Transactional
+	public List<Outfit> getAll() {
+		return outfitRepository.findAll();
 	}
 
-	public Outfit getById(Long id) {
+	public Outfit getById(Integer id) {
 		return outfitRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Outfit not found with ID: %s", String.valueOf(id))));
 	}
 
@@ -71,7 +57,15 @@ public class OutfitService {
 			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
 		}
 		List<Garment> garments = garmentService.createGarment(outfit.garments());
-		garments.addAll(garmentService.getById(outfit.existingGarments()));
+		List<Garment> existingGarments = garmentService.getById(outfit.existingGarments());
+
+		//Checking if the list of garments have each garment belonging to the user whose outfit this is
+		for(int i = 0; i < existingGarments.size(); ++i) {
+			if(existingGarments.get(i).getUser().getId() != outfit.userId()) {
+				throw new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(existingGarments.get(i).getId())));
+			}
+		}
+		garments.addAll(existingGarments);
 
 		List<Tag> tags = tagService.getById(outfit.outfitTags());
 
@@ -96,7 +90,7 @@ public class OutfitService {
 	}
 
 	//TODO add auth
-	public void deleteOutfit(Long id) {
+	public void deleteOutfit(Integer id) {
 		outfitRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Outfit not found with ID: %s", String.valueOf(id))));
 		this.outfitRepository.deleteById(id);
 	}

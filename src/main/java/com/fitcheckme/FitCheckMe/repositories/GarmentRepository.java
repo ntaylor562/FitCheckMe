@@ -4,4 +4,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.fitcheckme.FitCheckMe.models.Garment;
 
-public interface GarmentRepository extends JpaRepository<Garment, Long> {}
+public interface GarmentRepository extends JpaRepository<Garment, Integer> {}

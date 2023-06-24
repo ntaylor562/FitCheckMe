@@ -38,7 +38,6 @@ public class OutfitService {
 	@Autowired
 	private TagService tagService;
 
-	@Transactional
 	public List<Outfit> getAll() {
 		return outfitRepository.findAll();
 	}
@@ -71,6 +70,8 @@ public class OutfitService {
 
 		Outfit newOutfit = new Outfit(userService.getById(outfit.userId()), outfit.outfitName(), outfit.outfitDesc(), LocalDateTime.now(), garments, tags);
 		this.outfitRepository.save(newOutfit);
+		System.out.println("NEW OUTFIT'S USER'S OUTFITS:");
+		System.out.println(newOutfit.getUser().getOutfits());
 		return newOutfit;
 	}
 

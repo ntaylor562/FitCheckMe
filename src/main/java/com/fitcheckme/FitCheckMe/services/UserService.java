@@ -26,7 +26,6 @@ public class UserService {
 	@Autowired
 	private UserRepository userRepository;
 
-	@Transactional
 	public List<User> getAll() {
 		return userRepository.findAll();
 	}
@@ -38,10 +37,14 @@ public class UserService {
 
 	@Transactional
 	public User getByUsername(String username) {
-		return userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username))));
+		User res = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username))));
+		
+		System.out.println("USERS OUTFITS: ");
+		System.out.println(res.getOutfits());
+		System.out.println(res.getGarments());
+		return res;
 	}
 
-	@Transactional
 	public User createUser(UserCreateRequestDTO user) {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
@@ -58,7 +61,6 @@ public class UserService {
 		return newUser;
 	}
 
-	@Transactional
 	public void updateUser(UserUpdateRequestDTO user) {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
@@ -77,7 +79,6 @@ public class UserService {
 		this.userRepository.save(currentUser);
 	}
 
-	@Transactional
 	public void deleteUser(Integer id) {
 		userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
 		this.userRepository.deleteById(id);

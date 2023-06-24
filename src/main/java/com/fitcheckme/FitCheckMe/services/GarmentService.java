@@ -42,7 +42,6 @@ public class GarmentService {
 		return garmentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(id))));
 	}
 
-	@Transactional
 	public List<Garment> getById(List<Integer> ids) {
 		if(ids.isEmpty()) {
 			return new ArrayList<Garment>();

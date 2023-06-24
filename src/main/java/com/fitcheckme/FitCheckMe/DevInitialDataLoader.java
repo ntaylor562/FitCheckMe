@@ -1,5 +1,6 @@
 package com.fitcheckme.FitCheckMe;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,70 +12,75 @@ import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
-import com.fitcheckme.FitCheckMe.services.OutfitService;
-import com.fitcheckme.FitCheckMe.services.TagService;
-import com.fitcheckme.FitCheckMe.services.UserService;
+import com.fitcheckme.FitCheckMe.controllers.OutfitController;
+import com.fitcheckme.FitCheckMe.controllers.TagController;
+import com.fitcheckme.FitCheckMe.controllers.UserController;
+
+import jakarta.transaction.Transactional;
 
 @Profile("dev")
 @Component
 public class DevInitialDataLoader implements CommandLineRunner {
 	@Autowired
-	private UserService userService;
+	private UserController userController;
 
 	@Autowired
-	private TagService tagService;
+	private TagController tagController;
 
 	@Autowired
-	private OutfitService outfitService;
+	private OutfitController outfitController;
 
 	@Override
+	@Transactional
 	public void run(String... args) {
 		System.out.println("DEV INITIAL DATA LOADER");
-		if(userService.getAll().size() == 0) {
+		if(userController.findAll().size() == 0) {
 			System.out.println("CREATING USERS");
-			userService.createUser(new UserCreateRequestDTO("bender", "test bio"));
-			userService.createUser(new UserCreateRequestDTO("bender2", "TEST BIO 2"));
+			userController.createUser(new UserCreateRequestDTO("bender", "test bio"));
+			userController.createUser(new UserCreateRequestDTO("bender2", "TEST BIO 2"));
 		}
 		System.out.println("HERE1");
 
-		if(tagService.getAll().size() == 0) {
+		if(tagController.findAll().size() == 0) {
 			System.out.println("CREATING TAGS");
-			tagService.createTag(new TagCreateRequestDTO("green"));
-			tagService.createTag(new TagCreateRequestDTO("summer"));
+			tagController.createTag(new TagCreateRequestDTO("green"));
+			tagController.createTag(new TagCreateRequestDTO("summer"));
 		}
 		System.out.println("HERE2");
-		System.out.println(outfitService.getAll().size());
-		System.out.println("HERE2.5");
 
-
-		if(outfitService.getAll().size() != 0) {
+		if(outfitController.findAll().size() == 0) {
 			System.out.println("CREATING OUTFITS");
-			// outfitService.createOutfit(new OutfitCreateRequestDTO(
-			// 	userService.getByUsername("bender").getId(), 
-			// 	"outfit1", 
-			// 	"desc1", 
-			// 	List.of(tagService.getByTagName("green").getId(), tagService.getByTagName("summer").getId()), 
-			// 	List.of(new GarmentCreateRequestDTO("shirt1", userService.getByUsername("bender").getId(), List.of("url1", "url2"), List.of(tagService.getByTagName("green").getId()))),
-			// 	new ArrayList<Integer>()
-			// ));
-
-			// outfitService.createOutfit(new OutfitCreateRequestDTO(
-			// 	userService.getByUsername("bender2").getId(), 
-			// 	"Outfit2", 
-			// 	"DESC2", 
-			// 	List.of(tagService.getByTagName("summer").getId()), 
-			// 	List.of(new GarmentCreateRequestDTO("shirt2", userService.getByUsername("bender2").getId(), List.of("url3"), List.of(tagService.getByTagName("green").getId(), tagService.getByTagName("summer").getId()))),
-			// 	new ArrayList<Integer>()
-			// ));
-
-			outfitService.createOutfit(new OutfitCreateRequestDTO(
-				userService.getByUsername("bender").getId(), 
-				"OUTFIT3", 
-				"Desc3", 
-				List.of(tagService.getByTagName("summer").getId()), 
-				List.of(new GarmentCreateRequestDTO("shirt3", userService.getByUsername("bender").getId(), List.of("url4", "url5"), List.of(tagService.getByTagName("summer").getId()))),
-				List.of(userService.getByUsername("bender").getOutfits().get(0).getGarments().get(0).getId())
+			outfitController.createOutfit(new OutfitCreateRequestDTO(
+				userController.findByUsername("bender").getId(), 
+				"outfit1", 
+				"desc1", 
+				List.of(tagController.findByTagName("green").getId(), tagController.findByTagName("summer").getId()), 
+				List.of(new GarmentCreateRequestDTO("shirt1", userController.findByUsername("bender").getId(), List.of("url1", "url2"), List.of(tagController.findByTagName("green").getId()))),
+				new ArrayList<Integer>()
 			));
+
+			outfitController.createOutfit(new OutfitCreateRequestDTO(
+				userController.findByUsername("bender2").getId(), 
+				"Outfit2", 
+				"DESC2", 
+				List.of(tagController.findByTagName("summer").getId()), 
+				List.of(new GarmentCreateRequestDTO("shirt2", userController.findByUsername("bender2").getId(), List.of("url3"), List.of(tagController.findByTagName("green").getId(), tagController.findByTagName("summer").getId()))),
+				new ArrayList<Integer>()
+			));
+
+			System.out.println(userController.findByUsername("bender").getUsername());
+			System.out.println(userController.findByUsername("bender").getBio());
+			System.out.println(userController.findByUsername("bender").getOutfits());
+
+			//This one isn't working because these outfits are not being created in sequence. TODO make actual test cases so that these may run in sequence
+			// outfitController.createOutfit(new OutfitCreateRequestDTO(
+			// 	userController.findByUsername("bender").getId(), 
+			// 	"OUTFIT3", 
+			// 	"Desc3", 
+			// 	List.of(tagController.findByTagName("summer").getId()), 
+			// 	List.of(new GarmentCreateRequestDTO("shirt3", userController.findByUsername("bender").getId(), List.of("url4", "url5"), List.of(tagController.findByTagName("summer").getId()))),
+			// 	List.of(userController.findByUsername("bender").getOutfits().get(0).getGarments().get(0).getId())
+			// ));
 		}
 		System.out.println("HERE3");
 

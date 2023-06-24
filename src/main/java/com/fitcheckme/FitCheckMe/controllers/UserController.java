@@ -48,6 +48,16 @@ public class UserController {
 		}
 	}
 
+	@GetMapping("{username}")
+	public User findByUsername(@PathVariable String username) {
+		try {
+			return this.userService.getByUsername(username);
+		}
+		catch(EntityNotFoundException e) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username not found, could not get");
+		}
+	}
+
 	//TODO add auth
 	@PostMapping("")
 	@ResponseStatus(HttpStatus.CREATED)

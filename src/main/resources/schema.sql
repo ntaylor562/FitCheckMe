@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS community.user(
 CREATE INDEX IF NOT EXISTS user_username ON community.user(username);
 
 CREATE TABLE IF NOT EXISTS community.following(
-	follower_id SERIAL,
-	followee_id SERIAL,
+	follower_id INTEGER,
+	followee_id INTEGER,
 	follow_date TIMESTAMP WITH TIME ZONE NOT NULL,
 	PRIMARY KEY(follower_id, followee_id)
 );

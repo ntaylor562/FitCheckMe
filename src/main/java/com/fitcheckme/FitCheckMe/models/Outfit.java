@@ -31,7 +31,7 @@ public class Outfit {
 	@Column(name = "outfit_name", nullable = false)
 	private String outfitName;
 	
-	@Column(name = "outfit_desc")
+	@Column(name = "outfit_desc") //TODO Set desc to null instead of '' if empty desc given
 	private String outfitDesc;
 	
 	@Column(name = "outfit_creation_date", nullable = false)

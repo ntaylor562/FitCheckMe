@@ -23,10 +23,10 @@ public class User {
 	private Integer userId;
 
 	@NotBlank
-	@Column(name = "username", nullable = false)
+	@Column(name = "username", unique = true, nullable = false)
 	private String username;
 
-	@Column(name = "bio")
+	@Column(name = "bio") //TODO Set bio to null instead of '' if empty bio given
 	private String bio;
 
 	@OneToMany(mappedBy = "user")

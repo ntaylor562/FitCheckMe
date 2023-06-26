@@ -15,6 +15,7 @@ import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
+//TODO make sure someone can't follow themselves and can't follow someone multiple times
 @Service
 public class UserService {
 	@Value("${fitcheckme.max-username-length}")

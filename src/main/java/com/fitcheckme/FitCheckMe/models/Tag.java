@@ -51,4 +51,36 @@ public class Tag {
 	public List<Garment> getGarments() {
 		return this.garments;
 	}
+
+	public void addOutfit(Outfit outfit) {
+		this.outfits.add(outfit);
+	}
+
+	public void addOutfit(List<Outfit> outfits) {
+		this.outfits.addAll(outfits);
+	}
+
+	public void removeOutfit(Outfit outfit) {
+		this.outfits.remove(outfit);
+	}
+
+	public void removeOutfit(List<Outfit> outfits) {
+		this.outfits.removeAll(outfits);
+	}
+
+	public void addGarment(Garment garment) {
+		this.garments.add(garment);
+	}
+
+	public void addGarment(List<Garment> garments) {
+		this.garments.addAll(garments);
+	}
+
+	public void removeGarment(Garment garment) {
+		this.garments.remove(garment);
+	}
+
+	public void removeGarment(List<Garment> garments) {
+		this.garments.removeAll(garments);
+	}
 }

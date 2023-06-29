@@ -31,7 +31,7 @@ public class Outfit {
 	@Column(name = "outfit_name", nullable = false)
 	private String outfitName;
 	
-	@Column(name = "outfit_desc") //TODO Set desc to null instead of '' if empty desc given
+	@Column(name = "outfit_desc")
 	private String outfitDesc;
 	
 	@Column(name = "outfit_creation_date", nullable = false)
@@ -102,5 +102,37 @@ public class Outfit {
 
 	public void setDesc(String desc) {
 		this.outfitDesc = desc;
+	}
+
+	public void addGarment(Garment garment) {
+		this.garments.add(garment);
+	}
+
+	public void addGarment(List<Garment> garments) {
+		this.garments.addAll(garments);
+	}
+
+	public void removeGarment(Garment garment) {
+		this.garments.remove(garment);
+	}
+
+	public void removeGarment(List<Garment> garments) {
+		this.garments.removeAll(garments);
+	}
+
+	public void addTag(Tag tag) {
+		this.outfitTags.add(tag);
+	}
+
+	public void addTag(List<Tag> tags) {
+		this.outfitTags.addAll(tags);
+	}
+
+	public void removeTag(Tag tag) {
+		this.outfitTags.remove(tag);
+	}
+
+	public void removeTag(List<Tag> tags) {
+		this.outfitTags.removeAll(tags);
 	}
 }

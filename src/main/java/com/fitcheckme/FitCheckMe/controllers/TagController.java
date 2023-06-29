@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.services.TagService;
+import com.fitcheckme.FitCheckMe.services.get_services.TagGetService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -27,17 +28,20 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*")
 public class TagController {
 	@Autowired
+	private TagGetService tagGetService;
+
+	@Autowired
 	private TagService tagService;
 
 	@GetMapping("")
 	public List<Tag> findAll() {
-		return this.tagService.getAll();
+		return this.tagGetService.getAll();
 	}
 
 	@GetMapping("{id}")
 	public Tag findById(@PathVariable Integer id) {
 		try {
-			return this.tagService.getById(id);
+			return this.tagGetService.getById(id);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of tag not found");

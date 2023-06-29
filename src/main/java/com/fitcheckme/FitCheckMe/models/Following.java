@@ -11,17 +11,17 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "following", schema = "community")
-public record Following(
+public class Following{
     @Id
 	@ManyToOne
 	@JoinColumn(name = "follower_id", nullable = false)
-    User follower,
+    User follower;
 
     @Id
 	@ManyToOne
 	@JoinColumn(name = "followee_id", nullable = false)
-    User followee,
+    User followee;
 
 	@Column(name = "follow_date", nullable = false)
-	LocalDateTime followDate
-) {}
+	LocalDateTime followDate;
+}

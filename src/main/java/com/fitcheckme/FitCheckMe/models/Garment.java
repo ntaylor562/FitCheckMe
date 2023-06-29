@@ -85,4 +85,59 @@ public class Garment {
 	public List<Tag> getTags() {
 		return this.garmentTags;
 	}
+
+	public void setName(String name) {
+		this.garmentName = name;
+	}
+
+	public void addOutfit(Outfit outfit) {
+		this.outfits.add(outfit);
+	}
+
+	public void addOutfit(List<Outfit> outfit) {
+		this.outfits.addAll(outfit);
+	}
+
+	public void removeOutfit(Outfit outfit) {
+		this.outfits.remove(outfit);
+	}
+
+	public void removeOutfit(List<Outfit> outfit) {
+		this.outfits.removeAll(outfit);
+	}
+
+	public void addTag(Tag tag) {
+		this.garmentTags.add(tag);
+	}
+
+	public void addTag(List<Tag> tags) {
+		this.garmentTags.addAll(tags);
+	}
+
+	public void removeTag(Tag tag) {
+		this.garmentTags.remove(tag);
+	}
+
+	public void removeTag(List<Tag> tags) {
+		this.garmentTags.removeAll(tags);
+	}
+
+	public void addURL(String url) {
+		this.urls.add(url);
+	}
+
+	public void addURL(List<String> urls) {
+		this.urls.addAll(urls);
+	}
+
+	public void removeURL(String url) {
+		this.urls.remove(url);
+	}
+
+	public void removeURL(List<String> urls) {
+		//Removing one at a time because unsure whether removeAll will remove duplicates or just one of each
+		for(int i = 0; i < urls.size(); ++i) {
+			this.urls.remove(urls.get(i));
+		}
+	}
 }

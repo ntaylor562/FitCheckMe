@@ -1,6 +1,5 @@
 package com.fitcheckme.FitCheckMe.services;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +7,15 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagCreateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.Tag.TagGarmentUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.Tag.TagOutfitUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.models.Garment;
+import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.repositories.TagRepository;
+import com.fitcheckme.FitCheckMe.services.get_services.GarmentGetService;
+import com.fitcheckme.FitCheckMe.services.get_services.OutfitGetService;
+import com.fitcheckme.FitCheckMe.services.get_services.TagGetService;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -17,29 +23,15 @@ import jakarta.persistence.EntityNotFoundException;
 public class TagService {
 	@Autowired
 	private TagRepository tagRepository;
+	
+	@Autowired
+	private TagGetService tagGetService;
 
-	public List<Tag> getAll() {
-		return tagRepository.findAll();
-	}
+	@Autowired
+	private OutfitGetService outfitGetService;
 
-	public Tag getById(Integer id) {
-		return tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id))));
-	}
-
-	public List<Tag> getById(List<Integer> ids) {
-		if(ids.isEmpty()) {
-			return new ArrayList<Tag>();
-		}
-		
-		List<Tag> res = tagRepository.findAllById(ids);
-		
-		//If the db result doesn't have as many records as the input, we're missing one or more records
-		if(res.size() != ids.size()) {
-			throw new EntityNotFoundException(String.format("%d/%d tags in list not found", ids.size() - res.size(), ids.size()));
-		}
-
-		return res;
-	}
+	@Autowired
+	private GarmentGetService garmentGetService;
 
 	//TODO add auth so only admins can create tags
 	public Tag createTag(TagCreateRequestDTO tag) {
@@ -49,6 +41,58 @@ public class TagService {
 		Tag newTag = new Tag(tag.tagName().toLowerCase());
 		this.tagRepository.save(newTag);
 		return newTag;
+	}
+
+	public void editOutfits(TagOutfitUpdateRequestDTO tagUpdate) {
+		Tag tag = tagGetService.getById(tagUpdate.tagId());
+		List<Outfit> addOutfits = outfitGetService.getById(tagUpdate.addOutfitIds());
+		List<Outfit> removeOutfits = outfitGetService.getById(tagUpdate.removeOutfitIds());
+
+		tag.addOutfit(addOutfits);
+		tag.removeOutfit(removeOutfits);
+		tagRepository.save(tag);
+	}
+
+	public void addOutfit(Integer tagId, Integer outfitId) {
+		Tag tag = tagGetService.getById(tagId);
+		Outfit outfit = outfitGetService.getById(outfitId);
+
+		tag.addOutfit(outfit);
+		tagRepository.save(tag);
+	}
+
+	public void removeOutfit(Integer tagId, Integer outfitId) {
+		Tag tag = tagGetService.getById(tagId);
+		Outfit outfit = outfitGetService.getById(outfitId);
+
+		tag.removeOutfit(outfit);
+		tagRepository.save(tag);
+	}
+
+	public void editGarments(TagGarmentUpdateRequestDTO tagUpdate) {
+		Tag tag = tagGetService.getById(tagUpdate.tagId());
+		List<Garment> addGarments = garmentGetService.getById(tagUpdate.addGarmentIds());
+		List<Garment> removeGarments = garmentGetService.getById(tagUpdate.removeGarmentIds());
+
+		tag.addGarment(addGarments);
+		tag.removeGarment(removeGarments);
+		tagRepository.save(tag);
+	}
+
+	public void addGarment(Integer tagId, Integer garmentId) {
+		Tag tag = tagGetService.getById(tagId);
+		Garment garment = garmentGetService.getById(garmentId);
+
+		tag.addGarment(garment);
+		tagRepository.save(tag);
+	}
+
+	public void removeGarment(Integer tagId, Integer garmentId) {
+		Tag tag = tagGetService.getById(tagId);
+		Garment garment = garmentGetService.getById(garmentId);
+
+		tag.removeGarment(garment);
+		tagRepository.save(tag);
 	}
 
 	public Tag getByTagName(String tagName) {

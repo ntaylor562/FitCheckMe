@@ -21,6 +21,7 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.services.UserService;
+import com.fitcheckme.FitCheckMe.services.get_services.UserGetService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -31,17 +32,20 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*")
 public class UserController {
 	@Autowired
+	private UserGetService userGetService;
+
+	@Autowired
 	private UserService userService;
 
 	@GetMapping("")
 	public List<User> findAll() {
-		return this.userService.getAll();
+		return this.userGetService.getAll();
 	}
 
 	@GetMapping("{id}")
 	public User findById(@PathVariable Integer id) {
 		try {
-			return this.userService.getById(id);
+			return this.userGetService.getById(id);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of user not found, could not get");
@@ -51,7 +55,7 @@ public class UserController {
 	@GetMapping("{username}")
 	public User findByUsername(@PathVariable String username) {
 		try {
-			return this.userService.getByUsername(username);
+			return this.userGetService.getByUsername(username);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username not found, could not get");

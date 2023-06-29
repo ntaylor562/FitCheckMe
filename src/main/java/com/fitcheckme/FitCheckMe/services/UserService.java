@@ -1,7 +1,5 @@
 package com.fitcheckme.FitCheckMe.services;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -11,9 +9,7 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
-
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import com.fitcheckme.FitCheckMe.services.get_services.UserGetService;
 
 //TODO make sure someone can't follow themselves and can't follow someone multiple times
 @Service
@@ -27,24 +23,8 @@ public class UserService {
 	@Autowired
 	private UserRepository userRepository;
 
-	public List<User> getAll() {
-		return userRepository.findAll();
-	}
-
-	@Transactional
-	public User getById(Integer id) {
-		return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
-	}
-
-	@Transactional
-	public User getByUsername(String username) {
-		User res = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username))));
-		
-		System.out.println("USERS OUTFITS: ");
-		System.out.println(res.getOutfits());
-		System.out.println(res.getGarments());
-		return res;
-	}
+	@Autowired
+	private UserGetService userGetService;
 
 	public User createUser(UserCreateRequestDTO user) {
 		if(user.username().length() > this.maxUsernameLength) {
@@ -57,7 +37,7 @@ public class UserService {
 		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
-		User newUser = new User(user.username().toLowerCase(), user.bio());
+		User newUser = new User(user.username().toLowerCase(), user.bio() != "" ? user.bio() : null);
 		this.userRepository.save(newUser);
 		return newUser;
 	}
@@ -73,15 +53,16 @@ public class UserService {
 		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
-		User currentUser = userRepository.findById(user.userId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(user.userId()))));
+		User currentUser = userGetService.getById(user.userId());
 		currentUser.setUsername(user.username().toLowerCase());
-		currentUser.setBio(user.bio());
+		currentUser.setBio(user.bio() != "" ? user.bio() : null);
 		
 		this.userRepository.save(currentUser);
 	}
 
+	//TODO edit this to delete all outfits and garments associated with the user and other actions that need to be performed when deleting an entity
 	public void deleteUser(Integer id) {
-		userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
+		userGetService.getById(id);
 		this.userRepository.deleteById(id);
 	}
 }

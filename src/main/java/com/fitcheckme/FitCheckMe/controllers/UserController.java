@@ -74,6 +74,20 @@ public class UserController {
 		}
 	}
 
+	@PostMapping("{id}/follow/{followeeId}")
+	@ResponseStatus(HttpStatus.CREATED)
+	public void followUser(@PathVariable Integer followerId, @PathVariable Integer followeeId) {
+		try {
+			this.userService.followUser(followerId, followeeId);
+		}
+		catch(DataIntegrityViolationException e) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+		}
+		catch(IllegalArgumentException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
+	}
+
 	//TODO add auth
 	@PutMapping("")
 	@ResponseStatus(HttpStatus.ACCEPTED)

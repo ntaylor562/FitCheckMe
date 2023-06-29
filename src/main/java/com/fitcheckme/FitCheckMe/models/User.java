@@ -26,7 +26,7 @@ public class User {
 	@Column(name = "username", unique = true, nullable = false)
 	private String username;
 
-	@Column(name = "bio") //TODO Set bio to null instead of '' if empty bio given
+	@Column(name = "bio")
 	private String bio;
 
 	@OneToMany(mappedBy = "user")
@@ -84,6 +84,16 @@ public class User {
 
 	public void setBio(String bio) {
 		this.bio = bio;
+	}
+
+	public void addFollower(User user) {
+		Following following = new Following(user, this);
+		this.followers.add(following);
+	}
+
+	public void addFollowee(User user) {
+		Following following = new Following(this, user);
+		this.following.add(following);
 	}
 
 }

@@ -24,4 +24,26 @@ public class Following{
 
 	@Column(name = "follow_date", nullable = false)
 	LocalDateTime followDate;
+
+	public Following(){
+
+	}
+
+	public Following(User follower, User followee){
+		this.follower = follower;
+		this.followee = followee;
+		this.followDate = LocalDateTime.now();
+	}
+
+	public User getFollower(){
+		return this.follower;
+	}
+
+	public User getFollowee(){
+		return this.followee;
+	}
+
+	public LocalDateTime getFollowDate(){
+		return this.followDate;
+	}
 }

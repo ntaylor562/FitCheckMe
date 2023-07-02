@@ -48,3 +48,6 @@ buildNumber.properties
 
 ### Postgres ###
 pgdata/
+
+### MacOS ###
+.DS_Store

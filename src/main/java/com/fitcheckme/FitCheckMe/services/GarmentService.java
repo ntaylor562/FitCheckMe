@@ -26,13 +26,13 @@ import jakarta.transaction.Transactional;
 @Service
 public class GarmentService {
 	@Value("${fitcheckme.max-garment-name-length}")
-	Integer maxGarmentNameLength;
+	private Integer maxGarmentNameLength;
 
 	@Value("${fitcheckme.max-urls-per-garment}")
-	Integer maxURLsPerGarment;
+	private Integer maxURLsPerGarment;
 
 	@Value("${fitcheckme.max-garment-url-length}")
-	Integer maxGarmentURLLength;
+	private Integer maxGarmentURLLength;
 
 	@Autowired
 	private GarmentRepository garmentRepository;
@@ -51,6 +51,27 @@ public class GarmentService {
 
 	@Autowired
 	private UserGetService userGetService;
+
+	
+	/**
+	 * Validates the input URLs for a garment. If the number of URLs exceeds the maximum limit or if a URL is too long, an exception is thrown.
+	 * 
+	 * @param garment The garment object.
+	 * @param addURLs The list of URLs to be added.
+	 * @param removeURLs The list of URLs to be removed.
+	 * @throws IllegalArgumentException If the number of URLs exceeds the maximum limit or if a URL is too long.
+	 */
+	private void validateURLInput(Garment garment, List<String> addURLs, List<String> removeURLs) {
+		if(addURLs.size() + garment.getURLs().size() - removeURLs.size() > maxURLsPerGarment) {
+			throw new IllegalArgumentException(String.format("Too many URLs provided when creating a garment, must be at most %d URLs", maxURLsPerGarment));
+		}
+
+		for(int i = 0; i < addURLs.size(); ++i) {
+			if(addURLs.get(i).length() > maxGarmentURLLength) {
+				throw new IllegalArgumentException(String.format("Garment URL %s too long, must be at most %d characters", addURLs.get(i), maxGarmentURLLength));
+			}
+		}
+	}
 
 	@Transactional
 	public Garment createGarment(GarmentCreateRequestDTO garment) {
@@ -171,6 +192,8 @@ public class GarmentService {
 		List<String> addURLs = garmentUpdate.addURLs();
 		List<String> removeURLs = garmentUpdate.removeURLs();
 
+		validateURLInput(garment, addURLs, removeURLs);
+
 		garment.addURL(addURLs);
 		garment.removeURL(removeURLs);
 
@@ -180,7 +203,23 @@ public class GarmentService {
 	public void addURL(Integer garmentId, String url) {
 		Garment garment = garmentGetService.getById(garmentId);
 
+		validateURLInput(garment, new ArrayList<String>(List.of(url)), new ArrayList<String>());
+
 		garment.addURL(url);
+		garmentRepository.save(garment);
+	}
+
+	public void removeURL(Integer garmentId, String url) {
+		Garment garment = garmentGetService.getById(garmentId);
+
+
+		if(!garment.getURLs().contains(url)) {
+			throw new IllegalArgumentException(String.format("Garment does not contain URL %s", url));
+		}
+		
+		validateURLInput(garment, new ArrayList<String>(), new ArrayList<String>(List.of(url)));
+
+		garment.removeURL(url);
 		garmentRepository.save(garment);
 	}
 

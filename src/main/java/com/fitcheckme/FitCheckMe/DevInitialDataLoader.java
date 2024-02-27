@@ -3,7 +3,6 @@ package com.fitcheckme.FitCheckMe;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
@@ -19,17 +18,18 @@ import com.fitcheckme.FitCheckMe.controllers.UserController;
 @Profile("dev")
 @Component
 public class DevInitialDataLoader implements CommandLineRunner {
-	@Autowired
-	private UserController userController;
+	private final UserController userController;
+	private final TagController tagController;
+	private final OutfitController outfitController;
+	private final JdbcTemplate jdbcTemplate;
 
-	@Autowired
-	private TagController tagController;
 
-	@Autowired
-	private OutfitController outfitController;
-
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+	public DevInitialDataLoader(UserController userController, TagController tagController, OutfitController outfitController, JdbcTemplate jdbcTemplate) {
+		this.userController = userController;
+		this.tagController = tagController;
+		this.outfitController = outfitController;
+		this.jdbcTemplate = jdbcTemplate;
+	}
 
 	private final String fileName = "data-dev.sql";
 	

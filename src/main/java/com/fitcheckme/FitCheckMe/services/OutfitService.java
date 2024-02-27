@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -29,17 +28,17 @@ public class OutfitService {
 	@Value("${fitcheckme.max-outfit-name-length}")
 	private int maxNameLength;
 	
-	@Autowired
-	private OutfitRepository outfitRepository;
+	private final OutfitRepository outfitRepository;
+	private final UserService userService;
+	private final GarmentService garmentService;
+	private final TagService tagService;
 
-	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private GarmentService garmentService;
-
-	@Autowired
-	private TagService tagService;
+	public OutfitService(OutfitRepository outfitRepository, UserService userService, GarmentService garmentService, TagService tagService) {
+		this.outfitRepository = outfitRepository;
+		this.userService = userService;
+		this.garmentService = garmentService;
+		this.tagService = tagService;
+	}
 
 	public List<Outfit> getAll() {
 		return outfitRepository.findAll();

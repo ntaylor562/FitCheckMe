@@ -8,5 +8,6 @@ import com.fitcheckme.FitCheckMe.models.Tag;
 
 public interface TagRepository extends JpaRepository<Tag, Integer>{
 	boolean existsByTagNameIgnoreCase(String tagName);
+	
 	Optional<Tag> findByTagNameIgnoreCase(String tagName);
 }

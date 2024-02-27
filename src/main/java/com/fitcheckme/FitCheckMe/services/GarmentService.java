@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,15 +29,15 @@ public class GarmentService {
 	@Value("${fitcheckme.max-garment-url-length}")
 	private Integer maxGarmentURLLength;
 
-	@Autowired
-	private GarmentRepository garmentRepository;
+	private final GarmentRepository garmentRepository;
+	private final TagService tagService;
+	private final UserService userService;
 
-	@Autowired
-	private TagService tagService;
-
-	@Autowired
-	private UserService userService;
-
+	public GarmentService(GarmentRepository garmentRepository, TagService tagService, UserService userService) {
+		this.garmentRepository = garmentRepository;
+		this.tagService = tagService;
+		this.userService = userService;
+	}
 
 	public List<Garment> getAll() {
 		return garmentRepository.findAll();
@@ -98,9 +97,6 @@ public class GarmentService {
 		if(garment.garmentURLs().stream().anyMatch(url -> url.length() > maxGarmentURLLength)) {
 			throw new IllegalArgumentException(String.format("Garment URL too long, must be at most %d characters", maxGarmentURLLength));
 		}
-
-		System.out.println("USER ID:");
-		System.out.println(garment.userId());
 
 		//TODO think about performing security checks on URLs
 		Garment newGarment = new Garment(garment.garmentName(), userService.getById(garment.userId()), garment.garmentURLs(), tagService.getById(garment.garmentTagIds()));

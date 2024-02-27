@@ -2,7 +2,6 @@ package com.fitcheckme.FitCheckMe.services;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -23,8 +22,11 @@ public class UserService {
 	@Value("${fitcheckme.max-user-bio-length}")
 	private int maxBioLength;
 	
-	@Autowired
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
+
+	public UserService(UserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
 
 	public List<User> getAll() {
 		return userRepository.findAll();

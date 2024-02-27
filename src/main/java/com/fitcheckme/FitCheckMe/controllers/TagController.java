@@ -2,7 +2,6 @@ package com.fitcheckme.FitCheckMe.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,8 +25,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/tag")
 @CrossOrigin(origins = "*")
 public class TagController {
-	@Autowired
-	private TagService tagService;
+	private final TagService tagService;
+
+	public TagController(TagService tagService) {
+		this.tagService = tagService;
+	}
 
 	@GetMapping("")
 	public List<Tag> findAll() {

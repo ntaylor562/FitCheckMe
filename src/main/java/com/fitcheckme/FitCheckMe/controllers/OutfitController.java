@@ -2,7 +2,6 @@ package com.fitcheckme.FitCheckMe.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,9 +27,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/outfit")
 @CrossOrigin(origins = "*")
 public class OutfitController {
+	private final OutfitService outfitService;
 
-	@Autowired
-	private OutfitService outfitService;
+	public OutfitController(OutfitService outfitService) {
+		this.outfitService = outfitService;
+	}
 
 	@GetMapping("")
 	public List<OutfitRequestDTO> findAll() {

@@ -3,7 +3,6 @@ package com.fitcheckme.FitCheckMe.services;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +14,11 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class TagService {
-	@Autowired
-	private TagRepository tagRepository;
+	private final TagRepository tagRepository;
+
+	public TagService(TagRepository tagRepository) {
+		this.tagRepository = tagRepository;
+	}
 
 	public List<Tag> getAll() {
 		return tagRepository.findAll();

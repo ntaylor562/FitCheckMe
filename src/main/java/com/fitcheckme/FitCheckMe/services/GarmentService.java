@@ -2,25 +2,21 @@ package com.fitcheckme.FitCheckMe.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentOutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentTagUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentURLUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Garment;
-import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
-import com.fitcheckme.FitCheckMe.services.get_services.GarmentGetService;
-import com.fitcheckme.FitCheckMe.services.get_services.OutfitGetService;
-import com.fitcheckme.FitCheckMe.services.get_services.TagGetService;
-import com.fitcheckme.FitCheckMe.services.get_services.UserGetService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -38,19 +34,35 @@ public class GarmentService {
 	private GarmentRepository garmentRepository;
 
 	@Autowired
-	private GarmentGetService garmentGetService;
-
-	@Autowired
-	private OutfitGetService outfitGetService;
-
-	@Autowired
-	private TagGetService tagGetService;
-
-	@Autowired
 	private TagService tagService;
 
 	@Autowired
-	private UserGetService userGetService;
+	private UserService userService;
+
+
+	public List<Garment> getAll() {
+		return garmentRepository.findAll();
+	}
+
+	public Garment getById(Integer id) {
+		return garmentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(id))));
+	}
+
+	public List<Garment> getById(List<Integer> ids) {
+		if(ids.isEmpty()) {
+			return new ArrayList<Garment>();
+		}
+
+		List<Garment> res = garmentRepository.findAllById(ids);
+
+		//If the db result doesn't have as many records as the input, we're missing one or more records
+		if(res.size() != ids.size()) {
+			List<Integer> missingIds = res.stream().filter(g -> !ids.contains(g.getId())).map(Garment::getId).collect(Collectors.toList());
+			throw new EntityNotFoundException(String.format("Garments with the following ids not found: %s", missingIds.toString()));
+		}
+
+		return garmentRepository.findAllById(ids);
+	}
 
 	
 	/**
@@ -91,7 +103,7 @@ public class GarmentService {
 		System.out.println(garment.userId());
 
 		//TODO think about performing security checks on URLs
-		Garment newGarment = new Garment(garment.garmentName(), userGetService.getById(garment.userId()), garment.garmentURLs(), tagGetService.getById(garment.garmentTagIds()));
+		Garment newGarment = new Garment(garment.garmentName(), userService.getById(garment.userId()), garment.garmentURLs(), tagService.getById(garment.garmentTagIds()));
 		garmentRepository.save(newGarment);
 		return newGarment;
 	}
@@ -110,53 +122,17 @@ public class GarmentService {
 			throw new IllegalArgumentException(String.format("Garment name too long, must be at most %d characters", maxGarmentNameLength));
 		}
 
-		Garment currentGarment = garmentGetService.getById(garment.garmentId());
+		Garment currentGarment = this.getById(garment.garmentId());
 		currentGarment.setName(garment.garmentName());
 
 		garmentRepository.save(currentGarment);
 	}
 
 	@Transactional
-	public void editOutfits(GarmentOutfitUpdateRequestDTO garmentUpdate) {
-		Garment garment = garmentGetService.getById(garmentUpdate.garmentId());
-		List<Outfit> addOutfits = outfitGetService.getById(garmentUpdate.addOutfitIds());
-		List<Outfit> removeOutfits = outfitGetService.getById(garmentUpdate.removeOutfitIds());
-
-		garment.addOutfit(addOutfits);
-		garment.removeOutfit(removeOutfits);
-		
-		garmentRepository.save(garment);
-	}
-
-	public void addOutfit(Integer garmentId, Integer outfitId) {
-		Garment garment = garmentGetService.getById(garmentId);
-		Outfit outfit = outfitGetService.getById(outfitId);
-
-		garment.addOutfit(outfit);
-		garmentRepository.save(garment);
-	}
-
-	public void removeOutfit(Integer garmentId, Integer outfitId) {
-		Garment garment = garmentGetService.getById(garmentId);
-		Outfit outfit = outfitGetService.getById(outfitId);
-
-		garment.removeOutfit(outfit);
-		garmentRepository.save(garment);
-	}
-
-	@Transactional
 	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate) {
-		Garment garment = garmentGetService.getById(garmentUpdate.garmentId());
-		List<Tag> addTags = tagGetService.getById(garmentUpdate.addTagIds());
-		List<Tag> removeTags = tagGetService.getById(garmentUpdate.removeTagIds());
-
-		for(int i = 0; i < addTags.size(); ++i) {
-			tagService.addGarment(addTags.get(i).getId(), garment.getId());
-		}
-
-		for(int i = 0; i < removeTags.size(); ++i) {
-			tagService.removeGarment(addTags.get(i).getId(), garment.getId());
-		}
+		Garment garment = this.getById(garmentUpdate.garmentId());
+		List<Tag> addTags = tagService.getById(garmentUpdate.addTagIds());
+		List<Tag> removeTags = tagService.getById(garmentUpdate.removeTagIds());
 
 		garment.addTag(addTags);
 		garment.removeTag(removeTags);
@@ -166,10 +142,8 @@ public class GarmentService {
 
 	@Transactional
 	public void addTag(Integer garmentId, Integer tagId) {
-		Garment garment = garmentGetService.getById(garmentId);
-		Tag tag = tagGetService.getById(tagId);
-
-		tagService.addGarment(tagId, garmentId);
+		Garment garment = this.getById(garmentId);
+		Tag tag = tagService.getById(tagId);
 
 		garment.addTag(tag);
 		garmentRepository.save(garment);
@@ -177,10 +151,8 @@ public class GarmentService {
 
 	@Transactional
 	public void removeTag(Integer garmentId, Integer tagId) {
-		Garment garment = garmentGetService.getById(garmentId);
-		Tag tag = tagGetService.getById(tagId);
-
-		tagService.removeGarment(tagId, garmentId);
+		Garment garment = this.getById(garmentId);
+		Tag tag = tagService.getById(tagId);
 
 		garment.removeTag(tag);
 		garmentRepository.save(garment);
@@ -188,7 +160,7 @@ public class GarmentService {
 
 	@Transactional
 	public void editURLs(GarmentURLUpdateRequestDTO garmentUpdate) {
-		Garment garment = garmentGetService.getById(garmentUpdate.garmentId());
+		Garment garment = this.getById(garmentUpdate.garmentId());
 		List<String> addURLs = garmentUpdate.addURLs();
 		List<String> removeURLs = garmentUpdate.removeURLs();
 
@@ -201,7 +173,7 @@ public class GarmentService {
 	}
 
 	public void addURL(Integer garmentId, String url) {
-		Garment garment = garmentGetService.getById(garmentId);
+		Garment garment = this.getById(garmentId);
 
 		validateURLInput(garment, new ArrayList<String>(List.of(url)), new ArrayList<String>());
 
@@ -210,13 +182,13 @@ public class GarmentService {
 	}
 
 	public void removeURL(Integer garmentId, String url) {
-		Garment garment = garmentGetService.getById(garmentId);
+		Garment garment = this.getById(garmentId);
 
 
 		if(!garment.getURLs().contains(url)) {
 			throw new IllegalArgumentException(String.format("Garment does not contain URL %s", url));
 		}
-		
+
 		validateURLInput(garment, new ArrayList<String>(), new ArrayList<String>(List.of(url)));
 
 		garment.removeURL(url);

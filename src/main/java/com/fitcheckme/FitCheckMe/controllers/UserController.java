@@ -1,5 +1,6 @@
 package com.fitcheckme.FitCheckMe.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.services.UserService;
-import com.fitcheckme.FitCheckMe.services.get_services.UserGetService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -32,20 +33,17 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*")
 public class UserController {
 	@Autowired
-	private UserGetService userGetService;
-
-	@Autowired
 	private UserService userService;
 
 	@GetMapping("")
-	public List<User> findAll() {
-		return this.userGetService.getAll();
+	public List<UserRequestDTO> findAll() {
+		return this.userService.getAll().stream().map(user -> UserRequestDTO.toDTO(user)).toList();
 	}
 
 	@GetMapping("{id}")
-	public User findById(@PathVariable Integer id) {
+	public UserRequestDTO findById(@PathVariable Integer id) {
 		try {
-			return this.userGetService.getById(id);
+			return UserRequestDTO.toDTO(this.userService.getById(id));
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of user not found, could not get");
@@ -53,9 +51,9 @@ public class UserController {
 	}
 
 	@GetMapping("{username}")
-	public User findByUsername(@PathVariable String username) {
+	public UserRequestDTO findByUsername(@PathVariable String username) {
 		try {
-			return this.userGetService.getByUsername(username);
+			return UserRequestDTO.toDTO(this.userService.getByUsername(username));
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username not found, could not get");

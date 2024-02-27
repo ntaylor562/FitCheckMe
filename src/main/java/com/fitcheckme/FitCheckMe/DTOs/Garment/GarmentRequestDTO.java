@@ -9,7 +9,6 @@ public record GarmentRequestDTO(
 	String garmentName,
 	
 	Integer userId,
-	List<Integer> outfitIds,
 	List<String> urls,
 	List<TagRequestDTO> garmentTags
 ) {}

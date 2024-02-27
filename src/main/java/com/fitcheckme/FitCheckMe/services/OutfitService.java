@@ -1,6 +1,7 @@
 package com.fitcheckme.FitCheckMe.services;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,6 @@ import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.repositories.OutfitRepository;
-import com.fitcheckme.FitCheckMe.services.get_services.GarmentGetService;
-import com.fitcheckme.FitCheckMe.services.get_services.OutfitGetService;
-import com.fitcheckme.FitCheckMe.services.get_services.TagGetService;
-import com.fitcheckme.FitCheckMe.services.get_services.UserGetService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -36,22 +33,36 @@ public class OutfitService {
 	private OutfitRepository outfitRepository;
 
 	@Autowired
-	private OutfitGetService outfitGetService;
-
-	@Autowired
-	private UserGetService userGetService;
-
-	@Autowired
-	private GarmentGetService garmentGetService;
+	private UserService userService;
 
 	@Autowired
 	private GarmentService garmentService;
 
 	@Autowired
-	private TagGetService tagGetService;
-
-	@Autowired
 	private TagService tagService;
+
+	public List<Outfit> getAll() {
+		return outfitRepository.findAll();
+	}
+
+	public Outfit getById(Integer id) {
+		return outfitRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Outfit not found with ID: %s", String.valueOf(id))));
+	}
+
+	public List<Outfit> getById(List<Integer> ids) {
+		if(ids.isEmpty()) {
+			return new ArrayList<Outfit>();
+		}
+		
+		List<Outfit> res = outfitRepository.findAllById(ids);
+		
+		//If the db result doesn't have as many records as the input, we're missing one or more records
+		if(res.size() != ids.size()) {
+			throw new EntityNotFoundException(String.format("%d/%d outfits in list not found", ids.size() - res.size(), ids.size()));
+		}
+
+		return res;
+	}
 
 	//TODO add auth
 	@Transactional
@@ -63,7 +74,7 @@ public class OutfitService {
 			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
 		}
 		List<Garment> garments = garmentService.createGarment(outfit.garments());
-		List<Garment> existingGarments = garmentGetService.getById(outfit.existingGarments());
+		List<Garment> existingGarments = garmentService.getById(outfit.existingGarments());
 
 		//Checking if the list of garments have each garment belonging to the user whose outfit this is
 		for(int i = 0; i < existingGarments.size(); ++i) {
@@ -73,12 +84,10 @@ public class OutfitService {
 		}
 		garments.addAll(existingGarments);
 
-		List<Tag> tags = tagGetService.getById(outfit.outfitTags());
+		List<Tag> tags = tagService.getById(outfit.outfitTags());
 
-		Outfit newOutfit = new Outfit(userGetService.getById(outfit.userId()), outfit.outfitName(), outfit.outfitDesc() != "" ? outfit.outfitDesc() : null, LocalDateTime.now(), garments, tags);
+		Outfit newOutfit = new Outfit(userService.getById(outfit.userId()), outfit.outfitName(), outfit.outfitDesc() != "" ? outfit.outfitDesc() : null, LocalDateTime.now(), garments, tags);
 		this.outfitRepository.save(newOutfit);
-		System.out.println("NEW OUTFIT'S USER'S OUTFITS:");
-		System.out.println(newOutfit.getUser().getOutfits());
 		return newOutfit;
 	}
 
@@ -90,7 +99,7 @@ public class OutfitService {
 			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
 		}
 
-		Outfit currentOutfit = outfitGetService.getById(outfit.outfitId());
+		Outfit currentOutfit = this.getById(outfit.outfitId());
 		currentOutfit.setName(outfit.outfitName());
 		currentOutfit.setDesc(outfit.outfitDesc() != "" ? outfit.outfitDesc() : null);
 		
@@ -100,22 +109,20 @@ public class OutfitService {
 	//TODO add auth so only the owner can do this. Right now it's set up to allow anyone to do this as long as the garment's user matches the outfit's user. Replace that logic with proper auth
 	@Transactional
 	public void editGarments(OutfitGarmentUpdateRequestDTO outfitUpdate) {
-		Outfit currentOutfit = outfitGetService.getById(outfitUpdate.outfitId());
-		List<Garment> addGarments = garmentGetService.getById(outfitUpdate.addGarmentIds());
-		List<Garment> removeGarments = garmentGetService.getById(outfitUpdate.removeGarmentIds());
+		Outfit currentOutfit = this.getById(outfitUpdate.outfitId());
+		List<Garment> addGarments = garmentService.getById(outfitUpdate.addGarmentIds());
+		List<Garment> removeGarments = garmentService.getById(outfitUpdate.removeGarmentIds());
 
 		//Checking if the list of garments have each garment belonging to the user whose outfit this is
 		for(int i = 0; i < addGarments.size(); ++i) {
 			if(addGarments.get(i).getUser().getId() != currentOutfit.getUser().getId()) {
 				throw new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(addGarments.get(i).getId())));
 			}
-			garmentService.addOutfit(addGarments.get(i).getId(), currentOutfit.getId());
 		}
 		for(int i = 0; i < removeGarments.size(); ++i) {
 			if(removeGarments.get(i).getUser().getId() != currentOutfit.getUser().getId()) {
 				throw new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(removeGarments.get(i).getId())));
 			}
-			garmentService.removeOutfit(removeGarments.get(i).getId(), currentOutfit.getId());
 		}
 
 		currentOutfit.addGarment(addGarments);
@@ -125,17 +132,9 @@ public class OutfitService {
 
 	@Transactional
 	public void editTags(OutfitTagUpdateRequestDTO outfitUpdate) {
-		Outfit currentOutfit = outfitGetService.getById(outfitUpdate.outfitId());
-		List<Tag> addTags = tagGetService.getById(outfitUpdate.addTagIds());
-		List<Tag> removeTags = tagGetService.getById(outfitUpdate.removeTagIds());
-
-		for(int i = 0; i < addTags.size(); ++i) {
-			tagService.addOutfit(addTags.get(i).getId(), currentOutfit.getId());
-		}
-
-		for(int i = 0; i < removeTags.size(); ++i) {
-			tagService.removeOutfit(removeTags.get(i).getId(), currentOutfit.getId());
-		}
+		Outfit currentOutfit = this.getById(outfitUpdate.outfitId());
+		List<Tag> addTags = tagService.getById(outfitUpdate.addTagIds());
+		List<Tag> removeTags = tagService.getById(outfitUpdate.removeTagIds());
 
 		currentOutfit.addTag(addTags);
 		currentOutfit.removeTag(removeTags);
@@ -145,10 +144,8 @@ public class OutfitService {
 
 	@Transactional
 	public void addTag(Integer outfitId, Integer tagId) {
-		Outfit currentOutfit = outfitGetService.getById(outfitId);
-		Tag currentTag = tagGetService.getById(tagId);
-
-		tagService.addOutfit(tagId, outfitId);
+		Outfit currentOutfit = this.getById(outfitId);
+		Tag currentTag = tagService.getById(tagId);
 
 		currentOutfit.addTag(currentTag);
 		this.outfitRepository.save(currentOutfit);
@@ -156,10 +153,8 @@ public class OutfitService {
 
 	@Transactional
 	public void removeTag(Integer tagId, Integer outfitId) {
-		Outfit currentOutfit = outfitGetService.getById(outfitId);
-		Tag currentTag = tagGetService.getById(tagId);
-
-		tagService.removeOutfit(tagId, outfitId);
+		Outfit currentOutfit = this.getById(outfitId);
+		Tag currentTag = tagService.getById(tagId);
 
 		currentOutfit.removeTag(currentTag);
 		this.outfitRepository.save(currentOutfit);

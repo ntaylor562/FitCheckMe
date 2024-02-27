@@ -30,9 +30,6 @@ public class Garment {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
-	@ManyToMany(mappedBy = "garments")
-	private List<Outfit> outfits;
-
 	@ElementCollection
 	@CollectionTable(
 		name = "garment_url",
@@ -74,10 +71,6 @@ public class Garment {
 		return this.user;
 	}
 
-	public List<Outfit> getOutfits() {
-		return this.outfits;
-	}
-
 	public List<String> getURLs() {
 		return this.urls;
 	}
@@ -88,22 +81,6 @@ public class Garment {
 
 	public void setName(String name) {
 		this.garmentName = name;
-	}
-
-	public void addOutfit(Outfit outfit) {
-		this.outfits.add(outfit);
-	}
-
-	public void addOutfit(List<Outfit> outfit) {
-		this.outfits.addAll(outfit);
-	}
-
-	public void removeOutfit(Outfit outfit) {
-		this.outfits.remove(outfit);
-	}
-
-	public void removeOutfit(List<Outfit> outfit) {
-		this.outfits.removeAll(outfit);
 	}
 
 	public void addTag(Tag tag) {

@@ -20,7 +20,6 @@ import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.services.OutfitService;
-import com.fitcheckme.FitCheckMe.services.get_services.OutfitGetService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -29,21 +28,19 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/outfit")
 @CrossOrigin(origins = "*")
 public class OutfitController {
-	@Autowired
-	private OutfitGetService outfitGetService;
 
 	@Autowired
 	private OutfitService outfitService;
 
 	@GetMapping("")
 	public List<OutfitRequestDTO> findAll() {
-		return this.outfitGetService.getAll().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
+		return this.outfitService.getAll().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
 	@GetMapping("{id}")
 	public OutfitRequestDTO findById(@PathVariable Integer id) {
 		try {
-			return OutfitRequestDTO.toDTO(this.outfitGetService.getById(id));
+			return OutfitRequestDTO.toDTO(this.outfitService.getById(id));
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

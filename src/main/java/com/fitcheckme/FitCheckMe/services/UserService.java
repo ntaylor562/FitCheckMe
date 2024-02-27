@@ -1,5 +1,7 @@
 package com.fitcheckme.FitCheckMe.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -10,7 +12,8 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Following;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
-import com.fitcheckme.FitCheckMe.services.get_services.UserGetService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UserService {
@@ -23,8 +26,18 @@ public class UserService {
 	@Autowired
 	private UserRepository userRepository;
 
-	@Autowired
-	private UserGetService userGetService;
+	public List<User> getAll() {
+		return userRepository.findAll();
+	}
+
+	public User getById(Integer id) {
+		return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
+	}
+
+	public User getByUsername(String username) {
+		User res = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username))));
+		return res;
+	}
 
 	public User createUser(UserCreateRequestDTO user) {
 		if(user.username().length() > this.maxUsernameLength) {
@@ -53,7 +66,7 @@ public class UserService {
 		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
-		User currentUser = userGetService.getById(user.userId());
+		User currentUser = this.getById(user.userId());
 		currentUser.setUsername(user.username().toLowerCase());
 		currentUser.setBio(user.bio() != "" ? user.bio() : null);
 		
@@ -62,8 +75,8 @@ public class UserService {
 
 	//TODO add auth to make sure following can only be created by the follower
 	public void followUser(Integer followerId, Integer followeeId) {
-		User follower = userGetService.getById(followerId);
-		User followee = userGetService.getById(followeeId);
+		User follower = this.getById(followerId);
+		User followee = this.getById(followeeId);
 
 		if(follower.equals(followee)) {
 			throw new IllegalArgumentException("User cannot follow themselves");
@@ -81,7 +94,7 @@ public class UserService {
 
 	//TODO edit this to delete all outfits and garments associated with the user and other actions that need to be performed when deleting an entity
 	public void deleteUser(Integer id) {
-		userGetService.getById(id);
+		this.getById(id);
 		this.userRepository.deleteById(id);
 	}
 }

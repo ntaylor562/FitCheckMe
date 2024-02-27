@@ -29,12 +29,6 @@ public class User {
 	@Column(name = "bio")
 	private String bio;
 
-	@OneToMany(mappedBy = "user")
-	private List<Outfit> outfits;
-
-	@OneToMany(mappedBy = "user")
-	private List<Garment> garments;
-
 	@OneToMany(mappedBy = "follower")
 	private List<Following> followers;
 
@@ -60,14 +54,6 @@ public class User {
 
 	public String getBio() {
 		return this.bio;
-	}
-
-	public List<Outfit> getOutfits() {
-		return this.outfits;
-	}
-
-	public List<Garment> getGarments() {
-		return this.garments;
 	}
 
 	public List<Following> getFollowers() {

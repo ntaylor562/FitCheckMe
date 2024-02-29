@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,6 +26,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 //TODO implement permissions for this service
+//TODO extract following to a social service
 @RestController
 @RequestMapping("/api/user")
 @CrossOrigin(origins = "*")
@@ -35,7 +37,7 @@ public class UserController {
 		this.userService = userService;
 	}
 
-	@GetMapping("")
+	@GetMapping("/all")
 	public List<UserRequestDTO> findAll() {
 		return this.userService.getAll().stream().map(user -> UserRequestDTO.toDTO(user)).toList();
 	}
@@ -50,8 +52,8 @@ public class UserController {
 		}
 	}
 
-	@GetMapping("{username}")
-	public UserRequestDTO findByUsername(@PathVariable String username) {
+	@GetMapping("")
+	public UserRequestDTO findByUsername(@RequestParam(value="username") String username) {
 		try {
 			return UserRequestDTO.toDTO(this.userService.getByUsername(username));
 		}
@@ -66,6 +68,9 @@ public class UserController {
 	public void createUser(@Valid @RequestBody UserCreateRequestDTO user) {
 		try {
 			this.userService.createUser(user);
+		}
+		catch(IllegalArgumentException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 		}
 		catch(DataIntegrityViolationException e) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
@@ -84,6 +89,9 @@ public class UserController {
 		catch(IllegalArgumentException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 		}
+		catch(EntityNotFoundException e) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+		}
 	}
 
 	//TODO add auth
@@ -99,6 +107,9 @@ public class UserController {
 		catch(DataIntegrityViolationException e) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
 		}
+		catch(EntityNotFoundException e) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+		}
 	}
 
 	//TODO add auth
@@ -106,6 +117,12 @@ public class UserController {
 	public void deleteUser(@PathVariable Integer id) {
 		try {
 			userService.deleteUser(id);
+		}
+		catch(EntityNotFoundException e) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+		}
+		catch(IllegalArgumentException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 		}
 		catch(Exception e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

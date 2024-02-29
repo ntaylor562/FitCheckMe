@@ -96,7 +96,7 @@ public class UserService {
 
 	//TODO edit this to delete all outfits and garments associated with the user and other actions that need to be performed when deleting an entity
 	public void deleteUser(Integer id) {
-		this.getById(id);
+		//this.getById(id);
 		this.userRepository.deleteById(id);
 	}
 }

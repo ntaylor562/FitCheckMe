@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitGarmentUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitTagUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Garment;
@@ -65,32 +66,32 @@ public class OutfitService {
 
 	//TODO add auth
 	@Transactional
-	public Outfit createOutfit(OutfitCreateRequestDTO outfit) {
+	public OutfitRequestDTO createOutfit(OutfitCreateRequestDTO outfit) {
 		if(outfit.outfitName().length() > maxNameLength) {
 			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", maxNameLength));
 		}
 		if(outfit.outfitDesc().length() > maxDescLength) {
 			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
 		}
-		List<Garment> garments = garmentService.createGarment(outfit.garments());
-		List<Garment> existingGarments = garmentService.getById(outfit.existingGarments());
+
+		List<Garment> garments = garmentService.getById(outfit.garments());
 
 		//Checking if the list of garments have each garment belonging to the user whose outfit this is
-		for(int i = 0; i < existingGarments.size(); ++i) {
-			if(existingGarments.get(i).getUser().getId() != outfit.userId()) {
-				throw new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(existingGarments.get(i).getId())));
+		//May remove this to allow for sharing garments
+		garments.forEach(garment -> {
+			if (garment.getUser().getId() != outfit.userId()) {
+				throw new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(garment.getId())));
 			}
-		}
-		garments.addAll(existingGarments);
+		});
 
 		List<Tag> tags = tagService.getById(outfit.outfitTags());
 
 		Outfit newOutfit = new Outfit(userService.getById(outfit.userId()), outfit.outfitName(), outfit.outfitDesc() != "" ? outfit.outfitDesc() : null, LocalDateTime.now(), garments, tags);
 		this.outfitRepository.save(newOutfit);
-		return newOutfit;
+		return OutfitRequestDTO.toDTO(newOutfit);
 	}
 
-	public void updateOutfit(OutfitUpdateRequestDTO outfit) {
+	public OutfitRequestDTO updateOutfit(OutfitUpdateRequestDTO outfit) {
 		if(outfit.outfitName().length() > maxNameLength) {
 			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", maxNameLength));
 		}
@@ -101,8 +102,11 @@ public class OutfitService {
 		Outfit currentOutfit = this.getById(outfit.outfitId());
 		currentOutfit.setName(outfit.outfitName());
 		currentOutfit.setDesc(outfit.outfitDesc() != "" ? outfit.outfitDesc() : null);
+
+		//TODO add ability to update the garments in an outfit
 		
 		this.outfitRepository.save(currentOutfit);
+		return OutfitRequestDTO.toDTO(currentOutfit);
 	}
 
 	//TODO add auth so only the owner can do this. Right now it's set up to allow anyone to do this as long as the garment's user matches the outfit's user. Replace that logic with proper auth
@@ -162,5 +166,9 @@ public class OutfitService {
 	//TODO implement (must update all dependent tables)
 	public void deleteOutfit(Integer id) {
 		
+	}
+
+	public List<OutfitRequestDTO> getUserOutfits(Integer userId) {
+		return this.outfitRepository.findByUserId(userId).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 }

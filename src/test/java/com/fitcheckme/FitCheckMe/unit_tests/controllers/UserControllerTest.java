@@ -1,7 +1,6 @@
 package com.fitcheckme.FitCheckMe.unit_tests.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,9 +51,9 @@ public class UserControllerTest {
 		//Testing the get user by id call is OK
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/{id}", user.getId()))
 			.andExpect(MockMvcResultMatchers.status().isOk())
-			.andExpect(jsonPath("$.username").value(user.getUsername()))
-			.andExpect(jsonPath("$.bio").value(user.getBio()));
-
+			.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(user.getUsername()))
+			.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value(user.getBio()));
+			
 		//Testing the get user by id call is not found
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/{id}", 2))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
@@ -65,8 +64,8 @@ public class UserControllerTest {
 		//Testing the get user by username call is OK
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?username={username}", "test_username"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
-			.andExpect(jsonPath("$.username").value(user.getUsername()))
-			.andExpect(jsonPath("$.bio").value(user.getBio()));
+			.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(user.getUsername()))
+			.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value(user.getBio()));
 
 		//Testing the get user by username call is not found
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?username={username}", "not_a_user"))

@@ -22,6 +22,8 @@ import com.fitcheckme.FitCheckMe.services.OutfitService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/outfit")
@@ -33,7 +35,7 @@ public class OutfitController {
 		this.outfitService = outfitService;
 	}
 
-	@GetMapping("")
+	@GetMapping("all")
 	public List<OutfitRequestDTO> findAll() {
 		return this.outfitService.getAll().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
@@ -48,6 +50,17 @@ public class OutfitController {
 		}
 	}
 
+	@GetMapping("useroutfits")
+	public List<OutfitRequestDTO> getUserOutfits(@RequestParam Integer userId) {
+		try {
+			return this.outfitService.getUserOutfits(userId);
+		}
+		catch(EntityNotFoundException e) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+		}
+	}
+	
+
 	@PostMapping("")
 	@ResponseStatus(HttpStatus.CREATED)
 	public void createOutfit(@Valid @RequestBody OutfitCreateRequestDTO outfit) {
@@ -56,6 +69,9 @@ public class OutfitController {
 		}
 		catch(IllegalArgumentException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
+		catch(EntityNotFoundException e) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
 		}
 	}
 
@@ -68,6 +84,9 @@ public class OutfitController {
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
 		}
+		catch(IllegalArgumentException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
 	}
 
 	@DeleteMapping("{id}")
@@ -78,6 +97,9 @@ public class OutfitController {
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+		}
+		catch(IllegalArgumentException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 		}
 	}
 }

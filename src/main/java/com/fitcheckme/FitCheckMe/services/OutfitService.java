@@ -41,17 +41,21 @@ public class OutfitService {
 		this.tagService = tagService;
 	}
 
-	public List<Outfit> getAll() {
-		return outfitRepository.findAll();
+	public List<OutfitRequestDTO> getAll() {
+		return outfitRepository.findAll().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
-	public Outfit getById(Integer id) {
+	private Outfit getOutfit(Integer id) {
 		return outfitRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Outfit not found with ID: %s", String.valueOf(id))));
 	}
 
-	public List<Outfit> getById(List<Integer> ids) {
+	public OutfitRequestDTO getById(Integer id) {
+		return OutfitRequestDTO.toDTO(outfitRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Outfit not found with ID: %s", String.valueOf(id)))));
+	}
+
+	public List<OutfitRequestDTO> getById(List<Integer> ids) {
 		if(ids.isEmpty()) {
-			return new ArrayList<Outfit>();
+			return new ArrayList<OutfitRequestDTO>();
 		}
 		
 		List<Outfit> res = outfitRepository.findAllById(ids);
@@ -61,7 +65,19 @@ public class OutfitService {
 			throw new EntityNotFoundException(String.format("%d/%d outfits in list not found", ids.size() - res.size(), ids.size()));
 		}
 
-		return res;
+		return res.stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
+	}
+
+	public boolean exists(Integer id) {
+		return outfitRepository.existsById(id);
+	}
+
+	public List<OutfitRequestDTO> getUserOutfits(Integer userId) {
+		// Checking the user exists
+		if(!userService.exists(userId)) {
+			throw new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(userId)));
+		}
+		return this.outfitRepository.findByUserId(userId).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
 	//TODO add auth
@@ -99,7 +115,7 @@ public class OutfitService {
 			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
 		}
 
-		Outfit currentOutfit = this.getById(outfit.outfitId());
+		Outfit currentOutfit = this.getOutfit(outfit.outfitId());
 		currentOutfit.setName(outfit.outfitName());
 		currentOutfit.setDesc(outfit.outfitDesc() != "" ? outfit.outfitDesc() : null);
 
@@ -112,7 +128,7 @@ public class OutfitService {
 	//TODO add auth so only the owner can do this. Right now it's set up to allow anyone to do this as long as the garment's user matches the outfit's user. Replace that logic with proper auth
 	@Transactional
 	public void editGarments(OutfitGarmentUpdateRequestDTO outfitUpdate) {
-		Outfit currentOutfit = this.getById(outfitUpdate.outfitId());
+		Outfit currentOutfit = this.getOutfit(outfitUpdate.outfitId());
 		List<Garment> addGarments = garmentService.getById(outfitUpdate.addGarmentIds());
 		List<Garment> removeGarments = garmentService.getById(outfitUpdate.removeGarmentIds());
 
@@ -135,7 +151,7 @@ public class OutfitService {
 
 	@Transactional
 	public void editTags(OutfitTagUpdateRequestDTO outfitUpdate) {
-		Outfit currentOutfit = this.getById(outfitUpdate.outfitId());
+		Outfit currentOutfit = this.getOutfit(outfitUpdate.outfitId());
 		List<Tag> addTags = tagService.getById(outfitUpdate.addTagIds());
 		List<Tag> removeTags = tagService.getById(outfitUpdate.removeTagIds());
 
@@ -147,7 +163,7 @@ public class OutfitService {
 
 	@Transactional
 	public void addTag(Integer outfitId, Integer tagId) {
-		Outfit currentOutfit = this.getById(outfitId);
+		Outfit currentOutfit = this.getOutfit(outfitId);
 		Tag currentTag = tagService.getById(tagId);
 
 		currentOutfit.addTag(currentTag);
@@ -156,7 +172,7 @@ public class OutfitService {
 
 	@Transactional
 	public void removeTag(Integer tagId, Integer outfitId) {
-		Outfit currentOutfit = this.getById(outfitId);
+		Outfit currentOutfit = this.getOutfit(outfitId);
 		Tag currentTag = tagService.getById(tagId);
 
 		currentOutfit.removeTag(currentTag);
@@ -166,9 +182,5 @@ public class OutfitService {
 	//TODO implement (must update all dependent tables)
 	public void deleteOutfit(Integer id) {
 		
-	}
-
-	public List<OutfitRequestDTO> getUserOutfits(Integer userId) {
-		return this.outfitRepository.findByUserId(userId).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 }

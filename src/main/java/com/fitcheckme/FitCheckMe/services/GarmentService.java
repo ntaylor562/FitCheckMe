@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentTagUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentURLUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
@@ -39,11 +40,15 @@ public class GarmentService {
 		this.userService = userService;
 	}
 
-	public List<Garment> getAll() {
-		return garmentRepository.findAll();
+	public List<GarmentRequestDTO> getAll() {
+		return garmentRepository.findAll().stream().map(garment -> GarmentRequestDTO.toDTO(garment)).toList();
 	}
 
-	public Garment getById(Integer id) {
+	public GarmentRequestDTO getById(Integer id) {
+		return GarmentRequestDTO.toDTO(garmentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(id)))));
+	}
+
+	private Garment getGarment(Integer id) {
 		return garmentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(id))));
 	}
 
@@ -63,6 +68,17 @@ public class GarmentService {
 		return garmentRepository.findAllById(ids);
 	}
 
+	public boolean exists(Integer id) {
+		return garmentRepository.existsById(id);
+	}
+
+	public List<GarmentRequestDTO> getUserGarments(Integer userId) {
+		//Checking the user exists
+		if(!this.userService.exists(userId)) {
+			throw new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(userId)));
+		}
+		return this.garmentRepository.findByUserId(userId).stream().map(garment -> GarmentRequestDTO.toDTO(garment)).toList();
+	}
 	
 	/**
 	 * Validates the input URLs for a garment. If the number of URLs exceeds the maximum limit or if a URL is too long, an exception is thrown.
@@ -113,20 +129,21 @@ public class GarmentService {
 		return res;
 	}
 
-	public void updateGarment(GarmentUpdateRequestDTO garment) {
+	public GarmentRequestDTO updateGarment(GarmentUpdateRequestDTO garment) {
 		if(garment.garmentName().length() > maxGarmentNameLength) {
 			throw new IllegalArgumentException(String.format("Garment name too long, must be at most %d characters", maxGarmentNameLength));
 		}
 
-		Garment currentGarment = this.getById(garment.garmentId());
+		Garment currentGarment = this.getGarment(garment.garmentId());
 		currentGarment.setName(garment.garmentName());
 
 		garmentRepository.save(currentGarment);
+		return GarmentRequestDTO.toDTO(currentGarment);
 	}
 
 	@Transactional
 	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate) {
-		Garment garment = this.getById(garmentUpdate.garmentId());
+		Garment garment = this.getGarment(garmentUpdate.garmentId());
 		List<Tag> addTags = tagService.getById(garmentUpdate.addTagIds());
 		List<Tag> removeTags = tagService.getById(garmentUpdate.removeTagIds());
 
@@ -138,7 +155,7 @@ public class GarmentService {
 
 	@Transactional
 	public void addTag(Integer garmentId, Integer tagId) {
-		Garment garment = this.getById(garmentId);
+		Garment garment = this.getGarment(garmentId);
 		Tag tag = tagService.getById(tagId);
 
 		garment.addTag(tag);
@@ -147,7 +164,7 @@ public class GarmentService {
 
 	@Transactional
 	public void removeTag(Integer garmentId, Integer tagId) {
-		Garment garment = this.getById(garmentId);
+		Garment garment = this.getGarment(garmentId);
 		Tag tag = tagService.getById(tagId);
 
 		garment.removeTag(tag);
@@ -156,7 +173,7 @@ public class GarmentService {
 
 	@Transactional
 	public void editURLs(GarmentURLUpdateRequestDTO garmentUpdate) {
-		Garment garment = this.getById(garmentUpdate.garmentId());
+		Garment garment = this.getGarment(garmentUpdate.garmentId());
 		List<String> addURLs = garmentUpdate.addURLs();
 		List<String> removeURLs = garmentUpdate.removeURLs();
 
@@ -169,7 +186,7 @@ public class GarmentService {
 	}
 
 	public void addURL(Integer garmentId, String url) {
-		Garment garment = this.getById(garmentId);
+		Garment garment = this.getGarment(garmentId);
 
 		validateURLInput(garment, new ArrayList<String>(List.of(url)), new ArrayList<String>());
 
@@ -178,7 +195,7 @@ public class GarmentService {
 	}
 
 	public void removeURL(Integer garmentId, String url) {
-		Garment garment = this.getById(garmentId);
+		Garment garment = this.getGarment(garmentId);
 
 
 		if(!garment.getURLs().contains(url)) {

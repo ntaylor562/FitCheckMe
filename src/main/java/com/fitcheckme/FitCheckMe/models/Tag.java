@@ -31,7 +31,7 @@ public class Tag {
 		return this.tagId;
 	}
 
-	public String getTagName() {
+	public String getName() {
 		return this.tagName;
 	}
 }

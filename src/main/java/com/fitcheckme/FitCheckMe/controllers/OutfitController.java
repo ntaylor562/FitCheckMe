@@ -36,14 +36,14 @@ public class OutfitController {
 	}
 
 	@GetMapping("all")
-	public List<OutfitRequestDTO> findAll() {
-		return this.outfitService.getAll().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
+	public List<OutfitRequestDTO> getAll() {
+		return this.outfitService.getAll();
 	}
 
 	@GetMapping("{id}")
-	public OutfitRequestDTO findById(@PathVariable Integer id) {
+	public OutfitRequestDTO getById(@PathVariable Integer id) {
 		try {
-			return OutfitRequestDTO.toDTO(this.outfitService.getById(id));
+			return this.outfitService.getById(id);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

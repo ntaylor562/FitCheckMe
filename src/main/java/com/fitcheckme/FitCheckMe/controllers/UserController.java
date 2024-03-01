@@ -37,13 +37,13 @@ public class UserController {
 		this.userService = userService;
 	}
 
-	@GetMapping("/all")
-	public List<UserRequestDTO> findAll() {
+	@GetMapping("all")
+	public List<UserRequestDTO> getAll() {
 		return this.userService.getAll().stream().map(user -> UserRequestDTO.toDTO(user)).toList();
 	}
 
 	@GetMapping("{id}")
-	public UserRequestDTO findById(@PathVariable Integer id) {
+	public UserRequestDTO getById(@PathVariable Integer id) {
 		try {
 			return UserRequestDTO.toDTO(this.userService.getById(id));
 		}

@@ -31,13 +31,13 @@ public class TagController {
 		this.tagService = tagService;
 	}
 
-	@GetMapping("")
-	public List<Tag> findAll() {
+	@GetMapping("all")
+	public List<Tag> getAll() {
 		return this.tagService.getAll();
 	}
 
 	@GetMapping("{id}")
-	public Tag findById(@PathVariable Integer id) {
+	public Tag getById(@PathVariable Integer id) {
 		try {
 			return this.tagService.getById(id);
 		}

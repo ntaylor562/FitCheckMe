@@ -41,6 +41,10 @@ public class UserService {
 		return res;
 	}
 
+	public boolean exists(Integer id) {
+		return userRepository.existsById(id);
+	}
+
 	public User createUser(UserCreateRequestDTO user) {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));

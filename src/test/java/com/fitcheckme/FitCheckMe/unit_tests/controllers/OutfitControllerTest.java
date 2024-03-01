@@ -68,7 +68,8 @@ public class OutfitControllerTest {
 		Mockito.when(this.outfit1.getUser()).thenReturn(user);
 		Mockito.when(this.outfit2.getUser()).thenReturn(user);
 
-		Mockito.when(outfitService.getById(1)).thenReturn(this.outfit1);
+		OutfitRequestDTO outfit1DTO = OutfitRequestDTO.toDTO(this.outfit1);
+		Mockito.when(outfitService.getById(1)).thenReturn(outfit1DTO);
 		Mockito.when(outfitService.getById(2)).thenThrow(EntityNotFoundException.class);
 		List<OutfitRequestDTO> userOutfits = List.of(OutfitRequestDTO.toDTO(outfit1), OutfitRequestDTO.toDTO(outfit2));
 		Mockito.when(outfitService.getUserOutfits(1)).thenReturn(userOutfits);
@@ -85,21 +86,24 @@ public class OutfitControllerTest {
 			.andExpect(MockMvcResultMatchers.jsonPath("$.outfitDesc").value(outfit1.getDesc()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.creationDate").value(outfit1.getCreationDate().toString()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.garments[0].garmentId").value(outfit1.getGarments().get(0).getId()));
-		
-		//Testing get user outfits call is OK
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/outfit/useroutfits?userId={userId}", user.getId()))
-			.andExpect(MockMvcResultMatchers.status().isOk())
-			.andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2));
 
 		//Testing the get outfit by id call is not found
 		Mockito.when(outfitService.getById(3)).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/outfit/{id}", 2))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
+	}
 
-		//Testing get user outfits call is not found
+	@Test
+	public void testGetUserOutfits() throws Exception {
+		// Testing get user outfits call is OK
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/outfit/useroutfits?userId={userId}", user.getId()))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2));
+				
+		// Testing get user outfits call is not found
 		Mockito.when(outfitService.getUserOutfits(3)).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/outfit/useroutfits?userId={userId}", 3))
-			.andExpect(MockMvcResultMatchers.status().isNotFound());
+				.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}
 
 	@Test

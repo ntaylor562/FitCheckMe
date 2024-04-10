@@ -6,16 +6,16 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagCreateRequestDTO;
-import com.fitcheckme.FitCheckMe.models.Tag;
+import com.fitcheckme.FitCheckMe.DTOs.Tag.TagRequestDTO;
 import com.fitcheckme.FitCheckMe.services.TagService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -32,27 +32,23 @@ public class TagController {
 	}
 
 	@GetMapping("all")
-	public List<Tag> getAll() {
+	public List<TagRequestDTO> getAll() {
 		return this.tagService.getAll();
 	}
 
-	@GetMapping("{id}")
-	public Tag getById(@PathVariable Integer id) {
+	@GetMapping("")
+	public TagRequestDTO findByTagName(@RequestParam(required = false) Integer id, @RequestParam(required = false) String name) {
 		try {
-			return this.tagService.getById(id);
+			if(id != null) {
+				return this.tagService.getById(id);
+			}
+			if(name != null) {
+				return this.tagService.getByTagName(name);
+			}
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No ID or name provided");
 		}
 		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of tag not found");
-		}
-	}
-
-	@GetMapping("{tagName}")
-	public Tag findByTagName(@PathVariable String tagName) {
-		try {
-			return this.tagService.getByTagName(tagName);
-		}
-		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag name not found");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag not found");
 		}
 	}
 

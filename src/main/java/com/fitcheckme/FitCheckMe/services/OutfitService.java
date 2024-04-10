@@ -15,7 +15,9 @@ import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.models.Tag;
+import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
 import com.fitcheckme.FitCheckMe.repositories.OutfitRepository;
+import com.fitcheckme.FitCheckMe.repositories.TagRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -30,15 +32,15 @@ public class OutfitService {
 	private int maxNameLength;
 	
 	private final OutfitRepository outfitRepository;
+	private final GarmentRepository garmentRepository;
+	private final TagRepository tagRepository;
 	private final UserService userService;
-	private final GarmentService garmentService;
-	private final TagService tagService;
 
-	public OutfitService(OutfitRepository outfitRepository, UserService userService, GarmentService garmentService, TagService tagService) {
+	public OutfitService(OutfitRepository outfitRepository, GarmentRepository garmentRepository, TagRepository tagRepository, UserService userService) {
 		this.outfitRepository = outfitRepository;
+		this.garmentRepository = garmentRepository;
+		this.tagRepository = tagRepository;
 		this.userService = userService;
-		this.garmentService = garmentService;
-		this.tagService = tagService;
 	}
 
 	public List<OutfitRequestDTO> getAll() {
@@ -90,17 +92,15 @@ public class OutfitService {
 			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
 		}
 
-		List<Garment> garments = garmentService.getById(outfit.garments());
+		List<Garment> garments = garmentRepository.findAllById(outfit.garments());
+		if(garments.size() != outfit.garments().size()) {
+			throw new IllegalArgumentException("One or more garments not found");
+		}
 
-		//Checking if the list of garments have each garment belonging to the user whose outfit this is
-		//May remove this to allow for sharing garments
-		garments.forEach(garment -> {
-			if (garment.getUser().getId() != outfit.userId()) {
-				throw new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(garment.getId())));
-			}
-		});
-
-		List<Tag> tags = tagService.getById(outfit.outfitTags());
+		List<Tag> tags = tagRepository.findAllById(outfit.outfitTags());
+		if(tags.size() != outfit.outfitTags().size()) {
+			throw new IllegalArgumentException("One or more tags not found");
+		}
 
 		Outfit newOutfit = new Outfit(userService.getById(outfit.userId()), outfit.outfitName(), outfit.outfitDesc() != "" ? outfit.outfitDesc() : null, LocalDateTime.now(), garments, tags);
 		this.outfitRepository.save(newOutfit);
@@ -129,8 +129,12 @@ public class OutfitService {
 	@Transactional
 	public void editGarments(OutfitGarmentUpdateRequestDTO outfitUpdate) {
 		Outfit currentOutfit = this.getOutfit(outfitUpdate.outfitId());
-		List<Garment> addGarments = garmentService.getById(outfitUpdate.addGarmentIds());
-		List<Garment> removeGarments = garmentService.getById(outfitUpdate.removeGarmentIds());
+		List<Garment> addGarments = garmentRepository.findAllById(outfitUpdate.addGarmentIds());
+		List<Garment> removeGarments = garmentRepository.findAllById(outfitUpdate.removeGarmentIds());
+
+		if(addGarments.size() + removeGarments.size() != outfitUpdate.addGarmentIds().size() + outfitUpdate.removeGarmentIds().size()) {
+			throw new EntityNotFoundException("One or more garments not found");
+		}
 
 		//Checking if the list of garments have each garment belonging to the user whose outfit this is
 		for(int i = 0; i < addGarments.size(); ++i) {
@@ -152,8 +156,12 @@ public class OutfitService {
 	@Transactional
 	public void editTags(OutfitTagUpdateRequestDTO outfitUpdate) {
 		Outfit currentOutfit = this.getOutfit(outfitUpdate.outfitId());
-		List<Tag> addTags = tagService.getById(outfitUpdate.addTagIds());
-		List<Tag> removeTags = tagService.getById(outfitUpdate.removeTagIds());
+		List<Tag> addTags = tagRepository.findAllById(outfitUpdate.addTagIds());
+		List<Tag> removeTags = tagRepository.findAllById(outfitUpdate.removeTagIds());
+
+		if (addTags.size() + removeTags.size() != outfitUpdate.addTagIds().size() + outfitUpdate.removeTagIds().size()) {
+			throw new EntityNotFoundException("One or more tags not found");
+		}
 
 		currentOutfit.addTag(addTags);
 		currentOutfit.removeTag(removeTags);
@@ -164,18 +172,17 @@ public class OutfitService {
 	@Transactional
 	public void addTag(Integer outfitId, Integer tagId) {
 		Outfit currentOutfit = this.getOutfit(outfitId);
-		Tag currentTag = tagService.getById(tagId);
+		Tag currentTag = tagRepository.findById(tagId).orElseThrow(() -> new EntityNotFoundException("Tag not found"));
 
 		currentOutfit.addTag(currentTag);
 		this.outfitRepository.save(currentOutfit);
 	}
 
 	@Transactional
-	public void removeTag(Integer tagId, Integer outfitId) {
+	public void removeTag(Integer outfitId, Integer tagId) {
 		Outfit currentOutfit = this.getOutfit(outfitId);
-		Tag currentTag = tagService.getById(tagId);
 
-		currentOutfit.removeTag(currentTag);
+		currentOutfit.removeTag(tagId);
 		this.outfitRepository.save(currentOutfit);
 	}
 

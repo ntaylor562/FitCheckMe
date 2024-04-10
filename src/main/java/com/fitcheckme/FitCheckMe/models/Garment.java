@@ -91,12 +91,18 @@ public class Garment {
 		this.garmentTags.addAll(tags);
 	}
 
+	public void removeTag(Integer tagId) {
+		this.garmentTags.removeIf(tag -> tag.getId() == tagId);
+	}
+
 	public void removeTag(Tag tag) {
 		this.garmentTags.remove(tag);
 	}
 
-	public void removeTag(List<Tag> tags) {
-		this.garmentTags.removeAll(tags);
+	public void removeTag(List<Tag> tagsToBeRemoved) {
+		for(Tag tag : tagsToBeRemoved) {
+			this.garmentTags.remove(tag);
+		}
 	}
 
 	public void addURL(String url) {

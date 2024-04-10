@@ -128,11 +128,17 @@ public class Outfit {
 		this.outfitTags.addAll(tags);
 	}
 
+	public void removeTag(Integer tagId) {
+		this.outfitTags.removeIf(tag -> tag.getId() == tagId);
+	}
+
 	public void removeTag(Tag tag) {
 		this.outfitTags.remove(tag);
 	}
 
-	public void removeTag(List<Tag> tags) {
-		this.outfitTags.removeAll(tags);
+	public void removeTag(List<Tag> tagsToBeRemoved) {
+		for (Tag tag : tagsToBeRemoved) {
+			this.outfitTags.remove(tag);
+		}
 	}
 }

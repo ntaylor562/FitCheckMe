@@ -49,7 +49,7 @@ public class OutfitControllerTest {
 	private Outfit outfit2;
 
 	@BeforeEach
-	public void setUp() {
+	public void setup() {
 		this.user = Mockito.spy(new User("test_username", "test bio"));
 		this.tag1 = Mockito.spy(new Tag("tag1"));
 		this.tag2 = Mockito.spy(new Tag("tag1"));

@@ -15,6 +15,7 @@ import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
+import com.fitcheckme.FitCheckMe.repositories.TagRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -31,12 +32,12 @@ public class GarmentService {
 	private Integer maxGarmentURLLength;
 
 	private final GarmentRepository garmentRepository;
-	private final TagService tagService;
+	private final TagRepository tagRepository;
 	private final UserService userService;
 
-	public GarmentService(GarmentRepository garmentRepository, TagService tagService, UserService userService) {
+	public GarmentService(GarmentRepository garmentRepository, TagRepository tagRepository, UserService userService) {
 		this.garmentRepository = garmentRepository;
-		this.tagService = tagService;
+		this.tagRepository = tagRepository;
 		this.userService = userService;
 	}
 
@@ -101,7 +102,7 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public Garment createGarment(GarmentCreateRequestDTO garment) {
+	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment) {
 		if(garment.garmentName().length() > maxGarmentNameLength) {
 			throw new IllegalArgumentException(String.format("Garment name too long, must be at most %d characters", maxGarmentNameLength));
 		}
@@ -114,15 +115,20 @@ public class GarmentService {
 			throw new IllegalArgumentException(String.format("Garment URL too long, must be at most %d characters", maxGarmentURLLength));
 		}
 
+		List<Tag> tags = new ArrayList<Tag>();
+		for(int id : garment.garmentTagIds()) {
+			tags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
+		}
+
 		//TODO think about performing security checks on URLs
-		Garment newGarment = new Garment(garment.garmentName(), userService.getById(garment.userId()), garment.garmentURLs(), tagService.getById(garment.garmentTagIds()));
+		Garment newGarment = new Garment(garment.garmentName(), userService.getById(garment.userId()), garment.garmentURLs(), tags);
 		garmentRepository.save(newGarment);
-		return newGarment;
+		return GarmentRequestDTO.toDTO(newGarment);
 	}
 
 	@Transactional
-	public List<Garment> createGarment(List<GarmentCreateRequestDTO> garments) {
-		List<Garment> res = new ArrayList<Garment>();
+	public List<GarmentRequestDTO> createGarment(List<GarmentCreateRequestDTO> garments) {
+		List<GarmentRequestDTO> res = new ArrayList<GarmentRequestDTO>();
 		for(int i = 0; i < garments.size(); ++i) {
 			res.add(this.createGarment(garments.get(i)));
 		}
@@ -144,8 +150,15 @@ public class GarmentService {
 	@Transactional
 	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate) {
 		Garment garment = this.getGarment(garmentUpdate.garmentId());
-		List<Tag> addTags = tagService.getById(garmentUpdate.addTagIds());
-		List<Tag> removeTags = tagService.getById(garmentUpdate.removeTagIds());
+		List<Tag> addTags = new ArrayList<Tag>();
+		List<Tag> removeTags = new ArrayList<Tag>();
+
+		for (int id : garmentUpdate.addTagIds()) {
+			addTags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
+		}
+		for (int id : garmentUpdate.removeTagIds()) {
+			removeTags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
+		}
 
 		garment.addTag(addTags);
 		garment.removeTag(removeTags);
@@ -156,7 +169,7 @@ public class GarmentService {
 	@Transactional
 	public void addTag(Integer garmentId, Integer tagId) {
 		Garment garment = this.getGarment(garmentId);
-		Tag tag = tagService.getById(tagId);
+		Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(tagId))));
 
 		garment.addTag(tag);
 		garmentRepository.save(garment);
@@ -165,7 +178,7 @@ public class GarmentService {
 	@Transactional
 	public void removeTag(Integer garmentId, Integer tagId) {
 		Garment garment = this.getGarment(garmentId);
-		Tag tag = tagService.getById(tagId);
+		Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(tagId))));
 
 		garment.removeTag(tag);
 		garmentRepository.save(garment);

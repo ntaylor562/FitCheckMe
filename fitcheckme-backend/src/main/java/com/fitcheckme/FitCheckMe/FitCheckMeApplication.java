@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+//TODO Move building to the docker container
 //TODO Add tests
 //TODO Update controllers with better error handling, especially for the DB errors
 //TODO Add @ExceptionHandlers to controllers and create a @ControllerAdvice class

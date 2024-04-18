@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -57,8 +58,8 @@ public class OutfitControllerTest {
 		this.garment1 = Mockito.spy(new Garment("garment_1", user, Arrays.asList("url1"), Arrays.asList(tag1)));
 		this.garment2 = Mockito.spy(new Garment("garment_2", user, Arrays.asList("url2"), Arrays.asList(tag2)));
 		LocalDateTime now = LocalDateTime.of(2024, 1, 30, 12, 13, 14);
-		this.outfit1 = Mockito.spy(new Outfit(user, "test_outfit1", "test description 1", now, Arrays.asList(garment1), Arrays.asList(tag1)));
-		this.outfit2 = Mockito.spy(new Outfit(user, "test_outfit2", "test description 2", now, Arrays.asList(garment1, garment2), Arrays.asList(tag2)));
+		this.outfit1 = Mockito.spy(new Outfit(user, "test_outfit1", "test description 1", now, new HashSet<>(Arrays.asList(garment1)), Arrays.asList(tag1)));
+		this.outfit2 = Mockito.spy(new Outfit(user, "test_outfit2", "test description 2", now, new HashSet<>(Arrays.asList(garment1, garment2)), Arrays.asList(tag2)));
 
 		Mockito.when(this.user.getId()).thenReturn(1);
 		Mockito.when(this.tag1.getId()).thenReturn(1);
@@ -87,7 +88,7 @@ public class OutfitControllerTest {
 			.andExpect(MockMvcResultMatchers.jsonPath("$.outfitName").value(outfit1.getName()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.outfitDesc").value(outfit1.getDesc()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.creationDate").value(outfit1.getCreationDate().toString()))
-			.andExpect(MockMvcResultMatchers.jsonPath("$.garments[0].garmentId").value(outfit1.getGarments().get(0).getId()));
+			.andExpect(MockMvcResultMatchers.jsonPath("$.garments[0].garmentId").value(outfit1.getGarments().iterator().next().getId()));
 
 		//Testing the get outfit by id call is not found
 		Mockito.when(outfitService.getById(3)).thenThrow(EntityNotFoundException.class);

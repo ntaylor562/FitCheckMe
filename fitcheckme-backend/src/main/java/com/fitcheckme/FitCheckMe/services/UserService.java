@@ -7,6 +7,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Following;
 import com.fitcheckme.FitCheckMe.models.User;
@@ -28,24 +29,29 @@ public class UserService {
 		this.userRepository = userRepository;
 	}
 
-	public List<User> getAll() {
-		return userRepository.findAllByOrderByIdAsc();
+	public List<UserRequestDTO> getAll() {
+		return userRepository.findAllByOrderByIdAsc().stream().map((user) -> UserRequestDTO.toDTO(user)).toList();
 	}
 
-	public User getById(Integer id) {
+	public UserRequestDTO getById(Integer id) {
+		return UserRequestDTO.toDTO(userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id)))));
+	}
+
+	private User getUserById(Integer id) {
 		return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
+	
 	}
 
-	public User getByUsername(String username) {
+	public UserRequestDTO getByUsername(String username) {
 		User res = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username))));
-		return res;
+		return UserRequestDTO.toDTO(res);
 	}
 
 	public boolean exists(Integer id) {
 		return userRepository.existsById(id);
 	}
 
-	public User createUser(UserCreateRequestDTO user) {
+	public UserRequestDTO createUser(UserCreateRequestDTO user) {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
 		}
@@ -55,7 +61,7 @@ public class UserService {
 		}
 		User newUser = new User(user.username().toLowerCase(), null);
 		this.userRepository.save(newUser);
-		return newUser;
+		return UserRequestDTO.toDTO(newUser);
 	}
 
 	public void updateUser(UserUpdateRequestDTO user) {
@@ -69,7 +75,7 @@ public class UserService {
 		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
-		User currentUser = this.getById(user.userId());
+		User currentUser = this.getUserById(user.userId());
 		if(user.username() != null) {
 			if(!isValidUsername(user.username())) {
 				throw new IllegalArgumentException("Username must only contain letters, numbers, and underscores");
@@ -85,8 +91,8 @@ public class UserService {
 
 	//TODO add auth to make sure following can only be created by the follower
 	public void followUser(Integer followerId, Integer followeeId) {
-		User follower = this.getById(followerId);
-		User followee = this.getById(followeeId);
+		User follower = this.getUserById(followerId);
+		User followee = this.getUserById(followeeId);
 
 		if(follower.equals(followee)) {
 			throw new IllegalArgumentException("User cannot follow themselves");

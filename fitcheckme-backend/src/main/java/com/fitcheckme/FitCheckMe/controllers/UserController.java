@@ -39,13 +39,13 @@ public class UserController {
 
 	@GetMapping("all")
 	public List<UserRequestDTO> getAll() {
-		return this.userService.getAll().stream().map(user -> UserRequestDTO.toDTO(user)).toList();
+		return this.userService.getAll();
 	}
 
 	@GetMapping("{id}")
 	public UserRequestDTO getById(@PathVariable Integer id) {
 		try {
-			return UserRequestDTO.toDTO(this.userService.getById(id));
+			return this.userService.getById(id);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of user not found, could not get");
@@ -55,7 +55,7 @@ public class UserController {
 	@GetMapping("")
 	public UserRequestDTO getByUsername(@RequestParam(value="username") String username) {
 		try {
-			return UserRequestDTO.toDTO(this.userService.getByUsername(username));
+			return this.userService.getByUsername(username);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username not found, could not get");

@@ -18,6 +18,7 @@ import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
 import com.fitcheckme.FitCheckMe.repositories.OutfitRepository;
 import com.fitcheckme.FitCheckMe.repositories.TagRepository;
+import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -35,12 +36,14 @@ public class OutfitService {
 	private final GarmentRepository garmentRepository;
 	private final TagRepository tagRepository;
 	private final UserService userService;
+	private final UserRepository userRepository;
 
-	public OutfitService(OutfitRepository outfitRepository, GarmentRepository garmentRepository, TagRepository tagRepository, UserService userService) {
+	public OutfitService(OutfitRepository outfitRepository, GarmentRepository garmentRepository, TagRepository tagRepository, UserService userService, UserRepository userRepository) {
 		this.outfitRepository = outfitRepository;
 		this.garmentRepository = garmentRepository;
 		this.tagRepository = tagRepository;
 		this.userService = userService;
+		this.userRepository = userRepository;
 	}
 
 	public List<OutfitRequestDTO> getAll() {
@@ -102,7 +105,7 @@ public class OutfitService {
 			throw new IllegalArgumentException("One or more tags not found");
 		}
 
-		Outfit newOutfit = new Outfit(userService.getById(outfit.userId()), outfit.outfitName(), outfit.outfitDesc() != "" ? outfit.outfitDesc() : null, LocalDateTime.now(), garments, tags);
+		Outfit newOutfit = new Outfit(userRepository.findById(outfit.userId()).get(), outfit.outfitName(), outfit.outfitDesc() != "" ? outfit.outfitDesc() : null, LocalDateTime.now(), garments, tags);
 		this.outfitRepository.save(newOutfit);
 		return OutfitRequestDTO.toDTO(newOutfit);
 	}

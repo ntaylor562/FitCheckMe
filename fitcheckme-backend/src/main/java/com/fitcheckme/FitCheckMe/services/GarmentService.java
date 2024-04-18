@@ -16,6 +16,7 @@ import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
 import com.fitcheckme.FitCheckMe.repositories.TagRepository;
+import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -34,11 +35,13 @@ public class GarmentService {
 	private final GarmentRepository garmentRepository;
 	private final TagRepository tagRepository;
 	private final UserService userService;
+	private final UserRepository userRepository;
 
-	public GarmentService(GarmentRepository garmentRepository, TagRepository tagRepository, UserService userService) {
+	public GarmentService(GarmentRepository garmentRepository, TagRepository tagRepository, UserService userService, UserRepository userRepository) {
 		this.garmentRepository = garmentRepository;
 		this.tagRepository = tagRepository;
 		this.userService = userService;
+		this.userRepository = userRepository;
 	}
 
 	public List<GarmentRequestDTO> getAll() {
@@ -121,7 +124,7 @@ public class GarmentService {
 		}
 
 		//TODO think about performing security checks on URLs
-		Garment newGarment = new Garment(garment.garmentName(), userService.getById(garment.userId()), garment.garmentURLs(), tags);
+		Garment newGarment = new Garment(garment.garmentName(), userRepository.findById(garment.userId()).get(), garment.garmentURLs(), tags);
 		garmentRepository.save(newGarment);
 		return GarmentRequestDTO.toDTO(newGarment);
 	}

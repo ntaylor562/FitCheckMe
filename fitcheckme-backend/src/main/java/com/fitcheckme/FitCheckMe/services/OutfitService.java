@@ -2,7 +2,9 @@ package com.fitcheckme.FitCheckMe.services;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -95,7 +97,7 @@ public class OutfitService {
 			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
 		}
 
-		List<Garment> garments = garmentRepository.findAllById(outfit.garments());
+		Set<Garment> garments = new HashSet<>(garmentRepository.findAllById(outfit.garments()));
 		if(garments.size() != outfit.garments().size()) {
 			throw new IllegalArgumentException("One or more garments not found");
 		}
@@ -105,49 +107,57 @@ public class OutfitService {
 			throw new IllegalArgumentException("One or more tags not found");
 		}
 
-		Outfit newOutfit = new Outfit(userRepository.findById(outfit.userId()).get(), outfit.outfitName(), outfit.outfitDesc() != "" ? outfit.outfitDesc() : null, LocalDateTime.now(), garments, tags);
+		Outfit newOutfit = new Outfit(userRepository.findById(outfit.userId()).get(), outfit.outfitName(), outfit.outfitDesc(), LocalDateTime.now(), garments, tags);
 		this.outfitRepository.save(newOutfit);
 		return OutfitRequestDTO.toDTO(newOutfit);
 	}
 
 	public OutfitRequestDTO updateOutfit(OutfitUpdateRequestDTO outfit) {
-		if(outfit.outfitName().length() > maxNameLength) {
+		if(outfit.outfitName() != null && outfit.outfitName().length() > maxNameLength) {
 			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", maxNameLength));
 		}
-		if(outfit.outfitDesc().length() > maxDescLength) {
+		if(outfit.outfitDesc() != null && outfit.outfitDesc().length() > maxDescLength) {
 			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
 		}
 
 		Outfit currentOutfit = this.getOutfit(outfit.outfitId());
-		currentOutfit.setName(outfit.outfitName());
-		currentOutfit.setDesc(outfit.outfitDesc() != "" ? outfit.outfitDesc() : null);
-
-		//TODO add ability to update the garments in an outfit
+		if(outfit.outfitName() != null) {
+			currentOutfit.setName(outfit.outfitName());
+		}
+		if(outfit.outfitDesc() != null) {
+			currentOutfit.setDesc(outfit.outfitDesc());
+		}
 		
 		this.outfitRepository.save(currentOutfit);
 		return OutfitRequestDTO.toDTO(currentOutfit);
 	}
 
-	//TODO add auth so only the owner can do this. Right now it's set up to allow anyone to do this as long as the garment's user matches the outfit's user. Replace that logic with proper auth
+	//TODO add auth so only the owner can do this
 	@Transactional
 	public void editGarments(OutfitGarmentUpdateRequestDTO outfitUpdate) {
 		Outfit currentOutfit = this.getOutfit(outfitUpdate.outfitId());
-		List<Garment> addGarments = garmentRepository.findAllById(outfitUpdate.addGarmentIds());
-		List<Garment> removeGarments = garmentRepository.findAllById(outfitUpdate.removeGarmentIds());
+		Set<Garment> addGarments = outfitUpdate.addGarmentIds() != null && !outfitUpdate.addGarmentIds().isEmpty() ? new HashSet<>(garmentRepository.findAllById(outfitUpdate.addGarmentIds())) : new HashSet<Garment>();
+		Set<Garment> removeGarments = outfitUpdate.removeGarmentIds() != null && !outfitUpdate.removeGarmentIds().isEmpty() ? new HashSet<>(garmentRepository.findAllByOutfitIdAndId(outfitUpdate.removeGarmentIds(), currentOutfit.getId())) : new HashSet<Garment>();
 
-		if(addGarments.size() + removeGarments.size() != outfitUpdate.addGarmentIds().size() + outfitUpdate.removeGarmentIds().size()) {
-			throw new EntityNotFoundException("One or more garments not found");
+		if(outfitUpdate.addGarmentIds() != null && addGarments.size() != outfitUpdate.addGarmentIds().size()) {
+			throw new EntityNotFoundException("One or more garments not found in add list");
+		}
+		
+		if(outfitUpdate.removeGarmentIds() != null && removeGarments.size() != outfitUpdate.removeGarmentIds().size()) {
+			System.out.println(removeGarments.size() + " " + outfitUpdate.removeGarmentIds().size() + " ");
+			throw new EntityNotFoundException("One or more garments not found in remove list");
 		}
 
-		//Checking if the list of garments have each garment belonging to the user whose outfit this is
-		for(int i = 0; i < addGarments.size(); ++i) {
-			if(addGarments.get(i).getUser().getId() != currentOutfit.getUser().getId()) {
-				throw new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(addGarments.get(i).getId())));
+		if(addGarments.isEmpty() && removeGarments.isEmpty()) {
+			throw new IllegalArgumentException("No garments to add or remove");
+		}
+
+		for(Garment garment : addGarments) {
+			if(currentOutfit.getGarments().contains(garment)) {
+				throw new IllegalArgumentException("One or more garments already in outfit");
 			}
-		}
-		for(int i = 0; i < removeGarments.size(); ++i) {
-			if(removeGarments.get(i).getUser().getId() != currentOutfit.getUser().getId()) {
-				throw new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(removeGarments.get(i).getId())));
+			if(removeGarments.contains(garment)) {
+				throw new IllegalArgumentException("One or more garments in both add and remove lists");
 			}
 		}
 

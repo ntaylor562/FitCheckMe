@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.controllers.UserController;
 import com.fitcheckme.FitCheckMe.models.User;
@@ -39,10 +40,11 @@ public class UserControllerTest {
 		this.user = Mockito.spy(new User("test_username", "test bio"));
 		Mockito.when(this.user.getId()).thenReturn(1);
 
-		Mockito.when(userService.getById(1)).thenReturn(this.user);
+		UserRequestDTO userDTO = UserRequestDTO.toDTO(this.user);
+		Mockito.when(userService.getById(1)).thenReturn(userDTO);
 		Mockito.when(userService.getById(2)).thenThrow(EntityNotFoundException.class);
 
-		Mockito.when(userService.getByUsername("test_username")).thenReturn(this.user);
+		Mockito.when(userService.getByUsername("test_username")).thenReturn(userDTO);
 		Mockito.when(userService.getByUsername("not_a_user")).thenThrow(EntityNotFoundException.class);
 	}
 
@@ -76,7 +78,8 @@ public class UserControllerTest {
 	public void testCreateUser() throws Exception {
 		User newUser = Mockito.spy(new User("test_username3", "test bio 3"));
 		Mockito.when(newUser.getId()).thenReturn(3);
-		Mockito.when(userService.createUser(UserCreateRequestDTO.toDTO(newUser))).thenReturn(newUser);
+		UserRequestDTO newUserDTO = UserRequestDTO.toDTO(newUser);
+		Mockito.when(userService.createUser(UserCreateRequestDTO.toDTO(newUser))).thenReturn(newUserDTO);
 
 		UserCreateRequestDTO requestDTO = UserCreateRequestDTO.toDTO(newUser);
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);

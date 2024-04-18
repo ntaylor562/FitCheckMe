@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitGarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.services.OutfitService;
@@ -80,6 +81,20 @@ public class OutfitController {
 	public void updateOutfit(@Valid @RequestBody OutfitUpdateRequestDTO outfit) {
 		try {
 			this.outfitService.updateOutfit(outfit);
+		}
+		catch(EntityNotFoundException e) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+		}
+		catch(IllegalArgumentException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
+	}
+
+	@PutMapping("editgarments")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void updateOutfitGarments(@Valid @RequestBody OutfitGarmentUpdateRequestDTO outfit) {
+		try {
+			this.outfitService.editGarments(outfit);;
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

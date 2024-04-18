@@ -13,6 +13,7 @@ public record OutfitRequestDTO (
 	String outfitName,
 	String outfitDesc,
 	LocalDateTime creationDate,
+	List<TagRequestDTO> outfitTags,
 	List<GarmentRequestDTO>garments
 ) {
 	public static OutfitRequestDTO toDTO(Outfit outfit) {
@@ -21,6 +22,7 @@ public record OutfitRequestDTO (
 			outfit.getUser().getId(),
 			outfit.getName(), outfit.getDesc(),
 			outfit.getCreationDate(),
+			outfit.getTags().stream().map(t -> new TagRequestDTO(t.getId(), t.getName())).toList(),
 			outfit.getGarments().stream().map(garment -> new GarmentRequestDTO(
 				garment.getId(),
 				garment.getName(),

@@ -2,6 +2,7 @@ package com.fitcheckme.FitCheckMe.models;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,7 +45,7 @@ public class Outfit {
 		joinColumns = @JoinColumn(name = "outfit_id", nullable = false),
 		inverseJoinColumns = @JoinColumn(name = "garment_id", nullable = false)
 	)
-	private List<Garment> garments;
+	private Set<Garment> garments;
 
 	@ManyToMany
 	@JoinTable(
@@ -59,7 +60,7 @@ public class Outfit {
 
 	}
 
-	public Outfit(User user, String outfitName, String outfitDesc, LocalDateTime creationDate, List<Garment> garments, List<Tag> tags) {
+	public Outfit(User user, String outfitName, String outfitDesc, LocalDateTime creationDate, Set<Garment> garments, List<Tag> tags) {
 		this.user = user;
 		this.outfitName = outfitName;
 		this.outfitDesc = outfitDesc;
@@ -88,7 +89,7 @@ public class Outfit {
 		return this.creationDate;
 	}
 
-	public List<Garment> getGarments() {
+	public Set<Garment> getGarments() {
 		return this.garments;
 	}
 
@@ -108,7 +109,7 @@ public class Outfit {
 		this.garments.add(garment);
 	}
 
-	public void addGarment(List<Garment> garments) {
+	public void addGarment(Set<Garment> garments) {
 		this.garments.addAll(garments);
 	}
 
@@ -116,7 +117,7 @@ public class Outfit {
 		this.garments.remove(garment);
 	}
 
-	public void removeGarment(List<Garment> garments) {
+	public void removeGarment(Set<Garment> garments) {
 		this.garments.removeAll(garments);
 	}
 

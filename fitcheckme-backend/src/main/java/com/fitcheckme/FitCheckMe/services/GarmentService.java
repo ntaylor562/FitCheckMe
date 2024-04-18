@@ -42,7 +42,7 @@ public class GarmentService {
 	}
 
 	public List<GarmentRequestDTO> getAll() {
-		return garmentRepository.findAll().stream().map(garment -> GarmentRequestDTO.toDTO(garment)).toList();
+		return garmentRepository.findAllByOrderByIdAsc().stream().map(garment -> GarmentRequestDTO.toDTO(garment)).toList();
 	}
 
 	public GarmentRequestDTO getById(Integer id) {

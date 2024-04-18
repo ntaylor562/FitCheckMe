@@ -22,7 +22,7 @@ public class TagService {
 	}
 
 	public List<TagRequestDTO> getAll() {
-		return tagRepository.findAll().stream().map(tag -> TagRequestDTO.toDTO(tag)).toList();
+		return tagRepository.findAllByOrderByIdAsc().stream().map(tag -> TagRequestDTO.toDTO(tag)).toList();
 	}
 
 	public TagRequestDTO getById(Integer id) {

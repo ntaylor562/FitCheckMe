@@ -29,7 +29,7 @@ public class UserService {
 	}
 
 	public List<User> getAll() {
-		return userRepository.findAll();
+		return userRepository.findAllByOrderByIdAsc();
 	}
 
 	public User getById(Integer id) {
@@ -49,23 +49,20 @@ public class UserService {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
 		}
-		if(user.bio().length() > this.maxBioLength) {
-			throw new IllegalArgumentException(String.format("User bio must be at most %d characters", this.maxBioLength));
-		}
 		//Checking if username already exists
 		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
-		User newUser = new User(user.username().toLowerCase(), user.bio() != "" ? user.bio() : null);
+		User newUser = new User(user.username().toLowerCase(), null);
 		this.userRepository.save(newUser);
 		return newUser;
 	}
 
 	public void updateUser(UserUpdateRequestDTO user) {
-		if(user.username().length() > this.maxUsernameLength) {
+		if(user.username() != null && user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
 		}
-		if(user.bio().length() > this.maxBioLength) {
+		if(user.bio() != null && user.bio().length() > this.maxBioLength) {
 			throw new IllegalArgumentException(String.format("User bio must be at most %d characters", this.maxBioLength));
 		}
 		//Checking if username already exists
@@ -73,8 +70,15 @@ public class UserService {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
 		User currentUser = this.getById(user.userId());
-		currentUser.setUsername(user.username().toLowerCase());
-		currentUser.setBio(user.bio() != "" ? user.bio() : null);
+		if(user.username() != null) {
+			if(!isValidUsername(user.username())) {
+				throw new IllegalArgumentException("Username must only contain letters, numbers, and underscores");
+			}
+			currentUser.setUsername(user.username().toLowerCase());
+		}
+		if(user.bio() != null) {
+			currentUser.setBio(user.bio());
+		}
 		
 		this.userRepository.save(currentUser);
 	}
@@ -102,5 +106,9 @@ public class UserService {
 	public void deleteUser(Integer id) {
 		//this.getById(id);
 		this.userRepository.deleteById(id);
+	}
+
+	private boolean isValidUsername(String username) {
+		return username != null && username != "" && username.matches("^[a-zA-Z0-9_]*$");
 	}
 }

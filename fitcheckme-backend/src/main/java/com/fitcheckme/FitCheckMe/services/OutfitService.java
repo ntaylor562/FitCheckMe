@@ -44,7 +44,7 @@ public class OutfitService {
 	}
 
 	public List<OutfitRequestDTO> getAll() {
-		return outfitRepository.findAll().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
+		return outfitRepository.findAllByOrderByIdAsc().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
 	private Outfit getOutfit(Integer id) {

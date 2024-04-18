@@ -1,0 +1,24 @@
+HELP.md
+README.md
+
+.git
+.vscode
+.gitignore
+
+### Docker ###
+.dockerignore
+docker-compose.yaml
+Dockerfile
+
+### Node ###
+node_modules
+dist
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### VS Code ###
+.vscode/

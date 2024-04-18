@@ -53,7 +53,7 @@ public class UserController {
 	}
 
 	@GetMapping("")
-	public UserRequestDTO findByUsername(@RequestParam(value="username") String username) {
+	public UserRequestDTO getByUsername(@RequestParam(value="username") String username) {
 		try {
 			return UserRequestDTO.toDTO(this.userService.getByUsername(username));
 		}

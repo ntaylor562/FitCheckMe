@@ -27,7 +27,7 @@ public record OutfitRequestDTO (
 				garment.getId(),
 				garment.getName(),
 				garment.getUser().getId(),
-				garment.getURLs(),
+				garment.getURLs().stream().toList(),
 				garment.getTags().stream().map(t -> new TagRequestDTO(t.getId(), t.getName())).toList())
 			).toList()
 		);

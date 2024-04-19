@@ -1,6 +1,8 @@
 package com.fitcheckme.FitCheckMe.models;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -37,7 +39,7 @@ public class Garment {
 		joinColumns = @JoinColumn(name = "garment_id")
 	)
 	@Column(name = "garment_url")
-	private List<String> urls;
+	private Set<String> urls;
 
 	@ManyToMany
 	@JoinTable(
@@ -46,17 +48,17 @@ public class Garment {
 		joinColumns = @JoinColumn(name = "garment_id", nullable = false),
 		inverseJoinColumns = @JoinColumn(name = "tag_id", nullable = false)
 	)
-	private List<Tag> garmentTags;
+	private Set<Tag> garmentTags;
 
 	public Garment() {
 
 	}
 
-	public Garment(String garmentName, User user, List<String> urls, List<Tag> tags) {
+	public Garment(String garmentName, User user, Collection<String> urls, Collection<Tag> tags) {
 		this.garmentName = garmentName;
 		this.user = user;
-		this.urls = urls;
-		this.garmentTags = tags;
+		this.urls = new HashSet<>(urls);
+		this.garmentTags = new HashSet<>(tags);
 	}
 
 	public Integer getId() {
@@ -71,11 +73,11 @@ public class Garment {
 		return this.user;
 	}
 
-	public List<String> getURLs() {
+	public Set<String> getURLs() {
 		return this.urls;
 	}
 
-	public List<Tag> getTags() {
+	public Set<Tag> getTags() {
 		return this.garmentTags;
 	}
 
@@ -87,7 +89,7 @@ public class Garment {
 		this.garmentTags.add(tag);
 	}
 
-	public void addTag(List<Tag> tags) {
+	public void addTag(Collection<Tag> tags) {
 		this.garmentTags.addAll(tags);
 	}
 
@@ -99,17 +101,15 @@ public class Garment {
 		this.garmentTags.remove(tag);
 	}
 
-	public void removeTag(List<Tag> tagsToBeRemoved) {
-		for(Tag tag : tagsToBeRemoved) {
-			this.garmentTags.remove(tag);
-		}
+	public void removeTag(Collection<Tag> tagsToBeRemoved) {
+		this.garmentTags.removeAll(tagsToBeRemoved);
 	}
 
 	public void addURL(String url) {
 		this.urls.add(url);
 	}
 
-	public void addURL(List<String> urls) {
+	public void addURL(Collection<String> urls) {
 		this.urls.addAll(urls);
 	}
 
@@ -117,10 +117,7 @@ public class Garment {
 		this.urls.remove(url);
 	}
 
-	public void removeURL(List<String> urls) {
-		//Removing one at a time because unsure whether removeAll will remove duplicates or just one of each
-		for(int i = 0; i < urls.size(); ++i) {
-			this.urls.remove(urls.get(i));
-		}
+	public void removeURL(Collection<String> urls) {
+		this.urls.removeAll(urls);
 	}
 }

@@ -64,7 +64,7 @@ public class GarmentControllerTest {
 			.andExpect(MockMvcResultMatchers.jsonPath("$.userId").value(this.garment1.getUser().getId()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.urls.length()").value(this.garment1.getURLs().size()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.garmentTags.length()").value(this.garment1.getTags().size()))
-			.andExpect(MockMvcResultMatchers.jsonPath("$.garmentTags[0].tagName").value(this.garment1.getTags().get(0).getName()));
+			.andExpect(MockMvcResultMatchers.jsonPath("$.garmentTags[0].tagName").value(this.garment1.getTags().iterator().next().getName()));
 
 		//Testing get garment call with bad ID
 		Mockito.when(garmentService.getById(2)).thenThrow(EntityNotFoundException.class);

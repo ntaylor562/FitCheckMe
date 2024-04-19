@@ -1,7 +1,9 @@
 package com.fitcheckme.FitCheckMe.services;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -104,27 +106,33 @@ public class GarmentService {
 		}
 	}
 
+	//TODO add auth and grab user from token
 	@Transactional
 	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment) {
-		if(garment.garmentName().length() > maxGarmentNameLength) {
+		String garmentName = garment.garmentName() != null ? garment.garmentName().strip() : "";
+		Set<String> garmentURLs = new HashSet<>(garment.garmentURLs().stream().map(url -> url.strip()).toList());
+		Set<Tag> tags = new HashSet<>();
+
+		if(garmentName.length() > maxGarmentNameLength) {
 			throw new IllegalArgumentException(String.format("Garment name too long, must be at most %d characters", maxGarmentNameLength));
 		}
 
-		if(garment.garmentURLs().size() > maxURLsPerGarment) {
+		if(garmentURLs.size() > maxURLsPerGarment) {
 			throw new IllegalArgumentException(String.format("Too many URLs provided when creating a garment, must be at most %d URLs", maxURLsPerGarment));
 		}
 
-		if(garment.garmentURLs().stream().anyMatch(url -> url.length() > maxGarmentURLLength)) {
+		if(garmentURLs.stream().anyMatch(url -> url.length() > maxGarmentURLLength)) {
 			throw new IllegalArgumentException(String.format("Garment URL too long, must be at most %d characters", maxGarmentURLLength));
 		}
 
-		List<Tag> tags = new ArrayList<Tag>();
-		for(int id : garment.garmentTagIds()) {
-			tags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
+		if(garment.garmentTagIds() != null && !garment.garmentTagIds().isEmpty()) {
+			for(int id : garment.garmentTagIds()) {
+				tags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
+			}
 		}
 
 		//TODO think about performing security checks on URLs
-		Garment newGarment = new Garment(garment.garmentName(), userRepository.findById(garment.userId()).get(), garment.garmentURLs(), tags);
+		Garment newGarment = new Garment(garment.garmentName(), userRepository.findById(garment.userId()).get(), garmentURLs, tags);
 		garmentRepository.save(newGarment);
 		return GarmentRequestDTO.toDTO(newGarment);
 	}

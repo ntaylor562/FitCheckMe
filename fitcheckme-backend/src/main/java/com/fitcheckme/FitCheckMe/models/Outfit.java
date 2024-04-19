@@ -1,7 +1,8 @@
 package com.fitcheckme.FitCheckMe.models;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -54,19 +55,19 @@ public class Outfit {
 		joinColumns = @JoinColumn(name = "outfit_id", nullable = false),
 		inverseJoinColumns = @JoinColumn(name = "tag_id", nullable = false)
 	)
-	private List<Tag> outfitTags;
+	private Set<Tag> outfitTags;
 
 	public Outfit() {
 
 	}
 
-	public Outfit(User user, String outfitName, String outfitDesc, LocalDateTime creationDate, Set<Garment> garments, List<Tag> tags) {
+	public Outfit(User user, String outfitName, String outfitDesc, LocalDateTime creationDate, Collection<Garment> garments, Collection<Tag> tags) {
 		this.user = user;
 		this.outfitName = outfitName;
 		this.outfitDesc = outfitDesc;
 		this.creationDate = creationDate;
-		this.garments = garments;
-		this.outfitTags = tags;
+		this.garments = new HashSet<>(garments);
+		this.outfitTags = new HashSet<>(tags);
 	}
 
 	public Integer getId() {
@@ -93,7 +94,7 @@ public class Outfit {
 		return this.garments;
 	}
 
-	public List<Tag> getTags() {
+	public Set<Tag> getTags() {
 		return this.outfitTags;
 	}
 
@@ -109,7 +110,7 @@ public class Outfit {
 		this.garments.add(garment);
 	}
 
-	public void addGarment(Set<Garment> garments) {
+	public void addGarment(Collection<Garment> garments) {
 		this.garments.addAll(garments);
 	}
 
@@ -117,7 +118,7 @@ public class Outfit {
 		this.garments.remove(garment);
 	}
 
-	public void removeGarment(Set<Garment> garments) {
+	public void removeGarment(Collection<Garment> garments) {
 		this.garments.removeAll(garments);
 	}
 
@@ -125,7 +126,7 @@ public class Outfit {
 		this.outfitTags.add(tag);
 	}
 
-	public void addTag(List<Tag> tags) {
+	public void addTag(Collection<Tag> tags) {
 		this.outfitTags.addAll(tags);
 	}
 
@@ -137,9 +138,7 @@ public class Outfit {
 		this.outfitTags.remove(tag);
 	}
 
-	public void removeTag(List<Tag> tagsToBeRemoved) {
-		for (Tag tag : tagsToBeRemoved) {
-			this.outfitTags.remove(tag);
-		}
+	public void removeTag(Collection<Tag> tagsToBeRemoved) {
+		this.outfitTags.removeAll(tagsToBeRemoved);
 	}
 }

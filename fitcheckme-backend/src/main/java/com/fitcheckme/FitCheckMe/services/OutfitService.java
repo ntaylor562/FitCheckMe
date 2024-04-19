@@ -97,7 +97,7 @@ public class OutfitService {
 			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
 		}
 
-		Set<Garment> garments = new HashSet<>(garmentRepository.findAllById(outfit.garments()));
+		List<Garment> garments = garmentRepository.findAllById(outfit.garments());
 		if(garments.size() != outfit.garments().size()) {
 			throw new IllegalArgumentException("One or more garments not found");
 		}

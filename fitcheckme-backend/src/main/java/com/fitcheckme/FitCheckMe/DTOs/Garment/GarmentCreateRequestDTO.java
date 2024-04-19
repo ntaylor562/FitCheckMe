@@ -12,6 +12,6 @@ public record GarmentCreateRequestDTO(
 ) {
 
 	public static GarmentCreateRequestDTO toDTO(Garment garment) {
-		return new GarmentCreateRequestDTO(garment.getName(), garment.getUser().getId(), garment.getURLs(), garment.getTags().stream().map(tag -> tag.getId()).toList());
+		return new GarmentCreateRequestDTO(garment.getName(), garment.getUser().getId(), garment.getURLs().stream().toList(), garment.getTags().stream().map(tag -> tag.getId()).toList());
 	}
 }

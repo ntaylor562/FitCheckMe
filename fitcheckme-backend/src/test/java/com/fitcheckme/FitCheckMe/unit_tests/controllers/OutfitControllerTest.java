@@ -79,6 +79,16 @@ public class OutfitControllerTest {
 	}
 
 	@Test
+	public void testGetAllOutfits() throws Exception {
+		//Testing the get all outfits call is OK
+		List<OutfitRequestDTO> outfitList = List.of(OutfitRequestDTO.toDTO(outfit1), OutfitRequestDTO.toDTO(outfit2));
+		Mockito.when(outfitService.getAll()).thenReturn(outfitList);
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/outfit/all"))
+			.andExpect(MockMvcResultMatchers.status().isOk())
+			.andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2));
+	}
+
+	@Test
 	public void testGetOutfitById() throws Exception {
 		//Testing the get outfit by id with 1 id call is OK
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/outfit/{id}", outfit1.getId()))
@@ -200,7 +210,7 @@ public class OutfitControllerTest {
 	}
 
 	@Test
-	public void testDeleteOutfit() throws Exception {
+	public void testRemoveOutfit() throws Exception {
 		//Testing remove outfit call is OK
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit/{id}", this.outfit1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isAccepted());

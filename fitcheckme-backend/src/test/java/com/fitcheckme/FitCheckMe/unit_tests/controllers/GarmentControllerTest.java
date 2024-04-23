@@ -46,6 +46,7 @@ public class GarmentControllerTest {
 		this.user = Mockito.spy(new User("test_user", "test bio"));
 		this.tag1 = Mockito.spy(new Tag("tag 1"));
 		this.garment1 = Mockito.spy(new Garment("garment 1", user, List.of("url1"), List.of(tag1)));
+		this.garment2 = Mockito.spy(new Garment("garment 2", user, List.of("url2"), List.of(tag1)));
 
 		Mockito.when(this.user.getId()).thenReturn(1);
 		Mockito.when(this.tag1.getId()).thenReturn(1);
@@ -60,7 +61,9 @@ public class GarmentControllerTest {
 
 	@Test
 	public void testGetAllGarments() throws Exception {
-		Mockito.when(garmentService.getAll()).thenReturn(List.of(GarmentRequestDTO.toDTO(garment1), GarmentRequestDTO.toDTO(garment2)));
+		//Testing get all garments call is OK
+		List<GarmentRequestDTO> garmentList = List.of(GarmentRequestDTO.toDTO(garment1), GarmentRequestDTO.toDTO(garment2));
+		Mockito.when(garmentService.getAll()).thenReturn(garmentList);
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment/all"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2));
@@ -79,10 +82,12 @@ public class GarmentControllerTest {
 			.andExpect(MockMvcResultMatchers.jsonPath("$.garmentTags[0].tagName").value(this.garment1.getTags().iterator().next().getName()));
 
 		//Testing get garment call with bad ID
-		Mockito.when(garmentService.getById(2)).thenThrow(EntityNotFoundException.class);
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment/{id}", 2))
+		Mockito.when(garmentService.getById(3)).thenThrow(EntityNotFoundException.class);
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment/{id}", 3))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
-
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment/{id}", "test"))
+		.andExpect(MockMvcResultMatchers.status().isBadRequest());
+		
 		//Testing get garment call without ID
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment"))
 			.andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());

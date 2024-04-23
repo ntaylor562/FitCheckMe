@@ -49,15 +49,17 @@ public class TagControllerTest {
 	}
 
 	@Test
-	public void testGetTag() throws Exception {
-
+	public void testGetAllTags() throws Exception {
 		//Testing get all
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/tag/all"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$").isArray())
 			.andExpect(MockMvcResultMatchers.jsonPath("$[0].tagId").isNumber())
 			.andExpect(MockMvcResultMatchers.jsonPath("$[0].tagName").isString());
+	}
 
+	@Test
+	public void testGetTag() throws Exception {
 		//Testing get by ID
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/tag?id={id}", 1))
 			.andExpect(MockMvcResultMatchers.status().isOk())

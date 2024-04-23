@@ -34,28 +34,33 @@ public class TagControllerTest {
 	private TagService tagService;
 
 	private Tag tag1;
+	private Tag tag2;
 
 	@BeforeEach
 	public void setup() {
 		this.tag1 = Mockito.spy(new Tag("test tag 1"));
+		this.tag2 = Mockito.spy(new Tag("test tag 2"));
 		Mockito.when(this.tag1.getId()).thenReturn(1);
+		Mockito.when(this.tag2.getId()).thenReturn(2);
 
-		List<TagRequestDTO> tagList = List.of(TagRequestDTO.toDTO(tag1));
-		Mockito.when(tagService.getAll()).thenReturn(tagList);
-
-		TagRequestDTO tagRequestDTO = TagRequestDTO.toDTO(tag1);
-		Mockito.when(tagService.getById(1)).thenReturn(tagRequestDTO);
-		Mockito.when(tagService.getByTagName(this.tag1.getName())).thenReturn(tagRequestDTO);
+		TagRequestDTO tagRequestDTO1 = TagRequestDTO.toDTO(tag1);
+		Mockito.when(tagService.getById(1)).thenReturn(tagRequestDTO1);
+		Mockito.when(tagService.getByTagName(this.tag1.getName())).thenReturn(tagRequestDTO1);
+		TagRequestDTO tagRequestDTO2 = TagRequestDTO.toDTO(tag2);
+		Mockito.when(tagService.getById(2)).thenReturn(tagRequestDTO2);
+		Mockito.when(tagService.getByTagName(this.tag2.getName())).thenReturn(tagRequestDTO2);
 	}
 
 	@Test
 	public void testGetAllTags() throws Exception {
+		List<TagRequestDTO> tagList = List.of(TagRequestDTO.toDTO(tag1), TagRequestDTO.toDTO(tag2));
+		Mockito.when(tagService.getAll()).thenReturn(tagList);
 		//Testing get all
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/tag/all"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
-			.andExpect(MockMvcResultMatchers.jsonPath("$").isArray())
 			.andExpect(MockMvcResultMatchers.jsonPath("$[0].tagId").isNumber())
-			.andExpect(MockMvcResultMatchers.jsonPath("$[0].tagName").isString());
+			.andExpect(MockMvcResultMatchers.jsonPath("$[0].tagName").isString())
+			.andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2));
 	}
 
 	@Test

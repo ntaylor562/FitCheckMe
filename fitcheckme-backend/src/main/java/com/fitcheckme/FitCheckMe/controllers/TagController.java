@@ -37,7 +37,7 @@ public class TagController {
 	}
 
 	@GetMapping("")
-	public TagRequestDTO findByTagName(@RequestParam(required = false) Integer id, @RequestParam(required = false) String name) {
+	public TagRequestDTO getTag(@RequestParam(required = false) Integer id, @RequestParam(required = false) String name) {
 		try {
 			if(id != null) {
 				return this.tagService.getById(id);

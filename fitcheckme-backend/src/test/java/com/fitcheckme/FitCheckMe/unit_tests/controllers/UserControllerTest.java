@@ -2,6 +2,8 @@ package com.fitcheckme.FitCheckMe.unit_tests.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -33,41 +35,55 @@ public class UserControllerTest {
 	@MockBean
 	private UserService userService;
 
-	private User user;
+	private User user1;
+	private User user2;
 
 	@BeforeEach
 	public void setUp() {
-		this.user = Mockito.spy(new User("test_username", "test bio"));
-		Mockito.when(this.user.getId()).thenReturn(1);
+		this.user1 = Mockito.spy(new User("test_username1", "test bio1"));
+		this.user2 = Mockito.spy(new User("test_username2", "test bio2"));
+		Mockito.when(this.user1.getId()).thenReturn(1);
+		Mockito.when(this.user2.getId()).thenReturn(2);
 
-		UserRequestDTO userDTO = UserRequestDTO.toDTO(this.user);
-		Mockito.when(userService.getById(1)).thenReturn(userDTO);
-		Mockito.when(userService.getById(2)).thenThrow(EntityNotFoundException.class);
+		UserRequestDTO userDTO1 = UserRequestDTO.toDTO(this.user1);
+		Mockito.when(userService.getById(1)).thenReturn(userDTO1);
+		UserRequestDTO userDTO2 = UserRequestDTO.toDTO(this.user2);
+		Mockito.when(userService.getById(2)).thenReturn(userDTO2);
 
-		Mockito.when(userService.getByUsername("test_username")).thenReturn(userDTO);
+		Mockito.when(userService.getById(3)).thenThrow(EntityNotFoundException.class);
+
+		Mockito.when(userService.getByUsername("test_username1")).thenReturn(userDTO1);
+		Mockito.when(userService.getByUsername("test_username2")).thenReturn(userDTO2);
 		Mockito.when(userService.getByUsername("not_a_user")).thenThrow(EntityNotFoundException.class);
 	}
 
 	@Test
-	public void testGetUserById() throws Exception {
-		//Testing the get user by id call is OK
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/{id}", user.getId()))
+	public void testGetAllUsers() throws Exception {
+		List<UserRequestDTO> userList = List.of(UserRequestDTO.toDTO(user1), UserRequestDTO.toDTO(user2));
+		Mockito.when(userService.getAll()).thenReturn(userList);
+		//Testing the get all users call is OK
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/all"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
-			.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(user.getUsername()))
-			.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value(user.getBio()));
-			
-		//Testing the get user by id call is not found
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/{id}", 2))
-			.andExpect(MockMvcResultMatchers.status().isNotFound());
+			.andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2));
 	}
 
 	@Test
-	public void testGetUserByUsername() throws Exception {
-		//Testing the get user by username call is OK
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?username={username}", "test_username"))
+	public void testGetUser() throws Exception {
+		//Testing the get user by id call is OK
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?id={id}", user1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isOk())
-			.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(user.getUsername()))
-			.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value(user.getBio()));
+			.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(user1.getUsername()))
+			.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value(user1.getBio()));
+			
+		//Testing the get user by id call is not found
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?id={id}", 3))
+			.andExpect(MockMvcResultMatchers.status().isNotFound());
+
+		//Testing the get user by username call is OK
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?username={username}", user1.getUsername()))
+			.andExpect(MockMvcResultMatchers.status().isOk())
+			.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(user1.getUsername()))
+			.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value(user1.getBio()));
 
 		//Testing the get user by username call is not found
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?username={username}", "not_a_user"))
@@ -151,7 +167,7 @@ public class UserControllerTest {
 	@Test
 	public void testDeleteUser() throws Exception {
 		//Testing the delete user call is OK
-		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user/{id}", user.getId()))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user/{id}", user1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isOk());
 
 		//Testing the delete user call is not found

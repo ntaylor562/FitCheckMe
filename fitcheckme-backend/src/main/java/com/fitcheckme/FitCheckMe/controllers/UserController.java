@@ -42,23 +42,19 @@ public class UserController {
 		return this.userService.getAll();
 	}
 
-	@GetMapping("{id}")
-	public UserRequestDTO getById(@PathVariable Integer id) {
-		try {
-			return this.userService.getById(id);
-		}
-		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ID of user not found, could not get");
-		}
-	}
-
 	@GetMapping("")
-	public UserRequestDTO getByUsername(@RequestParam(value="username") String username) {
+	public UserRequestDTO getUser(@RequestParam(required = false) Integer id, @RequestParam(required = false) String username) {
 		try {
-			return this.userService.getByUsername(username);
+			if(id != null) {
+				return this.userService.getById(id);
+			}
+			if(username != null) {
+				return this.userService.getByUsername(username);
+			}
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No ID or username provided");
 		}
 		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username not found, could not get");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
 		}
 	}
 
@@ -77,6 +73,7 @@ public class UserController {
 		}
 	}
 
+	/*
 	@PostMapping("{id}/follow/{followeeId}")
 	@ResponseStatus(HttpStatus.CREATED)
 	public void followUser(@PathVariable Integer followerId, @PathVariable Integer followeeId) {
@@ -93,6 +90,7 @@ public class UserController {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
 		}
 	}
+	*/
 
 	//TODO add auth
 	@PutMapping("")

@@ -39,6 +39,7 @@ public class GarmentControllerTest {
 	private User user;
 	private Tag tag1;
 	private Garment garment1;
+	private Garment garment2;
 
 	@BeforeEach
 	public void setup() {
@@ -49,9 +50,20 @@ public class GarmentControllerTest {
 		Mockito.when(this.user.getId()).thenReturn(1);
 		Mockito.when(this.tag1.getId()).thenReturn(1);
 		Mockito.when(this.garment1.getId()).thenReturn(1);
+		Mockito.when(this.garment2.getId()).thenReturn(2);
 
 		GarmentRequestDTO garment1DTO = GarmentRequestDTO.toDTO(garment1);
+		GarmentRequestDTO garment2DTO = GarmentRequestDTO.toDTO(garment1);
 		Mockito.when(garmentService.getById(garment1.getId())).thenReturn(garment1DTO);
+		Mockito.when(garmentService.getById(garment2.getId())).thenReturn(garment2DTO);
+	}
+
+	@Test
+	public void testGetAllGarments() throws Exception {
+		Mockito.when(garmentService.getAll()).thenReturn(List.of(GarmentRequestDTO.toDTO(garment1), GarmentRequestDTO.toDTO(garment2)));
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment/all"))
+			.andExpect(MockMvcResultMatchers.status().isOk())
+			.andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2));
 	}
 
 	@Test

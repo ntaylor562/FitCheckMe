@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -111,8 +110,8 @@ public class UserController {
 	}
 
 	//TODO add auth
-	@DeleteMapping("{id}")
-	public void deleteUser(@PathVariable Integer id) {
+	@DeleteMapping("")
+	public void deleteUser(@RequestParam Integer id) {
 		try {
 			userService.deleteUser(id);
 		}

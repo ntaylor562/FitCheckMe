@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetailsService;
 import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.GarmentController;
 import com.fitcheckme.FitCheckMe.models.Garment;
@@ -15,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import java.util.List;
 
@@ -26,6 +28,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -41,6 +46,9 @@ public class GarmentControllerTest {
 
 	@MockBean
 	private JwtUtil jwtUtil;
+
+	@MockBean
+	private CustomUserDetailsService userDetailsService;
 
 	private User user;
 	private Tag tag1;
@@ -58,6 +66,16 @@ public class GarmentControllerTest {
 		Mockito.when(this.tag1.getId()).thenReturn(1);
 		Mockito.when(this.garment1.getId()).thenReturn(1);
 		Mockito.when(this.garment2.getId()).thenReturn(2);
+
+		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+			.username(user.getUsername())
+			.password("")
+			.build();
+		Authentication authentication = Mockito.mock(Authentication.class);
+        Mockito.when(authentication.getPrincipal()).thenReturn(userDetails);
+
+        // Set up the SecurityContextHolder with the mock Authentication
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
 		GarmentRequestDTO garment1DTO = GarmentRequestDTO.toDTO(garment1);
 		GarmentRequestDTO garment2DTO = GarmentRequestDTO.toDTO(garment1);
@@ -78,7 +96,7 @@ public class GarmentControllerTest {
 	@Test
 	public void testGetGarment() throws Exception {
 		//Testing get garment call is OK
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment/{id}", this.garment1.getId()))
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment?id={id}", this.garment1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$.garmentId").value(this.garment1.getId()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.garmentName").value(this.garment1.getName()))
@@ -89,14 +107,14 @@ public class GarmentControllerTest {
 
 		//Testing get garment call with bad ID
 		Mockito.when(garmentService.getById(3)).thenThrow(EntityNotFoundException.class);
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment/{id}", 3))
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment?id={id}", 3))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment/{id}", "test"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment?id={id}", "test"))
 		.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 		//Testing get garment call without ID
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment"))
-			.andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
+			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 	}
 
 	@Test
@@ -130,14 +148,14 @@ public class GarmentControllerTest {
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 		//Testing the create garment call fails with illegal arguments
-		Mockito.when(garmentService.createGarment(any(GarmentCreateRequestDTO.class))).thenThrow(IllegalArgumentException.class);
+		Mockito.when(garmentService.createGarment(any(GarmentCreateRequestDTO.class), anyString())).thenThrow(IllegalArgumentException.class);
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/garment")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 		//Testing the create garment call fails with entity not found
-		Mockito.when(garmentService.createGarment(any(GarmentCreateRequestDTO.class))).thenThrow(EntityNotFoundException.class);
+		Mockito.when(garmentService.createGarment(any(GarmentCreateRequestDTO.class), anyString())).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/garment")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
@@ -177,21 +195,21 @@ public class GarmentControllerTest {
 	@Test
 	public void testDeleteGarment() throws Exception {
 		//Testing remove garment call is OK
-		mockMvc.perform(MockMvcRequestBuilders.delete("/api/garment/{id}", this.garment1.getId()))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/garment?id={id}", this.garment1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isAccepted());
 
 		//Testing remove garment call with no ID
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/garment"))
-			.andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
+			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		// Testing remove garment with bad ID
 		Mockito.doThrow(IllegalArgumentException.class).when(garmentService).deleteGarment(anyInt());
-		mockMvc.perform(MockMvcRequestBuilders.delete("/api/garment/{id}", this.garment1.getId()))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/garment?id={id}", this.garment1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		// Testing remove garment with bad ID
 		Mockito.doThrow(EntityNotFoundException.class).when(garmentService).deleteGarment(anyInt());
-		mockMvc.perform(MockMvcRequestBuilders.delete("/api/garment/{id}", this.garment1.getId()))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/garment?id={id}", this.garment1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}
 }

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetailsService;
 import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.UserController;
 import com.fitcheckme.FitCheckMe.models.User;
@@ -40,6 +41,9 @@ public class UserControllerTest {
 
 	@MockBean
 	private JwtUtil jwtUtil;
+
+	@MockBean
+	private CustomUserDetailsService userDetailsService;
 
 	private User user1;
 	private User user2;
@@ -173,12 +177,12 @@ public class UserControllerTest {
 	@Test
 	public void testDeleteUser() throws Exception {
 		//Testing the delete user call is OK
-		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user/{id}", user1.getId()))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user?id={id}", user1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isOk());
 
 		//Testing the delete user call is not found
 		Mockito.doThrow(EntityNotFoundException.class).when(userService).deleteUser(3);
-		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user/{id}", 3))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user?id={id}", 3))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}
 

@@ -33,6 +33,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -80,6 +83,16 @@ public class OutfitControllerTest {
 		Mockito.when(this.outfit2.getId()).thenReturn(2);
 		Mockito.when(this.outfit1.getUser()).thenReturn(user);
 		Mockito.when(this.outfit2.getUser()).thenReturn(user);
+
+		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+			.username(user.getUsername())
+			.password("")
+			.build();
+		Authentication authentication = Mockito.mock(Authentication.class);
+        Mockito.when(authentication.getPrincipal()).thenReturn(userDetails);
+
+        // Set up the SecurityContextHolder with the mock Authentication
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
 		OutfitRequestDTO outfit1DTO = OutfitRequestDTO.toDTO(this.outfit1);
 		Mockito.when(outfitService.getById(1)).thenReturn(outfit1DTO);
@@ -145,14 +158,14 @@ public class OutfitControllerTest {
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 		//Testing the create outfit call fails with illegal arguments
-		Mockito.when(outfitService.createOutfit(any(OutfitCreateRequestDTO.class))).thenThrow(IllegalArgumentException.class);
+		Mockito.when(outfitService.createOutfit(any(OutfitCreateRequestDTO.class), any(UserDetails.class))).thenThrow(IllegalArgumentException.class);
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/outfit")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 		//Testing the create outfit call fails with entity not found
-		Mockito.when(outfitService.createOutfit(any(OutfitCreateRequestDTO.class))).thenThrow(EntityNotFoundException.class);
+		Mockito.when(outfitService.createOutfit(any(OutfitCreateRequestDTO.class), any(UserDetails.class))).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/outfit")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
@@ -175,14 +188,14 @@ public class OutfitControllerTest {
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		//Testing the update outfit call with entity not found
-		Mockito.when(outfitService.updateOutfit(any(OutfitUpdateRequestDTO.class))).thenThrow(EntityNotFoundException.class);
+		Mockito.when(outfitService.updateOutfit(any(OutfitUpdateRequestDTO.class), any(UserDetails.class))).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
 		
 		//Testing the update outfit call with illegal arguments
-		Mockito.when(outfitService.updateOutfit(any(OutfitUpdateRequestDTO.class))).thenThrow(IllegalArgumentException.class);
+		Mockito.when(outfitService.updateOutfit(any(OutfitUpdateRequestDTO.class), any(UserDetails.class))).thenThrow(IllegalArgumentException.class);
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
@@ -205,14 +218,14 @@ public class OutfitControllerTest {
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		//Testing the update outfit garments call with entity not found
-		Mockito.doThrow(EntityNotFoundException.class).when(outfitService).editGarments(any(OutfitGarmentUpdateRequestDTO.class));
+		Mockito.doThrow(EntityNotFoundException.class).when(outfitService).editGarments(any(OutfitGarmentUpdateRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit/editgarments")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
 
 		//Testing the update outfit garments call with illegal arguments
-		Mockito.doThrow(IllegalArgumentException.class).when(outfitService).editGarments(any(OutfitGarmentUpdateRequestDTO.class));
+		Mockito.doThrow(IllegalArgumentException.class).when(outfitService).editGarments(any(OutfitGarmentUpdateRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit/editgarments")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
@@ -230,12 +243,12 @@ public class OutfitControllerTest {
 			.andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
 
 		// Testing remove outfit with bad ID
-		Mockito.doThrow(IllegalArgumentException.class).when(outfitService).deleteOutfit(anyInt());
+		Mockito.doThrow(IllegalArgumentException.class).when(outfitService).deleteOutfit(anyInt(), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit/{id}", this.outfit1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		// Testing remove outfit with bad ID
-		Mockito.doThrow(EntityNotFoundException.class).when(outfitService).deleteOutfit(anyInt());
+		Mockito.doThrow(EntityNotFoundException.class).when(outfitService).deleteOutfit(anyInt(), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit/{id}", this.outfit1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}

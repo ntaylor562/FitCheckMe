@@ -123,6 +123,6 @@ public class UserService {
 	}
 
 	private boolean isValidUsername(String username) {
-		return username != null && username != "" && username.matches("^[a-zA-Z0-9_]*$");
+		return username != null && !username.isBlank() && username.matches("^[a-zA-Z0-9_]*$");
 	}
 }

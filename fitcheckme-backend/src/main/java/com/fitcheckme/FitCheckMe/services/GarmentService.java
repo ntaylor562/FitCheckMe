@@ -162,7 +162,7 @@ public class GarmentService {
 
 		Garment currentGarment = this.getGarment(garment.garmentId());
 
-		if(currentGarment.getUser().getUsername().toLowerCase() != userDetails.getUsername().toLowerCase()) {
+		if(!currentGarment.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
 			throw new IllegalArgumentException("User does not have permission to edit this garment");
 		}
 
@@ -176,7 +176,7 @@ public class GarmentService {
 	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate, UserDetails userDetails) {
 		Garment garment = this.getGarment(garmentUpdate.garmentId());
 
-		if(garment.getUser().getUsername().toLowerCase() != userDetails.getUsername().toLowerCase()) {
+		if(!garment.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
 			throw new IllegalArgumentException("User does not have permission to edit this garment");
 		}
 
@@ -200,7 +200,7 @@ public class GarmentService {
 	public void editURLs(GarmentURLUpdateRequestDTO garmentUpdate, UserDetails userDetails) {
 		Garment garment = this.getGarment(garmentUpdate.garmentId());
 
-		if(garment.getUser().getUsername().toLowerCase() != userDetails.getUsername().toLowerCase()) {
+		if(!garment.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
 			throw new IllegalArgumentException("User does not have permission to edit this garment");
 		}
 

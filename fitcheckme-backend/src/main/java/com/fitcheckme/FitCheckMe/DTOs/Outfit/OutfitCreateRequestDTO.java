@@ -5,7 +5,6 @@ import java.util.List;
 import com.fitcheckme.FitCheckMe.models.Outfit;
 
 public record OutfitCreateRequestDTO (
-	Integer userId,
 	String outfitName,
 	String outfitDesc,
 	List<Integer> outfitTags,
@@ -13,6 +12,6 @@ public record OutfitCreateRequestDTO (
 ) {
 	public static OutfitCreateRequestDTO toDTO(Outfit outfit) {
 		//return new OutfitCreateRequestDTO(outfit.getUser().getId(), outfit.getName(), outfit.getDesc(), outfit.getTags(), outfit.getGarments().stream().map(garment -> GarmentCreateRequestDTO.toDTO(garment)), )
-		return new OutfitCreateRequestDTO(outfit.getUser().getId(), outfit.getName(), outfit.getDesc(), outfit.getTags().stream().map(tag -> tag.getId()).toList(), outfit.getGarments().stream().map(garment -> garment.getId()).toList());
+		return new OutfitCreateRequestDTO(outfit.getName(), outfit.getDesc(), outfit.getTags().stream().map(tag -> tag.getId()).toList(), outfit.getGarments().stream().map(garment -> garment.getId()).toList());
 	}
 }

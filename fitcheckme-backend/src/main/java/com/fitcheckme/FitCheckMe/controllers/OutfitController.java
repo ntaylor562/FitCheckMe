@@ -3,6 +3,8 @@ package com.fitcheckme.FitCheckMe.controllers;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,9 +66,9 @@ public class OutfitController {
 
 	@PostMapping("")
 	@ResponseStatus(HttpStatus.CREATED)
-	public void createOutfit(@Valid @RequestBody OutfitCreateRequestDTO outfit) {
+	public void createOutfit(@Valid @RequestBody OutfitCreateRequestDTO outfit, @AuthenticationPrincipal UserDetails userDetails) {
 		try {
-			this.outfitService.createOutfit(outfit);
+			this.outfitService.createOutfit(outfit, userDetails);
 		}
 		catch(IllegalArgumentException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -78,9 +80,9 @@ public class OutfitController {
 
 	@PutMapping("")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void updateOutfit(@Valid @RequestBody OutfitUpdateRequestDTO outfit) {
+	public void updateOutfit(@Valid @RequestBody OutfitUpdateRequestDTO outfit, @AuthenticationPrincipal UserDetails userDetails) {
 		try {
-			this.outfitService.updateOutfit(outfit);
+			this.outfitService.updateOutfit(outfit, userDetails);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -92,9 +94,9 @@ public class OutfitController {
 
 	@PutMapping("editgarments")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void updateOutfitGarments(@Valid @RequestBody OutfitGarmentUpdateRequestDTO outfit) {
+	public void updateOutfitGarments(@Valid @RequestBody OutfitGarmentUpdateRequestDTO outfit, @AuthenticationPrincipal UserDetails userDetails) {
 		try {
-			this.outfitService.editGarments(outfit);;
+			this.outfitService.editGarments(outfit, userDetails);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -106,9 +108,9 @@ public class OutfitController {
 
 	@DeleteMapping("{id}")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void removeOutfit(@PathVariable Integer id) {
+	public void removeOutfit(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) {
 		try {
-			this.outfitService.deleteOutfit(id);
+			this.outfitService.deleteOutfit(id, userDetails);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

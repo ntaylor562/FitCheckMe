@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.GarmentController;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Tag;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -29,12 +31,16 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @WebMvcTest(GarmentController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class GarmentControllerTest {
 	@Autowired
 	MockMvc mockMvc;
 
 	@MockBean
 	private GarmentService garmentService;
+
+	@MockBean
+	private JwtUtil jwtUtil;
 
 	private User user;
 	private Tag tag1;
@@ -43,7 +49,7 @@ public class GarmentControllerTest {
 
 	@BeforeEach
 	public void setup() {
-		this.user = Mockito.spy(new User("test_user", "test bio"));
+		this.user = Mockito.spy(new User("test_user", "test@email.com", "pass", "test bio"));
 		this.tag1 = Mockito.spy(new Tag("tag 1"));
 		this.garment1 = Mockito.spy(new Garment("garment 1", user, List.of("url1"), List.of(tag1)));
 		this.garment2 = Mockito.spy(new Garment("garment 2", user, List.of("url2"), List.of(tag1)));

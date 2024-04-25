@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -66,12 +64,5 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter{
 			mapper.writeValue(res.getWriter(), errors);
 		}
 		filterChain.doFilter(req, res);
-	}
-
-	@Bean
-	public FilterRegistrationBean<JwtAuthorizationFilter> jwtAuthorizationFilterRegistration(JwtAuthorizationFilter filter) {
-		FilterRegistrationBean<JwtAuthorizationFilter> registration = new FilterRegistrationBean<>(filter);
-		registration.setEnabled(false);
-		return registration;
 	}
 }

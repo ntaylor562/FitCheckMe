@@ -5,6 +5,7 @@ import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitGarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.OutfitController;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Outfit;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -35,12 +37,16 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @WebMvcTest(OutfitController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class OutfitControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
 	@MockBean
 	private OutfitService outfitService;
+
+	@MockBean
+	private JwtUtil jwtUtil;
 
 	private User user;
 	private Tag tag1;
@@ -52,7 +58,7 @@ public class OutfitControllerTest {
 
 	@BeforeEach
 	public void setup() {
-		this.user = Mockito.spy(new User("test_username", "test bio"));
+		this.user = Mockito.spy(new User("test_username", "test@email.com", "pass", "test bio"));
 		this.tag1 = Mockito.spy(new Tag("tag1"));
 		this.tag2 = Mockito.spy(new Tag("tag1"));
 		this.garment1 = Mockito.spy(new Garment("garment_1", user, Arrays.asList("url1"), Arrays.asList(tag1)));

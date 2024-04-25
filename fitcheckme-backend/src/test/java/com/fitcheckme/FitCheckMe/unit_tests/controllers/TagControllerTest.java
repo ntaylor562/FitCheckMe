@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -19,6 +20,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.TagController;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.services.TagService;
@@ -26,12 +28,16 @@ import com.fitcheckme.FitCheckMe.services.TagService;
 import jakarta.persistence.EntityNotFoundException;
 
 @WebMvcTest(TagController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class TagControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
 	@MockBean
 	private TagService tagService;
+
+	@MockBean
+	private JwtUtil jwtUtil;
 
 	private Tag tag1;
 	private Tag tag2;

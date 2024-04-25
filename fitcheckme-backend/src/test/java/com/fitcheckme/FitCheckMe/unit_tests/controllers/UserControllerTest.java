@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.UserController;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.services.UserService;
@@ -28,6 +30,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @WebMvcTest(UserController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class UserControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
@@ -35,13 +38,16 @@ public class UserControllerTest {
 	@MockBean
 	private UserService userService;
 
+	@MockBean
+	private JwtUtil jwtUtil;
+
 	private User user1;
 	private User user2;
 
 	@BeforeEach
 	public void setUp() {
-		this.user1 = Mockito.spy(new User("test_username1", "test bio1"));
-		this.user2 = Mockito.spy(new User("test_username2", "test bio2"));
+		this.user1 = Mockito.spy(new User("test_username1", "test1@email.com", "pass1", "test bio1"));
+		this.user2 = Mockito.spy(new User("test_username2", "test2@email.com", "pass2", "test bio2"));
 		Mockito.when(this.user1.getId()).thenReturn(1);
 		Mockito.when(this.user2.getId()).thenReturn(2);
 
@@ -92,7 +98,7 @@ public class UserControllerTest {
 
 	@Test
 	public void testCreateUser() throws Exception {
-		User newUser = Mockito.spy(new User("test_username3", "test bio 3"));
+		User newUser = Mockito.spy(new User("test_username3", "test3@email.com", "pass3", "test bio 3"));
 		Mockito.when(newUser.getId()).thenReturn(3);
 		UserRequestDTO newUserDTO = UserRequestDTO.toDTO(newUser);
 		Mockito.when(userService.createUser(UserCreateRequestDTO.toDTO(newUser))).thenReturn(newUserDTO);
@@ -101,25 +107,25 @@ public class UserControllerTest {
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 
 		//Testing the create user call is OK
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/user")
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/user/create")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isCreated());
 
 		//Testing the create user call errors when it is given no body
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/user"))
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/user/create"))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		// Testing the create user call errors when illegal arguments passed
 		Mockito.doThrow(IllegalArgumentException.class).when(userService).createUser(any(UserCreateRequestDTO.class));
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/user")
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/user/create")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		// Testing the create user call errors when username is taken
 		Mockito.doThrow(DataIntegrityViolationException.class).when(userService).createUser(any(UserCreateRequestDTO.class));
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/user")
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/user/create")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isConflict());

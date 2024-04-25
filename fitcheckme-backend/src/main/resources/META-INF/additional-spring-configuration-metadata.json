@@ -1,0 +1,72 @@
+{"properties": [
+  {
+    "name": "fitcheckme.jwt-access-token-validity-s",
+    "type": "java.lang.Integer",
+    "description": "How many seconds the JWT access token will remain valid for"
+  },
+  {
+    "name": "fitcheckme.bcrypt-password-encoder-strength",
+    "type": "java.lang.Integer",
+    "description": "Strength passed to BCryptPasswordEncoder. Higher value means more computationally expensive. Tune until it takes roughly 1 second to verify a password"
+  },
+  {
+    "name": "fitcheckme.jwt-secret-key",
+    "type": "java.lang.String",
+    "description": "Secret key for JWT tokens"
+  },
+  {
+    "name": "fitcheckme.max-username-length",
+    "type": "java.lang.Integer",
+    "description": "How many characters usernames are allowed"
+  },
+  {
+    "name": "fitcheckme.max-email-length",
+    "type": "java.lang.Integer",
+    "description": "How many characters emails are allowed"
+  },
+  {
+    "name": "fitcheckme.max-user-bio-length",
+    "type": "java.lang.Integer",
+    "description": "How many characters bios are allowed"
+  },
+  {
+    "name": "fitcheckme.max-outfit-name-length",
+    "type": "java.lang.Integer",
+    "description": "How many characters outfit names are allowed"
+  },
+  {
+    "name": "fitcheckme.max-outfit-desc-length",
+    "type": "java.lang.Integer",
+    "description": "How many characters outfit descriptions are allowed"
+  },
+  {
+    "name": "fitcheckme.max-outfit-tags",
+    "type": "java.lang.Integer",
+    "description": "How many tags outfits are allowed"
+  },
+  {
+    "name": "fitcheckme.max-garment-name-length",
+    "type": "java.lang.Integer",
+    "description": "How many characters garment names are allowed"
+  },
+  {
+    "name": "fitcheckme.max-urls-per-garment",
+    "type": "java.lang.Integer",
+    "description": "How many URLs garments are allowed"
+  },
+  {
+    "name": "fitcheckme.max-garment-url-length",
+    "type": "java.lang.Integer",
+    "description": "How many characters garment URLs are allowed"
+  },
+  {
+    "name": "fitcheckme.max-garment-tags",
+    "type": "java.lang.How many tags garments are allowed",
+    "description": ""
+  },
+  {
+    "name": "fitcheckme.max-garments-per-outfit",
+    "type": "java.lang.Integer",
+    "description": "How many garments outfits are allowed"
+  }
+]}

@@ -29,7 +29,7 @@ import jakarta.validation.Valid;
 //TODO extract following to a social service
 @RestController
 @RequestMapping("/api/user")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 	private final UserService userService;
 
@@ -59,7 +59,7 @@ public class UserController {
 	}
 
 	//TODO add auth
-	@PostMapping("")
+	@PostMapping("create")
 	@ResponseStatus(HttpStatus.CREATED)
 	public void createUser(@Valid @RequestBody UserCreateRequestDTO user) {
 		try {

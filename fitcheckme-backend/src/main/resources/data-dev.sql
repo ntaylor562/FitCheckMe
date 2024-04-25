@@ -1,11 +1,11 @@
 --Sample data
 
 --Users (# of users: 5)
-insert into community.user (username, bio) values ('bender', 'bender profile bio');
-insert into community.user (username, bio) values ('ependell0', 'consequat dui nec nisi volutpat eleifend donec ut dolor morbi vel lectus in quam fringilla rhoncus mauris enim');
-insert into community.user (username, bio) values ('tpisco1', 'vestibulum sed magna at nunc commodo placerat praesent blandit nam nulla integer pede justo lacinia eget tincidunt eget tempus');
-insert into community.user (username, bio) values ('cstelfox2', 'venenatis turpis enim blandit mi in porttitor pede justo eu massa donec dapibus duis at velit eu est congue elementum');
-insert into community.user (username, bio) values ('sdredge3', null);
+insert into community.user (username, email, password, bio) values ('bender', 'bfreyne0@boston.com', '$2a$04$PQRD.iXQfRdxjwyBMPoTLuYMCFQnD8e3eXWAPkiOLp/TU1a9IDH0G', 'bender profile bio');
+insert into community.user (username, email, password, bio) values ('ependell0', 'bissit1@redcross.org', '$2a$04$egyPHdKJeDTlrMgzHPE0SeDtCCStd3KuFfZ4/RlqtHc3mtU6pS2s6', 'consequat dui nec nisi volutpat eleifend donec ut dolor morbi vel lectus in quam fringilla rhoncus mauris enim');
+insert into community.user (username, email, password, bio) values ('tpisco1', 'elowdes2@ox.ac.uk', '$2a$04$gH6OMtd2KZlgJcb9q28X7uLskmwGJEM17NA6/qfoUmUPl370elwm.', 'vestibulum sed magna at nunc commodo placerat praesent blandit nam nulla integer pede justo lacinia eget tincidunt eget tempus');
+insert into community.user (username, email, password, bio) values ('cstelfox2', 'lthorntondewhirst3@icio.us', '$2a$04$Ey51lphteIUxX0ngTBWbQ.9ayT6VySj8EuuX9kxby/gZv6A1d6iFC', 'venenatis turpis enim blandit mi in porttitor pede justo eu massa donec dapibus duis at velit eu est congue elementum');
+insert into community.user (username, email, password, bio) values ('sdredge3', 'mfarans4@microsoft.com', '$2a$04$q2RupVgrk5MHzjmVtvUUQuQtQJav4DpQLLoZ5W7iqF47QVZSMOLDq', null);
 
 --Followings (# of followings: 5)
 insert into community.following (follower_id, followee_id, follow_date) values (1, 2, '2023-06-17T08:08:32Z');

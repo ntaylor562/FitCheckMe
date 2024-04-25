@@ -26,6 +26,14 @@ public class User {
 	@Column(name = "username", unique = true, nullable = false)
 	private String username;
 
+	@NotBlank
+	@Column(name = "email", unique = true, nullable = false)
+	private String email;
+
+	@NotBlank
+	@Column(name = "password", nullable = false)
+	private String password;
+
 	@Column(name = "bio")
 	private String bio;
 
@@ -39,8 +47,10 @@ public class User {
 
 	}
 
-	public User(String username, String bio) {
+	public User(String username, String email, String password, String bio) {
 		this.username = username;
+		this.email = email;
+		this.password = password;
 		this.bio = bio;
 	}
 
@@ -50,6 +60,14 @@ public class User {
 
 	public String getUsername() {
 		return this.username;
+	}
+
+	public String getEmail() {
+		return this.email;
+	}
+
+	public String getPassword() {
+		return this.password;
 	}
 
 	public String getBio() {
@@ -66,6 +84,14 @@ public class User {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public void setBio(String bio) {

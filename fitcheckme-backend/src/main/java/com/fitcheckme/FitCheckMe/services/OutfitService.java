@@ -144,7 +144,6 @@ public class OutfitService {
 		}
 		
 		if(outfitUpdate.removeGarmentIds() != null && removeGarments.size() != outfitUpdate.removeGarmentIds().size()) {
-			System.out.println(removeGarments.size() + " " + outfitUpdate.removeGarmentIds().size() + " ");
 			throw new EntityNotFoundException("One or more garments not found in remove list");
 		}
 

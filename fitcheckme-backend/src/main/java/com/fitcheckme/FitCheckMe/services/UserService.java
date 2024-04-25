@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
@@ -17,16 +19,22 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UserService {
+
 	@Value("${fitcheckme.max-username-length}")
-	private int maxUsernameLength;
+	private Integer maxUsernameLength;
+
+	@Value("${fitcheckme.max-email-length}")
+	private Integer maxEmailLength;
 
 	@Value("${fitcheckme.max-user-bio-length}")
-	private int maxBioLength;
+	private Integer maxBioLength;
 	
 	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
 
-	public UserService(UserRepository userRepository) {
+	public UserService(UserRepository userRepository, @Value("${fitcheckme.bcrypt-password-encoder-strength}") Integer bCryptPasswordEncoderStrength) {
 		this.userRepository = userRepository;
+		this.passwordEncoder = new BCryptPasswordEncoder(bCryptPasswordEncoderStrength);
 	}
 
 	public List<UserRequestDTO> getAll() {
@@ -59,7 +67,7 @@ public class UserService {
 		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
-		User newUser = new User(user.username().toLowerCase(), null);
+		User newUser = new User(user.username(), user.email().toLowerCase(), passwordEncoder.encode(user.password()), null);
 		this.userRepository.save(newUser);
 		return UserRequestDTO.toDTO(newUser);
 	}

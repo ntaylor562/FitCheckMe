@@ -14,6 +14,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,8 +45,8 @@ public class GarmentController {
 		return this.garmentService.getAll();
 	}
 
-	@GetMapping("{id}")
-	public GarmentRequestDTO getById(@PathVariable Integer id) {
+	@GetMapping("")
+	public GarmentRequestDTO getById(@RequestParam Integer id) {
 		try {
 			return this.garmentService.getById(id);
 		} 
@@ -68,9 +70,9 @@ public class GarmentController {
 	
 	@PostMapping("")
 	@ResponseStatus(HttpStatus.CREATED)
-	public void createGarment(@Valid @RequestBody GarmentCreateRequestDTO garment) {
+	public void createGarment(@Valid @RequestBody GarmentCreateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
 		try {
-			garmentService.createGarment(garment);
+			garmentService.createGarment(garment, userDetails.getUsername());
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -94,9 +96,9 @@ public class GarmentController {
 		}
 	}
 	
-	@DeleteMapping("{id}")
+	@DeleteMapping("")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void deleteGarment(@PathVariable Integer id) {
+	public void deleteGarment(@RequestParam Integer id) {
 		try {
 			this.garmentService.deleteGarment(id);
 		}

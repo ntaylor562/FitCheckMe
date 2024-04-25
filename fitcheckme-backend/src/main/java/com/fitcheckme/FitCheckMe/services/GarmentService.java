@@ -16,6 +16,7 @@ import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentURLUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Tag;
+import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
 import com.fitcheckme.FitCheckMe.repositories.TagRepository;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
@@ -106,9 +107,8 @@ public class GarmentService {
 		}
 	}
 
-	//TODO add auth and grab user from token
 	@Transactional
-	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment) {
+	private GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, User user) {
 		String garmentName = garment.garmentName() != null ? garment.garmentName().strip() : "";
 		Set<String> garmentURLs = new HashSet<>(garment.garmentURLs().stream().map(url -> url.strip()).toList());
 		Set<Tag> tags = new HashSet<>();
@@ -130,18 +130,25 @@ public class GarmentService {
 				tags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
 			}
 		}
-
+		
 		//TODO think about performing security checks on URLs
-		Garment newGarment = new Garment(garment.garmentName(), userRepository.findById(garment.userId()).get(), garmentURLs, tags);
+		Garment newGarment = new Garment(garment.garmentName(), user, garmentURLs, tags);
 		garmentRepository.save(newGarment);
 		return GarmentRequestDTO.toDTO(newGarment);
 	}
 
 	@Transactional
-	public List<GarmentRequestDTO> createGarment(List<GarmentCreateRequestDTO> garments) {
+	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, String username) {
+		User user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found")));
+		return this.createGarment(garment, user);
+	}
+
+	@Transactional
+	public List<GarmentRequestDTO> createGarment(List<GarmentCreateRequestDTO> garments, String username) {
+		User user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found")));
 		List<GarmentRequestDTO> res = new ArrayList<GarmentRequestDTO>();
 		for(int i = 0; i < garments.size(); ++i) {
-			res.add(this.createGarment(garments.get(i)));
+			res.add(this.createGarment(garments.get(i), user));
 		}
 		return res;
 	}

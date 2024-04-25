@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -24,11 +25,14 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthorizationFilter extends OncePerRequestFilter{
 	
 	private final JwtUtil jwtUtil;
+
+	private final CustomUserDetailsService userDetailsService;
 	
 	private final ObjectMapper mapper;
 
-	public JwtAuthorizationFilter(JwtUtil jwtUtil, ObjectMapper mapper) {
+	public JwtAuthorizationFilter(JwtUtil jwtUtil, CustomUserDetailsService customUserDetailsService, ObjectMapper mapper) {
 		this.jwtUtil = jwtUtil;
+		this.userDetailsService = customUserDetailsService;
 		this.mapper = mapper;
 	}
 
@@ -45,11 +49,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter{
 			Claims claims = jwtUtil.resolveClaims(req);
 
 			if(claims != null && jwtUtil.validateClaims(claims)) {
-				String username = claims.getSubject();
+				UserDetails user = userDetailsService.loadUserByUsername(claims.getSubject());
 
 				//TODO implement roles
 				//Empty credentials because authentication was successful
-				Authentication authentication = new UsernamePasswordAuthenticationToken(username, "", null);
+				Authentication authentication = new UsernamePasswordAuthenticationToken(user, "", null);
 
 				//Marking authentication as successful
 				SecurityContextHolder.getContext().setAuthentication(authentication);

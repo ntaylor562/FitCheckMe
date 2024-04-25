@@ -38,6 +38,7 @@ public class JwtUtil {
 
 	public String createToken(JwtUserDTO user) {		
 		return Jwts.builder()
+			.id(Integer.toString(user.userId()))
 			.subject(user.username())
 			.claim("em", user.email())
 			.issuedAt(new Date())

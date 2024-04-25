@@ -71,7 +71,7 @@ public class GarmentController {
 	@ResponseStatus(HttpStatus.CREATED)
 	public void createGarment(@Valid @RequestBody GarmentCreateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
 		try {
-			garmentService.createGarment(garment, userDetails.getUsername());
+			garmentService.createGarment(garment, userDetails);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -83,9 +83,9 @@ public class GarmentController {
 
 	@PutMapping("")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void updateOutfit(@Valid @RequestBody GarmentUpdateRequestDTO garment) {
+	public void updateOutfit(@Valid @RequestBody GarmentUpdateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
 		try {
-			this.garmentService.updateGarment(garment);
+			this.garmentService.updateGarment(garment, userDetails);
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -97,9 +97,9 @@ public class GarmentController {
 	
 	@DeleteMapping("")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void deleteGarment(@RequestParam(required = true) Integer id) {
+	public void deleteGarment(@RequestParam(required = true) Integer id, @AuthenticationPrincipal UserDetails userDetails) {
 		try {
-			this.garmentService.deleteGarment(id);
+			this.garmentService.deleteGarment(id, userDetails);
 		}
 		catch (EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

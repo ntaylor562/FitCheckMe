@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
@@ -138,14 +139,14 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, String username) {
-		User user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found")));
+	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, UserDetails userDetails) {
+		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found")));
 		return this.createGarment(garment, user);
 	}
 
 	@Transactional
-	public List<GarmentRequestDTO> createGarment(List<GarmentCreateRequestDTO> garments, String username) {
-		User user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found")));
+	public List<GarmentRequestDTO> createGarment(List<GarmentCreateRequestDTO> garments, UserDetails userDetails) {
+		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found")));
 		List<GarmentRequestDTO> res = new ArrayList<GarmentRequestDTO>();
 		for(int i = 0; i < garments.size(); ++i) {
 			res.add(this.createGarment(garments.get(i), user));
@@ -153,12 +154,18 @@ public class GarmentService {
 		return res;
 	}
 
-	public GarmentRequestDTO updateGarment(GarmentUpdateRequestDTO garment) {
+	@Transactional
+	public GarmentRequestDTO updateGarment(GarmentUpdateRequestDTO garment, UserDetails userDetails) {
 		if(garment.garmentName().length() > maxGarmentNameLength) {
 			throw new IllegalArgumentException(String.format("Garment name too long, must be at most %d characters", maxGarmentNameLength));
 		}
 
 		Garment currentGarment = this.getGarment(garment.garmentId());
+
+		if(currentGarment.getUser().getUsername().toLowerCase() != userDetails.getUsername().toLowerCase()) {
+			throw new IllegalArgumentException("User does not have permission to edit this garment");
+		}
+
 		currentGarment.setName(garment.garmentName());
 
 		garmentRepository.save(currentGarment);
@@ -166,8 +173,13 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate) {
+	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate, UserDetails userDetails) {
 		Garment garment = this.getGarment(garmentUpdate.garmentId());
+
+		if(garment.getUser().getUsername().toLowerCase() != userDetails.getUsername().toLowerCase()) {
+			throw new IllegalArgumentException("User does not have permission to edit this garment");
+		}
+
 		List<Tag> addTags = new ArrayList<Tag>();
 		List<Tag> removeTags = new ArrayList<Tag>();
 
@@ -185,26 +197,13 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public void addTag(Integer garmentId, Integer tagId) {
-		Garment garment = this.getGarment(garmentId);
-		Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(tagId))));
-
-		garment.addTag(tag);
-		garmentRepository.save(garment);
-	}
-
-	@Transactional
-	public void removeTag(Integer garmentId, Integer tagId) {
-		Garment garment = this.getGarment(garmentId);
-		Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(tagId))));
-
-		garment.removeTag(tag);
-		garmentRepository.save(garment);
-	}
-
-	@Transactional
-	public void editURLs(GarmentURLUpdateRequestDTO garmentUpdate) {
+	public void editURLs(GarmentURLUpdateRequestDTO garmentUpdate, UserDetails userDetails) {
 		Garment garment = this.getGarment(garmentUpdate.garmentId());
+
+		if(garment.getUser().getUsername().toLowerCase() != userDetails.getUsername().toLowerCase()) {
+			throw new IllegalArgumentException("User does not have permission to edit this garment");
+		}
+
 		List<String> addURLs = garmentUpdate.addURLs();
 		List<String> removeURLs = garmentUpdate.removeURLs();
 
@@ -216,31 +215,8 @@ public class GarmentService {
 		garmentRepository.save(garment);
 	}
 
-	public void addURL(Integer garmentId, String url) {
-		Garment garment = this.getGarment(garmentId);
-
-		validateURLInput(garment, new ArrayList<String>(List.of(url)), new ArrayList<String>());
-
-		garment.addURL(url);
-		garmentRepository.save(garment);
-	}
-
-	public void removeURL(Integer garmentId, String url) {
-		Garment garment = this.getGarment(garmentId);
-
-
-		if(!garment.getURLs().contains(url)) {
-			throw new IllegalArgumentException(String.format("Garment does not contain URL %s", url));
-		}
-
-		validateURLInput(garment, new ArrayList<String>(), new ArrayList<String>(List.of(url)));
-
-		garment.removeURL(url);
-		garmentRepository.save(garment);
-	}
-
 	//TODO implement (must update all dependent tables)
-	public void deleteGarment(Integer garmentId) {
+	public void deleteGarment(Integer garmentId, UserDetails userDetails) {
 		
 	}
 }

@@ -13,12 +13,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetailsService;
 import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.UserController;
@@ -61,6 +65,16 @@ public class UserControllerTest {
 		Mockito.when(userService.getById(2)).thenReturn(userDTO2);
 
 		Mockito.when(userService.getById(3)).thenThrow(EntityNotFoundException.class);
+
+		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+			.username(user1.getUsername())
+			.password("")
+			.build();
+		Authentication authentication = Mockito.mock(Authentication.class);
+        Mockito.when(authentication.getPrincipal()).thenReturn(userDetails);
+
+        // Set up the SecurityContextHolder with the mock Authentication
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
 		Mockito.when(userService.getByUsername("test_username1")).thenReturn(userDTO1);
 		Mockito.when(userService.getByUsername("test_username2")).thenReturn(userDTO2);
@@ -137,7 +151,7 @@ public class UserControllerTest {
 
 	//TODO test auth once implemented
 	@Test
-	public void testUpdateUser() throws Exception {
+	public void testUpdateUserDetails() throws Exception {
 		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 
@@ -171,6 +185,36 @@ public class UserControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isConflict());
+	}
+
+	@Test
+	public void testUpdateUserPassword() throws Exception {
+		UserUpdatePasswordRequestDTO requestDTO = new UserUpdatePasswordRequestDTO(1, "passw", "pass3");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
+
+		//Testing the update user password call is accepted
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isAccepted());
+
+		//Testing the update user password call errors when it is given no body
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password"))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+		// Testing the update user password call errors when user is not found
+		Mockito.doThrow(EntityNotFoundException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(UserDetails.class));
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isNotFound());
+
+		// Testing the update user password call errors when illegal arguments passed
+		Mockito.doThrow(IllegalArgumentException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(UserDetails.class));
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 	}
 
 	// TODO test auth once implemented

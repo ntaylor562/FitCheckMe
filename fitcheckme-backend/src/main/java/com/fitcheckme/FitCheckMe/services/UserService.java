@@ -4,13 +4,15 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Following;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
@@ -72,7 +74,7 @@ public class UserService {
 		return UserRequestDTO.toDTO(newUser);
 	}
 
-	public void updateUser(UserUpdateRequestDTO user) {
+	public void updateUserDetails(UserUpdateDetailsRequestDTO user) {
 		if(user.username() != null && user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
 		}
@@ -94,6 +96,18 @@ public class UserService {
 			currentUser.setBio(user.bio());
 		}
 		
+		this.userRepository.save(currentUser);
+	}
+
+	public void updatePassword(UserUpdatePasswordRequestDTO user, UserDetails userDetails) {
+		User currentUser = this.getUserById(user.userId());
+		if(!currentUser.getUsername().equals(userDetails.getUsername())) {
+			throw new IllegalArgumentException("User does not have permission to update password");
+		}
+		if(!passwordEncoder.matches(user.oldPassword(), currentUser.getPassword())) {
+			throw new IllegalArgumentException("Old password is incorrect");
+		}
+		currentUser.setPassword(passwordEncoder.encode(user.newPassword()));
 		this.userRepository.save(currentUser);
 	}
 

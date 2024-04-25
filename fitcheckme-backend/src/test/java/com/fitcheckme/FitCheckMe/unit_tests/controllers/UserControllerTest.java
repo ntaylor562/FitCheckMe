@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetailsService;
 import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.UserController;
@@ -138,36 +138,36 @@ public class UserControllerTest {
 	//TODO test auth once implemented
 	@Test
 	public void testUpdateUser() throws Exception {
-		UserUpdateRequestDTO requestDTO = new UserUpdateRequestDTO(1, "test_username2", "test bio 2");
+		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 
 		//Testing the update user call is accepted
-		mockMvc.perform(MockMvcRequestBuilders.put("/api/user")
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isAccepted());
 
 		//Testing the update user call errors when it is given no body
-		mockMvc.perform(MockMvcRequestBuilders.put("/api/user"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details"))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 		// Testing the update user call errors when user is not found
-		Mockito.doThrow(EntityNotFoundException.class).when(userService).updateUser(any(UserUpdateRequestDTO.class));
-		mockMvc.perform(MockMvcRequestBuilders.put("/api/user")
+		Mockito.doThrow(EntityNotFoundException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class));
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isNotFound());
 
 		// Testing the update user call errors when illegal arguments passed
-		Mockito.doThrow(IllegalArgumentException.class).when(userService).updateUser(any(UserUpdateRequestDTO.class));
-		mockMvc.perform(MockMvcRequestBuilders.put("/api/user")
+		Mockito.doThrow(IllegalArgumentException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class));
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		// Testing the update user call errors when username is taken
-		Mockito.doThrow(DataIntegrityViolationException.class).when(userService).updateUser(any(UserUpdateRequestDTO.class));
-		mockMvc.perform(MockMvcRequestBuilders.put("/api/user")
+		Mockito.doThrow(DataIntegrityViolationException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class));
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isConflict());

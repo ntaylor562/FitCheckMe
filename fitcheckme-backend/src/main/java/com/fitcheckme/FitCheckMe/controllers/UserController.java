@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
 import com.fitcheckme.FitCheckMe.services.UserService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -92,17 +95,31 @@ public class UserController {
 	*/
 
 	//TODO add auth
-	@PutMapping("")
+	@PutMapping("details")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void updateUser(@Valid @RequestBody UserUpdateRequestDTO user) {
+	public void updateUserDetails(@Valid @RequestBody UserUpdateDetailsRequestDTO user) {
 		try {
-			userService.updateUser(user);
+			userService.updateUserDetails(user);
 		}
 		catch(IllegalArgumentException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 		}
 		catch(DataIntegrityViolationException e) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+		}
+		catch(EntityNotFoundException e) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+		}
+	}
+
+	@PutMapping("password")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void updateUserPassword(@Valid @RequestBody UserUpdatePasswordRequestDTO user, @AuthenticationPrincipal UserDetails userDetails) {
+		try {
+			userService.updatePassword(user, userDetails);
+		}
+		catch(IllegalArgumentException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 		}
 		catch(EntityNotFoundException e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

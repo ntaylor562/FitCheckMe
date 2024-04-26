@@ -1,10 +1,16 @@
 import { useState } from 'react'
-import "./components/ThemeToggle"
+import { Route, Routes } from "react-router-dom";
 import './App.css'
+import "./components/ThemeToggle"
 import ThemeToggle from './components/ThemeToggle'
 import Profile from './pages/Profile'
 import { Stack } from '@chakra-ui/react'
 import OutfitCard from './components/OutfitCard'
+import ErrorPage from './pages/ErrorPage';
+import Home from './pages/Home';
+import Testing from './pages/Testing';
+import NotFoundPage from './pages/NotFoundPage';
+import TempNavigation from './components/TempNavigation';
 
 function App() {
 	const user = {
@@ -21,11 +27,35 @@ function App() {
 		garments: []
 	}
 
+	let routes = [
+		{
+			path: "/",
+			name: "Home"
+		},
+		{
+			path: "/profile",
+			name: "Profile"
+		},
+		{
+			path: "/testing",
+			name: "Testing"
+		}
+	]
+
 	return (
 		<>
-			<ThemeToggle />
+			<Routes>
+				<Route path="/" element={<TempNavigation routes={routes} />}>
+					<Route index element={<Home />} />
+					<Route path="profile" element={<Profile user={user}/>} />
+					<Route path="testing" element={<Testing />} />
+
+					<Route path="*" element={<NotFoundPage />} />
+				</Route>
+			</Routes>
+			{/* <ThemeToggle /> */}
 			{/* <Profile user={user} /> */}
-			<OutfitCard outfit={outfit} />
+			{/* <OutfitCard outfit={outfit} /> */}
 		</>
 	)
 }

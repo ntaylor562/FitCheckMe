@@ -1,5 +1,6 @@
 package com.fitcheckme.FitCheckMe.auth;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
@@ -16,6 +17,7 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Component
@@ -25,9 +27,6 @@ public class JwtUtil {
 
 	@Value("${fitcheckme.jwt-access-token-validity-s}")
 	private Integer jwtAccessTokenValidity;
-
-	private final String TOKEN_HEADER = "Authorization";
-	private final String TOKEN_PREFIX = "Bearer ";
 
 	private final JwtParser jwtParser;
 
@@ -52,9 +51,11 @@ public class JwtUtil {
 	}
 
 	public String resolveToken(HttpServletRequest request) {
-		String bearerToken = request.getHeader(TOKEN_HEADER);
-		if(bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX)) {
-			return bearerToken.substring(TOKEN_PREFIX.length());
+		Cookie[] cookies = request.getCookies();
+		if(cookies == null) return null;
+		String bearerToken = Arrays.stream(cookies).filter(cookie -> cookie.getName().equals("jwt-token")).map(cookie -> cookie.getValue()).findFirst().orElse(null);
+		if(bearerToken != null) {
+			return bearerToken;
 		}
 		return null;
 	}

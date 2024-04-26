@@ -11,6 +11,8 @@ import Home from './pages/Home';
 import Testing from './pages/Testing';
 import NotFoundPage from './pages/NotFoundPage';
 import TempNavigation from './components/TempNavigation';
+import Login from './Login';
+import Register from './Register';
 
 function App() {
 	const user = {
@@ -33,6 +35,14 @@ function App() {
 			name: "Home"
 		},
 		{
+			path: "/login",
+			name: "Login"
+		},
+		{
+			path: "/register",
+			name: "Register"
+		},
+		{
 			path: "/profile",
 			name: "Profile"
 		},
@@ -47,13 +57,14 @@ function App() {
 			<Routes>
 				<Route path="/" element={<TempNavigation routes={routes} />}>
 					<Route index element={<Home />} />
+					<Route path="login" element={<Login />} />
+					<Route path="register" element={<Register />} />
 					<Route path="profile" element={<Profile user={user}/>} />
 					<Route path="testing" element={<Testing />} />
 
 					<Route path="*" element={<NotFoundPage />} />
 				</Route>
 			</Routes>
-			{/* <ThemeToggle /> */}
 			{/* <Profile user={user} /> */}
 			{/* <OutfitCard outfit={outfit} /> */}
 		</>

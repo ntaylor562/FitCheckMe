@@ -74,7 +74,7 @@ public class UserService {
 		return UserRequestDTO.toDTO(newUser);
 	}
 
-	public void updateUserDetails(UserUpdateDetailsRequestDTO user) {
+	public void updateUserDetails(UserUpdateDetailsRequestDTO user, UserDetails userDetails) {
 		if(user.username() != null && user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
 		}
@@ -86,6 +86,9 @@ public class UserService {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
 		User currentUser = this.getUserById(user.userId());
+		if(!currentUser.getUsername().equals(userDetails.getUsername())) {
+			throw new IllegalArgumentException("User does not have permission to update details");
+		}
 		if(user.username() != null) {
 			if(!isValidUsername(user.username())) {
 				throw new IllegalArgumentException("Username must only contain letters, numbers, and underscores");

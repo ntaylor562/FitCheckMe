@@ -41,6 +41,7 @@ public class AuthController {
 			Cookie cookie = new Cookie("jwt-token", userLoginReturnDTO.token());
 			cookie.setHttpOnly(true);
 			cookie.setPath("/");
+			cookie.setSecure(true);
 			response.addCookie(cookie);
 		}
 		catch (BadCredentialsException e) {

@@ -97,9 +97,9 @@ public class UserController {
 	//TODO add auth
 	@PutMapping("details")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void updateUserDetails(@Valid @RequestBody UserUpdateDetailsRequestDTO user) {
+	public void updateUserDetails(@Valid @RequestBody UserUpdateDetailsRequestDTO user, @AuthenticationPrincipal UserDetails userDetails) {
 		try {
-			userService.updateUserDetails(user);
+			userService.updateUserDetails(user, userDetails);
 		}
 		catch(IllegalArgumentException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

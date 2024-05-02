@@ -166,21 +166,21 @@ public class UserControllerTest {
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 		// Testing the update user call errors when user is not found
-		Mockito.doThrow(EntityNotFoundException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class));
+		Mockito.doThrow(EntityNotFoundException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isNotFound());
 
 		// Testing the update user call errors when illegal arguments passed
-		Mockito.doThrow(IllegalArgumentException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class));
+		Mockito.doThrow(IllegalArgumentException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		// Testing the update user call errors when username is taken
-		Mockito.doThrow(DataIntegrityViolationException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class));
+		Mockito.doThrow(DataIntegrityViolationException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))

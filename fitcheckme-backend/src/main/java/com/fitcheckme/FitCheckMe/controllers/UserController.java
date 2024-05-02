@@ -40,11 +40,13 @@ public class UserController {
 	}
 
 	@GetMapping("all")
+	@ResponseStatus(HttpStatus.OK)
 	public List<UserRequestDTO> getAll() {
 		return this.userService.getAll();
 	}
 
 	@GetMapping("")
+	@ResponseStatus(HttpStatus.OK)
 	public UserRequestDTO getUser(@RequestParam(required = false) Integer id, @RequestParam(required = false) String username) {
 		try {
 			if(id != null) {
@@ -128,6 +130,7 @@ public class UserController {
 
 	//TODO add auth
 	@DeleteMapping("")
+	@ResponseStatus(HttpStatus.OK)
 	public void deleteUser(@RequestParam Integer id) {
 		try {
 			userService.deleteUser(id);

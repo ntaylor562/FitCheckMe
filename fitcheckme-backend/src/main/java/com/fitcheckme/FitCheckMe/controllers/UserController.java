@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
@@ -46,34 +46,30 @@ public class UserController {
 	}
 
 	@GetMapping("")
-	@ResponseStatus(HttpStatus.OK)
-	public UserRequestDTO getUser(@RequestParam(required = false) Integer id, @RequestParam(required = false) String username) {
+	public ResponseEntity<?> getUser(@RequestParam(required = false) Integer id, @RequestParam(required = false) String username) {
 		try {
 			if(id != null) {
-				return this.userService.getById(id);
+				return new ResponseEntity<>(this.userService.getById(id), HttpStatus.OK);
 			}
 			if(username != null) {
-				return this.userService.getByUsername(username);
+				return new ResponseEntity<>(this.userService.getByUsername(username), HttpStatus.OK);
 			}
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No ID or username provided");
+			return new ResponseEntity<>("No ID or username provided", HttpStatus.BAD_REQUEST);
 		}
 		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+			return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
 		}
 	}
 
 	//TODO add auth
 	@PostMapping("create")
-	@ResponseStatus(HttpStatus.CREATED)
-	public void createUser(@Valid @RequestBody UserCreateRequestDTO user) {
+	public ResponseEntity<?> createUser(@Valid @RequestBody UserCreateRequestDTO user) {
 		try {
 			this.userService.createUser(user);
-		}
-		catch(IllegalArgumentException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+			return new ResponseEntity<>(HttpStatus.CREATED);
 		}
 		catch(DataIntegrityViolationException e) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
 		}
 	}
 
@@ -98,51 +94,26 @@ public class UserController {
 
 	//TODO add auth
 	@PutMapping("details")
-	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void updateUserDetails(@Valid @RequestBody UserUpdateDetailsRequestDTO user, @AuthenticationPrincipal UserDetails userDetails) {
+	public ResponseEntity<?> updateUserDetails(@Valid @RequestBody UserUpdateDetailsRequestDTO user, @AuthenticationPrincipal UserDetails userDetails) {
 		try {
 			userService.updateUserDetails(user, userDetails);
-		}
-		catch(IllegalArgumentException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		}
 		catch(DataIntegrityViolationException e) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
-		}
-		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
 		}
 	}
 
 	@PutMapping("password")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void updateUserPassword(@Valid @RequestBody UserUpdatePasswordRequestDTO user, @AuthenticationPrincipal UserDetails userDetails) {
-		try {
-			userService.updatePassword(user, userDetails);
-		}
-		catch(IllegalArgumentException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-		}
-		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-		}
+		userService.updatePassword(user, userDetails);
 	}
 
 	//TODO add auth
 	@DeleteMapping("")
 	@ResponseStatus(HttpStatus.OK)
 	public void deleteUser(@RequestParam Integer id) {
-		try {
-			userService.deleteUser(id);
-		}
-		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-		}
-		catch(IllegalArgumentException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-		}
-		catch(Exception e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-		}
+		userService.deleteUser(id);
 	}
 }

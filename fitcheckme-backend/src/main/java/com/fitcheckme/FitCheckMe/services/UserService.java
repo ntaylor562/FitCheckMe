@@ -43,16 +43,16 @@ public class UserService {
 		return userRepository.findAllByOrderByIdAsc().stream().map((user) -> UserRequestDTO.toDTO(user)).toList();
 	}
 
-	public UserRequestDTO getById(Integer id) {
+	public UserRequestDTO getById(Integer id) throws EntityNotFoundException {
 		return UserRequestDTO.toDTO(userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id)))));
 	}
 
-	private User getUserById(Integer id) {
+	private User getUserById(Integer id) throws EntityNotFoundException {
 		return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
 	
 	}
 
-	public UserRequestDTO getByUsername(String username) {
+	public UserRequestDTO getByUsername(String username) throws EntityNotFoundException {
 		User res = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username))));
 		return UserRequestDTO.toDTO(res);
 	}
@@ -61,7 +61,7 @@ public class UserService {
 		return userRepository.existsById(id);
 	}
 
-	public UserRequestDTO createUser(UserCreateRequestDTO user) {
+	public UserRequestDTO createUser(UserCreateRequestDTO user) throws DataIntegrityViolationException, IllegalArgumentException {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
 		}
@@ -74,7 +74,7 @@ public class UserService {
 		return UserRequestDTO.toDTO(newUser);
 	}
 
-	public void updateUserDetails(UserUpdateDetailsRequestDTO user, UserDetails userDetails) {
+	public void updateUserDetails(UserUpdateDetailsRequestDTO user, UserDetails userDetails) throws DataIntegrityViolationException, IllegalArgumentException {
 		if(user.username() != null && user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
 		}
@@ -102,7 +102,7 @@ public class UserService {
 		this.userRepository.save(currentUser);
 	}
 
-	public void updatePassword(UserUpdatePasswordRequestDTO user, UserDetails userDetails) {
+	public void updatePassword(UserUpdatePasswordRequestDTO user, UserDetails userDetails) throws IllegalArgumentException {
 		User currentUser = this.getUserById(user.userId());
 		if(!currentUser.getUsername().equals(userDetails.getUsername())) {
 			throw new IllegalArgumentException("User does not have permission to update password");
@@ -115,7 +115,7 @@ public class UserService {
 	}
 
 	//TODO add auth to make sure following can only be created by the follower
-	public void followUser(Integer followerId, Integer followeeId) {
+	public void followUser(Integer followerId, Integer followeeId) throws DataIntegrityViolationException, IllegalArgumentException {
 		User follower = this.getUserById(followerId);
 		User followee = this.getUserById(followeeId);
 

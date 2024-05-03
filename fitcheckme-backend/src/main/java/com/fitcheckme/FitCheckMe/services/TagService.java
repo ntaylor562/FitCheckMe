@@ -25,11 +25,11 @@ public class TagService {
 		return tagRepository.findAllByOrderByIdAsc().stream().map(tag -> TagRequestDTO.toDTO(tag)).toList();
 	}
 
-	public TagRequestDTO getById(Integer id) {
+	public TagRequestDTO getById(Integer id) throws EntityNotFoundException {
 		return TagRequestDTO.toDTO(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
 	}
 
-	public List<TagRequestDTO> getById(List<Integer> ids) {
+	public List<TagRequestDTO> getById(List<Integer> ids) throws EntityNotFoundException {
 		if(ids.isEmpty()) {
 			return new ArrayList<TagRequestDTO>();
 		}
@@ -45,7 +45,7 @@ public class TagService {
 	}
 
 	//TODO add auth so only admins can create tags
-	public TagRequestDTO createTag(TagCreateRequestDTO tag) {
+	public TagRequestDTO createTag(TagCreateRequestDTO tag) throws EntityNotFoundException, DataIntegrityViolationException {
 		if(tagRepository.existsByTagNameIgnoreCase(tag.tagName())) {
 			throw new DataIntegrityViolationException(String.format("Tagname '%s' is already used", tag.tagName()));
 		}

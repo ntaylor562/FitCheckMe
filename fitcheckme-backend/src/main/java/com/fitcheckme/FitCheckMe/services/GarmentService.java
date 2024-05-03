@@ -52,15 +52,15 @@ public class GarmentService {
 		return garmentRepository.findAllByOrderByIdAsc().stream().map(garment -> GarmentRequestDTO.toDTO(garment)).toList();
 	}
 
-	public GarmentRequestDTO getById(Integer id) {
+	public GarmentRequestDTO getById(Integer id) throws EntityNotFoundException {
 		return GarmentRequestDTO.toDTO(garmentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(id)))));
 	}
 
-	private Garment getGarment(Integer id) {
+	private Garment getGarment(Integer id) throws EntityNotFoundException {
 		return garmentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(id))));
 	}
 
-	public List<Garment> getById(List<Integer> ids) {
+	public List<Garment> getById(List<Integer> ids) throws EntityNotFoundException {
 		if(ids.isEmpty()) {
 			return new ArrayList<Garment>();
 		}
@@ -80,7 +80,7 @@ public class GarmentService {
 		return garmentRepository.existsById(id);
 	}
 
-	public List<GarmentRequestDTO> getUserGarments(Integer userId) {
+	public List<GarmentRequestDTO> getUserGarments(Integer userId) throws EntityNotFoundException {
 		//Checking the user exists
 		if(!this.userService.exists(userId)) {
 			throw new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(userId)));
@@ -96,7 +96,7 @@ public class GarmentService {
 	 * @param removeURLs The list of URLs to be removed.
 	 * @throws IllegalArgumentException If the number of URLs exceeds the maximum limit or if a URL is too long.
 	 */
-	private void validateURLInput(Garment garment, List<String> addURLs, List<String> removeURLs) {
+	private void validateURLInput(Garment garment, List<String> addURLs, List<String> removeURLs) throws IllegalArgumentException {
 		if(addURLs.size() + garment.getURLs().size() - removeURLs.size() > maxURLsPerGarment) {
 			throw new IllegalArgumentException(String.format("Too many URLs provided when creating a garment, must be at most %d URLs", maxURLsPerGarment));
 		}
@@ -109,7 +109,7 @@ public class GarmentService {
 	}
 
 	@Transactional
-	private GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, User user) {
+	private GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, User user) throws EntityNotFoundException, IllegalArgumentException {
 		String garmentName = garment.garmentName() != null ? garment.garmentName().strip() : "";
 		Set<String> garmentURLs = new HashSet<>(garment.garmentURLs().stream().map(url -> url.strip()).toList());
 		Set<Tag> tags = new HashSet<>();
@@ -139,13 +139,13 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, UserDetails userDetails) {
+	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found")));
 		return this.createGarment(garment, user);
 	}
 
 	@Transactional
-	public List<GarmentRequestDTO> createGarment(List<GarmentCreateRequestDTO> garments, UserDetails userDetails) {
+	public List<GarmentRequestDTO> createGarment(List<GarmentCreateRequestDTO> garments, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException{
 		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found")));
 		List<GarmentRequestDTO> res = new ArrayList<GarmentRequestDTO>();
 		for(int i = 0; i < garments.size(); ++i) {
@@ -155,7 +155,7 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public GarmentRequestDTO updateGarment(GarmentUpdateRequestDTO garment, UserDetails userDetails) {
+	public GarmentRequestDTO updateGarment(GarmentUpdateRequestDTO garment, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException{
 		if(garment.garmentName().length() > maxGarmentNameLength) {
 			throw new IllegalArgumentException(String.format("Garment name too long, must be at most %d characters", maxGarmentNameLength));
 		}
@@ -173,7 +173,7 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate, UserDetails userDetails) {
+	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		Garment garment = this.getGarment(garmentUpdate.garmentId());
 
 		if(!garment.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
@@ -197,7 +197,7 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public void editURLs(GarmentURLUpdateRequestDTO garmentUpdate, UserDetails userDetails) {
+	public void editURLs(GarmentURLUpdateRequestDTO garmentUpdate, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		Garment garment = this.getGarment(garmentUpdate.garmentId());
 
 		if(!garment.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {

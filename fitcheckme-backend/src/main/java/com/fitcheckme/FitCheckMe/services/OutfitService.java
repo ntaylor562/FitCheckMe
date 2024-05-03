@@ -54,15 +54,15 @@ public class OutfitService {
 		return outfitRepository.findAllByOrderByIdAsc().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
-	private Outfit getOutfit(Integer id) {
+	private Outfit getOutfit(Integer id) throws EntityNotFoundException {
 		return outfitRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Outfit not found with ID: %s", String.valueOf(id))));
 	}
 
-	public OutfitRequestDTO getById(Integer id) {
+	public OutfitRequestDTO getById(Integer id) throws EntityNotFoundException {
 		return OutfitRequestDTO.toDTO(outfitRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Outfit not found with ID: %s", String.valueOf(id)))));
 	}
 
-	public List<OutfitRequestDTO> getById(List<Integer> ids) {
+	public List<OutfitRequestDTO> getById(List<Integer> ids) throws EntityNotFoundException {
 		if(ids.isEmpty()) {
 			return new ArrayList<OutfitRequestDTO>();
 		}
@@ -81,7 +81,7 @@ public class OutfitService {
 		return outfitRepository.existsById(id);
 	}
 
-	public List<OutfitRequestDTO> getUserOutfits(Integer userId) {
+	public List<OutfitRequestDTO> getUserOutfits(Integer userId) throws EntityNotFoundException {
 		// Checking the user exists
 		if(!userService.exists(userId)) {
 			throw new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(userId)));
@@ -91,7 +91,7 @@ public class OutfitService {
 
 	//TODO add auth
 	@Transactional
-	public OutfitRequestDTO createOutfit(OutfitCreateRequestDTO outfit, UserDetails userDetails) {
+	public OutfitRequestDTO createOutfit(OutfitCreateRequestDTO outfit, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		if(outfit.outfitName().length() > maxNameLength) {
 			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", maxNameLength));
 		}
@@ -116,7 +116,7 @@ public class OutfitService {
 		return OutfitRequestDTO.toDTO(newOutfit);
 	}
 
-	public OutfitRequestDTO updateOutfit(OutfitUpdateRequestDTO outfit, UserDetails userDetails) {
+	public OutfitRequestDTO updateOutfit(OutfitUpdateRequestDTO outfit, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		if(outfit.outfitName() != null && outfit.outfitName().length() > maxNameLength) {
 			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", maxNameLength));
 		}
@@ -143,7 +143,7 @@ public class OutfitService {
 
 	//TODO add auth so only the owner can do this
 	@Transactional
-	public void editGarments(OutfitGarmentUpdateRequestDTO outfitUpdate, UserDetails userDetails) {
+	public void editGarments(OutfitGarmentUpdateRequestDTO outfitUpdate, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		Outfit currentOutfit = this.getOutfit(outfitUpdate.outfitId());
 
 		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {
@@ -180,7 +180,7 @@ public class OutfitService {
 	}
 
 	@Transactional
-	public void editTags(OutfitTagUpdateRequestDTO outfitUpdate, UserDetails userDetails) {
+	public void editTags(OutfitTagUpdateRequestDTO outfitUpdate, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		Outfit currentOutfit = this.getOutfit(outfitUpdate.outfitId());
 
 		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {

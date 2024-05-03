@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,13 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagRequestDTO;
 import com.fitcheckme.FitCheckMe.services.TagService;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -37,29 +36,25 @@ public class TagController {
 	}
 
 	@GetMapping("")
-	public TagRequestDTO getTag(@RequestParam(required = false) Integer id, @RequestParam(required = false) String name) {
-		try {
-			if(id != null) {
-				return this.tagService.getById(id);
-			}
-			if(name != null) {
-				return this.tagService.getByTagName(name);
-			}
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No ID or name provided");
+	public ResponseEntity<?> getTag(@RequestParam(required = false) Integer id, @RequestParam(required = false) String name) {
+		if(id != null) {
+			return new ResponseEntity<>(this.tagService.getById(id), HttpStatus.OK);
 		}
-		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag not found");
+		if(name != null) {
+			return new ResponseEntity<>(this.tagService.getByTagName(name), HttpStatus.OK);
 		}
+		return new ResponseEntity<>("No ID or name provided", HttpStatus.BAD_REQUEST);
 	}
 
 	@PostMapping("")
 	@ResponseStatus(HttpStatus.CREATED)
-	public void createTag(@Valid @RequestBody TagCreateRequestDTO tag) {
+	public ResponseEntity<String> createTag(@Valid @RequestBody TagCreateRequestDTO tag) {
 		try {
 			tagService.createTag(tag);
+			return new ResponseEntity<>(HttpStatus.CREATED);
 		}
 		catch(DataIntegrityViolationException e) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, String.format("Tag with name %s already exists", tag.tagName()));
+			return new ResponseEntity<>(String.format("Tag with name %s already exists", tag.tagName()), HttpStatus.CONFLICT);
 		}
 	}
 }

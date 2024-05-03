@@ -3,12 +3,10 @@ package com.fitcheckme.FitCheckMe.controllers;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +22,6 @@ import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.services.OutfitService;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -37,16 +34,6 @@ public class OutfitController {
 
 	public OutfitController(OutfitService outfitService) {
 		this.outfitService = outfitService;
-	}
-
-	@ExceptionHandler(EntityNotFoundException.class)
-	public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-	}
-
-	@ExceptionHandler(IllegalArgumentException.class)
-	public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
 
 	@GetMapping("all")

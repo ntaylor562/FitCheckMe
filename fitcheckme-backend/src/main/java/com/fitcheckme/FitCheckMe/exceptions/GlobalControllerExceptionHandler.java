@@ -1,0 +1,29 @@
+package com.fitcheckme.FitCheckMe.exceptions;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+//TODO add logging here
+@RestControllerAdvice
+public class GlobalControllerExceptionHandler {
+	
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<String> handleException(Exception e) {
+		System.out.println(e.getMessage() + e.getClass());
+		return new ResponseEntity<>("An unexpected error has occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+		return new ResponseEntity<>("Invalid JSON", HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+	public ResponseEntity<String> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+		return new ResponseEntity<>("Method not allowed", HttpStatus.METHOD_NOT_ALLOWED);
+	}
+}

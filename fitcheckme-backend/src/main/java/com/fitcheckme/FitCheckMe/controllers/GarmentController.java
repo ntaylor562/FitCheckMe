@@ -1,14 +1,12 @@
 package com.fitcheckme.FitCheckMe.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.services.GarmentService;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -25,8 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-
 
 
 @RestController
@@ -46,66 +42,29 @@ public class GarmentController {
 
 	@GetMapping("")
 	public GarmentRequestDTO getById(@RequestParam Integer id) {
-		try {
-			return this.garmentService.getById(id);
-		} 
-		catch (EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-		} 
-		catch (IllegalArgumentException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-		}
+		return this.garmentService.getById(id);
 	}
 	
 	@GetMapping("usergarments")
 	public List<GarmentRequestDTO> getUserGarments(@RequestParam Integer userId) {
-		try {
-			return this.garmentService.getUserGarments(userId);
-		}
-		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-		}
+		return this.garmentService.getUserGarments(userId);
 	}
 	
 	@PostMapping("")
 	@ResponseStatus(HttpStatus.CREATED)
 	public void createGarment(@Valid @RequestBody GarmentCreateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
-		try {
-			garmentService.createGarment(garment, userDetails);
-		}
-		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-		}
-		catch(IllegalArgumentException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-		}
+		garmentService.createGarment(garment, userDetails);
 	}
 
 	@PutMapping("")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void updateOutfit(@Valid @RequestBody GarmentUpdateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
-		try {
-			this.garmentService.updateGarment(garment, userDetails);
-		}
-		catch(EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-		}
-		catch(IllegalArgumentException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-		}
+		this.garmentService.updateGarment(garment, userDetails);
 	}
 	
 	@DeleteMapping("")
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	public void deleteGarment(@RequestParam(required = true) Integer id, @AuthenticationPrincipal UserDetails userDetails) {
-		try {
-			this.garmentService.deleteGarment(id, userDetails);
-		}
-		catch (EntityNotFoundException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-		}
-		catch (IllegalArgumentException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-		}
+		this.garmentService.deleteGarment(id, userDetails);
 	}
 }

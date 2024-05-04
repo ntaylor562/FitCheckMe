@@ -4,8 +4,12 @@ import java.util.List;
 
 import com.fitcheckme.FitCheckMe.models.Outfit;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record OutfitCreateRequestDTO (
+	@NotBlank
 	String outfitName,
+	@NotBlank
 	String outfitDesc,
 	List<Integer> outfitTags,
 	List<Integer> garments

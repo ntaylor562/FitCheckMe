@@ -2,7 +2,10 @@ package com.fitcheckme.FitCheckMe.DTOs.User;
 
 import com.fitcheckme.FitCheckMe.models.User;
 
+import jakarta.validation.constraints.NotNull;
+
 public record UserUpdateDetailsRequestDTO(
+	@NotNull
 	Integer userId,	
 	String username,
 	String bio

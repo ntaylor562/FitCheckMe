@@ -4,7 +4,10 @@ import java.util.List;
 
 import com.fitcheckme.FitCheckMe.models.Garment;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record GarmentCreateRequestDTO(
+	@NotBlank
 	String garmentName,
 	List<String> garmentURLs,
 	List<Integer> garmentTagIds

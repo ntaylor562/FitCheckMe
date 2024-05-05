@@ -54,7 +54,7 @@ public class AuthController {
 	@ResponseStatus(HttpStatus.OK)
 	public void logout(HttpServletResponse response, @AuthenticationPrincipal UserDetails userDetails) {
 		//Deleting cookie
-		Cookie cookie = new Cookie("jwt-token", "");
+		Cookie cookie = new Cookie("jwt-token", null);
 		cookie.setHttpOnly(true);
 		cookie.setPath("/");
 		cookie.setSecure(true);

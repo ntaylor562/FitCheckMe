@@ -1,5 +1,6 @@
 package com.fitcheckme.FitCheckMe.unit_tests.controllers;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -77,6 +78,6 @@ public class AuthControllerTest {
 			.andExpect(MockMvcResultMatchers.cookie().secure("jwt-token", true))
 			.andExpect(MockMvcResultMatchers.cookie().path("jwt-token", "/"))
 			.andExpect(MockMvcResultMatchers.cookie().maxAge("jwt-token", 0))
-			.andExpect(MockMvcResultMatchers.cookie().value("jwt-token", ""));
+			.andExpect(MockMvcResultMatchers.cookie().value("jwt-token", Matchers.equalTo(null)));
 	}
 }

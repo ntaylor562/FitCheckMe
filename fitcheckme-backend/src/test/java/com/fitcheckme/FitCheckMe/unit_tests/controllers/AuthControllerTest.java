@@ -21,6 +21,8 @@ import com.fitcheckme.FitCheckMe.auth.JwtAuthorizationFilter;
 import com.fitcheckme.FitCheckMe.controllers.AuthController;
 import com.fitcheckme.FitCheckMe.services.AuthService;
 
+import jakarta.servlet.http.Cookie;
+
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class AuthControllerTest {
@@ -53,7 +55,12 @@ public class AuthControllerTest {
 			.andExpect(MockMvcResultMatchers.cookie().exists("jwt-access-token"))
 			.andExpect(MockMvcResultMatchers.cookie().httpOnly("jwt-access-token", true))
 			.andExpect(MockMvcResultMatchers.cookie().secure("jwt-access-token", true))
-			.andExpect(MockMvcResultMatchers.cookie().path("jwt-access-token", "/"));
+			.andExpect(MockMvcResultMatchers.cookie().path("jwt-access-token", "/"))
+			.andExpect(MockMvcResultMatchers.status().isOk())
+			.andExpect(MockMvcResultMatchers.cookie().exists("jwt-refresh-token"))
+			.andExpect(MockMvcResultMatchers.cookie().httpOnly("jwt-refresh-token", true))
+			.andExpect(MockMvcResultMatchers.cookie().secure("jwt-refresh-token", true))
+			.andExpect(MockMvcResultMatchers.cookie().path("jwt-refresh-token", "/"));
 
 		//Testing with no body
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login"))
@@ -71,13 +78,29 @@ public class AuthControllerTest {
 
 	@Test
 	public void testLogout() throws Exception {
+		//Testing with no cookies
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/logout"))
+			.andExpect(MockMvcResultMatchers.status().isOk());
+
+		//Testing with cookies
+		Cookie accessToken = new Cookie("jwt-access-token", "token");
+		Cookie refreshToken = new Cookie("jwt-refresh-token", "refreshToken");
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/logout")
+			.cookie(accessToken)
+			.cookie(refreshToken))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.cookie().exists("jwt-access-token"))
 			.andExpect(MockMvcResultMatchers.cookie().httpOnly("jwt-access-token", true))
 			.andExpect(MockMvcResultMatchers.cookie().secure("jwt-access-token", true))
 			.andExpect(MockMvcResultMatchers.cookie().path("jwt-access-token", "/"))
 			.andExpect(MockMvcResultMatchers.cookie().maxAge("jwt-access-token", 0))
-			.andExpect(MockMvcResultMatchers.cookie().value("jwt-access-token", Matchers.equalTo(null)));
+			.andExpect(MockMvcResultMatchers.cookie().value("jwt-access-token", Matchers.equalTo(null)))
+			
+			.andExpect(MockMvcResultMatchers.cookie().exists("jwt-refresh-token"))
+			.andExpect(MockMvcResultMatchers.cookie().httpOnly("jwt-refresh-token", true))
+			.andExpect(MockMvcResultMatchers.cookie().secure("jwt-refresh-token", true))
+			.andExpect(MockMvcResultMatchers.cookie().path("jwt-refresh-token", "/"))
+			.andExpect(MockMvcResultMatchers.cookie().maxAge("jwt-refresh-token", 0))
+			.andExpect(MockMvcResultMatchers.cookie().value("jwt-refresh-token", Matchers.equalTo(null)));
 	}
 }

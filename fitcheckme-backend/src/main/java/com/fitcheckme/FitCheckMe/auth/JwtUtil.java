@@ -53,7 +53,7 @@ public class JwtUtil {
 	public String resolveToken(HttpServletRequest request) {
 		Cookie[] cookies = request.getCookies();
 		if(cookies == null) return null;
-		String bearerToken = Arrays.stream(cookies).filter(cookie -> cookie.getName().equals("jwt-token")).map(cookie -> cookie.getValue()).findFirst().orElse(null);
+		String bearerToken = Arrays.stream(cookies).filter(cookie -> cookie.getName().equals("jwt-access-token")).map(cookie -> cookie.getValue()).findFirst().orElse(null);
 		if(bearerToken != null) {
 			return bearerToken;
 		}

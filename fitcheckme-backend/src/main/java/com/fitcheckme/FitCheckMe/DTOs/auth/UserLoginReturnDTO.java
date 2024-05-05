@@ -6,5 +6,7 @@ public record UserLoginReturnDTO (
 	@NotNull
 	String username,
 	@NotNull
-	String token
+	String accessToken,
+	@NotNull
+	String refreshToken
 ){}

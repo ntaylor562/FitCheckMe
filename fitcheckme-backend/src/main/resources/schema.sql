@@ -18,6 +18,13 @@ CREATE TABLE IF NOT EXISTS community.following(
 	PRIMARY KEY(follower_id, followee_id)
 );
 
+CREATE TABLE IF NOT EXISTS app.refresh_token(
+	refresh_token_id SERIAL PRIMARY KEY,
+	user_id INTEGER REFERENCES community.user(user_id),
+	refresh_token VARCHAR(255) NOT NULL,
+	expire_date TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS app.tag(
 	tag_id SERIAL PRIMARY KEY,
 	tag_name VARCHAR(30) UNIQUE NOT NULL

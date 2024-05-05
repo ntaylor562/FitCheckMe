@@ -47,6 +47,7 @@ public class SecurityConfig {
 				auth.requestMatchers("/error").permitAll();
 				auth.requestMatchers("/api/user/create").permitAll();
 				auth.requestMatchers("/api/auth/login").permitAll();
+				auth.requestMatchers("/api/auth/refresh").permitAll();
 				auth.anyRequest().authenticated();
 			})
 			.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -5,6 +5,11 @@
     "description": "How many seconds the JWT access token will remain valid for"
   },
   {
+    "name": "fitcheckme.jwt-refresh-token-validity-s",
+    "type": "java.lang.Integer",
+    "description": "How many seconds the JWT refresh token will remain valid for"
+  },
+  {
     "name": "fitcheckme.bcrypt-password-encoder-strength",
     "type": "java.lang.Integer",
     "description": "Strength passed to BCryptPasswordEncoder. Higher value means more computationally expensive. Tune until it takes roughly 1 second to verify a password"

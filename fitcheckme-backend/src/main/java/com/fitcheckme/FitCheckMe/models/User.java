@@ -16,7 +16,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
-//TODO implement auth stuff
 //TODO implement checks for max length stuff (do this for all TEXT columns)
 @Entity
 @Table(name = "user", schema = "community")

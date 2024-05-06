@@ -45,7 +45,7 @@ public class TagService {
 		return res.stream().map(tag -> TagRequestDTO.toDTO(tag)).toList();
 	}
 
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	public TagRequestDTO createTag(TagCreateRequestDTO tag) throws EntityNotFoundException, DataIntegrityViolationException {
 		if(tagRepository.existsByTagNameIgnoreCase(tag.tagName())) {
 			throw new DataIntegrityViolationException(String.format("Tagname '%s' is already used", tag.tagName()));

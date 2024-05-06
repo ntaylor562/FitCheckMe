@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ public class GarmentControllerTest {
 
 	@BeforeEach
 	public void setup() {
-		this.user = Mockito.spy(new User("test_user", "test@email.com", "pass", "test bio"));
+		this.user = Mockito.spy(new User("test_user", "test@email.com", "pass", "test bio", Set.of()));
 		this.tag1 = Mockito.spy(new Tag("tag 1"));
 		this.garment1 = Mockito.spy(new Garment("garment 1", user, List.of("url1"), List.of(tag1)));
 		this.garment2 = Mockito.spy(new Garment("garment 2", user, List.of("url2"), List.of(tag1)));

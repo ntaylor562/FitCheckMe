@@ -11,6 +11,19 @@ CREATE TABLE IF NOT EXISTS community.user(
 
 CREATE INDEX IF NOT EXISTS user_username ON community.user(username);
 
+CREATE TABLE IF NOT EXISTS app.role(
+	role_id SERIAL PRIMARY KEY,
+	role_name VARCHAR(20) UNIQUE NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS role_name ON app.role(role_name);
+
+CREATE TABLE IF NOT EXISTS app.user_role(
+	user_id INTEGER REFERENCES community.user(user_id),
+	role_id INTEGER REFERENCES app.role(role_id),
+	PRIMARY KEY(user_id, role_id)
+);
+
 CREATE TABLE IF NOT EXISTS community.following(
 	follower_id INTEGER,
 	followee_id INTEGER,

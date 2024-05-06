@@ -57,6 +57,9 @@ public class UserService {
 	}
 
 	public UserRequestDTO getByUsername(String username) throws EntityNotFoundException {
+		if(!isValidUsername(username)) {
+			throw new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username)));
+		}
 		User res = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username))));
 		return UserRequestDTO.toDTO(res);
 	}
@@ -68,6 +71,9 @@ public class UserService {
 	public UserRequestDTO createUser(UserCreateRequestDTO user) throws DataIntegrityViolationException, IllegalArgumentException {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
+		}
+		if (user.email().length() > this.maxEmailLength) {
+			throw new IllegalArgumentException(String.format("Email must be at most %d characters", this.maxEmailLength));
 		}
 		//Checking if username already exists
 		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
@@ -144,6 +150,9 @@ public class UserService {
 	}
 
 	private boolean isValidUsername(String username) {
-		return username != null && !username.isBlank() && username.matches("^[a-zA-Z0-9_]*$");
+		return username != null 
+			&& !username.isBlank() 
+			&& username.matches("^[a-zA-Z0-9_]*$")
+			&& username.length() <= this.maxUsernameLength;
 	}
 }

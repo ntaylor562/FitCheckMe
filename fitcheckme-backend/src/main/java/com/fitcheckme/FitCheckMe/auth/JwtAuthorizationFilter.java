@@ -72,6 +72,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter{
 				SecurityContextHolder.getContext().setAuthentication(authentication);
 			}
 		}
+		catch (ExpiredJwtException e) {
+			errors.put("message", "Token Expired");
+			errors.put("details", e.getMessage());
+			res.setStatus(HttpStatus.UNAUTHORIZED.value());
+			res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+			mapper.writeValue(res.getWriter(), errors);
+		}
 		catch (Exception e) {
 			errors.put("message", "Authentication Error");
 			errors.put("details", e.getMessage());

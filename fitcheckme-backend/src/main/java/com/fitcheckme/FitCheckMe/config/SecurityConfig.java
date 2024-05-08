@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,8 +22,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetailsService;
 import com.fitcheckme.FitCheckMe.auth.JwtAuthorizationFilter;
 
+import jakarta.servlet.DispatcherType;
+
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
 	@Value("${fitcheckme.bcrypt-password-encoder-strength}")
@@ -49,6 +53,7 @@ public class SecurityConfig {
 			.csrf(csrf -> csrf.disable())
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.authorizeHttpRequests(auth -> {
+				auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll();
 				auth.requestMatchers("/").permitAll();
 				auth.requestMatchers("/error").permitAll();
 				auth.requestMatchers("/api/user/create").permitAll();

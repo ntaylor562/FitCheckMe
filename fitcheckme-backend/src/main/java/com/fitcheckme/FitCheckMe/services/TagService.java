@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagCreateRequestDTO;
@@ -44,7 +45,7 @@ public class TagService {
 		return res.stream().map(tag -> TagRequestDTO.toDTO(tag)).toList();
 	}
 
-	//TODO add auth so only admins can create tags
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	public TagRequestDTO createTag(TagCreateRequestDTO tag) throws EntityNotFoundException, DataIntegrityViolationException {
 		if(tagRepository.existsByTagNameIgnoreCase(tag.tagName())) {
 			throw new DataIntegrityViolationException(String.format("Tagname '%s' is already used", tag.tagName()));

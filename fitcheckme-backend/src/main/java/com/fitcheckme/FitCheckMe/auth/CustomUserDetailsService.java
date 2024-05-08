@@ -1,8 +1,5 @@
 package com.fitcheckme.FitCheckMe.auth;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -20,6 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 	}
 
 	@Override
+	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		UsernameNotFoundException notFoundException = new UsernameNotFoundException(String.format("User with username '%s' not found", username));
 
@@ -28,13 +28,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 			? userRepository.findByEmailIgnoreCase(username).orElseThrow(() -> notFoundException)
 			: userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> notFoundException);
 
-
-		//TODO implement roles to return roles in userDetails
-		List<String> roles = new ArrayList<>();
 		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
 			.username(user.getUsername())
 			.password(user.getPassword())
-			.roles(roles.toArray(new String[0]))
+			.roles(user.getRoles().stream().map(role -> role.getName()).toList().toArray(new String[user.getRoles().size()]))
 			.build();
 		return userDetails;
 	}

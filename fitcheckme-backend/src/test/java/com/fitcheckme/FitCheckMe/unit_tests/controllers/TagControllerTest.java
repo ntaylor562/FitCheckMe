@@ -108,18 +108,18 @@ public class TagControllerTest {
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 
 		//Testing creating tag
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/tag")
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/tag/create")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isCreated());
 
 		//Testing create tag call with no body
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/tag"))
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/tag/create"))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 		//Testing create tag fails with conflict
 		Mockito.when(tagService.createTag(any(TagCreateRequestDTO.class))).thenThrow(DataIntegrityViolationException.class);
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/tag")
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/tag/create")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isConflict());

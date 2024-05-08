@@ -43,7 +43,7 @@ public class TagController {
 		return new ResponseEntity<>("No ID or name provided", HttpStatus.BAD_REQUEST);
 	}
 
-	@PostMapping("")
+	@PostMapping("create")
 	public ResponseEntity<String> createTag(@Valid @RequestBody TagCreateRequestDTO tag) {
 		try {
 			tagService.createTag(tag);

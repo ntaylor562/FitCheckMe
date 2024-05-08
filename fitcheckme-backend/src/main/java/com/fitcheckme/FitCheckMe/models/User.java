@@ -1,18 +1,21 @@
 package com.fitcheckme.FitCheckMe.models;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
-
-//TODO implement auth stuff
 //TODO implement checks for max length stuff (do this for all TEXT columns)
 @Entity
 @Table(name = "user", schema = "community")
@@ -37,6 +40,15 @@ public class User {
 	@Column(name = "bio")
 	private String bio;
 
+	@ManyToMany
+	@JoinTable(
+		name = "user_role",
+		schema = "app",
+		joinColumns = @JoinColumn(name = "user_id", nullable = false),
+		inverseJoinColumns = @JoinColumn(name = "role_id", nullable = false)
+	)
+	private Set<Role> roles;
+
 	@OneToMany(mappedBy = "follower")
 	private List<Following> followers;
 
@@ -47,11 +59,12 @@ public class User {
 
 	}
 
-	public User(String username, String email, String password, String bio) {
+	public User(String username, String email, String password, String bio, Set<Role> roles) {
 		this.username = username;
 		this.email = email;
 		this.password = password;
 		this.bio = bio;
+		this.roles = roles;
 	}
 
 	public Integer getId() {
@@ -72,6 +85,10 @@ public class User {
 
 	public String getBio() {
 		return this.bio;
+	}
+
+	public Set<Role> getRoles() {
+		return this.roles;
 	}
 
 	public List<Following> getFollowers() {
@@ -96,6 +113,22 @@ public class User {
 
 	public void setBio(String bio) {
 		this.bio = bio;
+	}
+
+	public void addRole(Role role) {
+		this.roles.add(role);
+	}
+
+	public void addRole(Collection<Role> roles) {
+		this.roles.addAll(roles);
+	}
+
+	public void removeRole(Role role) {
+		this.roles.remove(role);
+	}
+
+	public void removeRole(Collection<Role> roles) {
+		this.roles.removeAll(roles);
 	}
 
 	public void addFollower(User user) {

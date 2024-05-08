@@ -30,12 +30,19 @@ import jakarta.transaction.Transactional;
 //TODO implement auth permissions for this service
 @Service
 public class OutfitService {
-	@Value("${fitcheckme.max-outfit-desc-length}")
-	private int maxDescLength;
 
 	@Value("${fitcheckme.max-outfit-name-length}")
-	private int maxNameLength;
-	
+	private Integer maxNameLength;
+
+	@Value("${fitcheckme.max-outfit-desc-length}")
+	private Integer maxDescLength;
+
+	@Value("${fitcheckme.max-outfit-tags}")
+	private Integer maxTagsPerOutfit;
+
+	@Value("${fitcheckme.max-garments-per-outfit}")
+	private Integer maxGarmentsPerOutfit;
+
 	private final OutfitRepository outfitRepository;
 	private final GarmentRepository garmentRepository;
 	private final TagRepository tagRepository;
@@ -92,11 +99,11 @@ public class OutfitService {
 	//TODO add auth
 	@Transactional
 	public OutfitRequestDTO createOutfit(OutfitCreateRequestDTO outfit, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
-		if(outfit.outfitName().length() > maxNameLength) {
-			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", maxNameLength));
+		if(outfit.outfitName().length() > this.maxNameLength) {
+			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", this.maxNameLength));
 		}
-		if(outfit.outfitDesc().length() > maxDescLength) {
-			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
+		if(outfit.outfitDesc().length() > this.maxDescLength) {
+			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", this.maxDescLength));
 		}
 
 		List<Garment> garments = garmentRepository.findAllById(outfit.garments());
@@ -117,11 +124,11 @@ public class OutfitService {
 	}
 
 	public OutfitRequestDTO updateOutfit(OutfitUpdateRequestDTO outfit, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
-		if(outfit.outfitName() != null && outfit.outfitName().length() > maxNameLength) {
-			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", maxNameLength));
+		if(outfit.outfitName() != null && outfit.outfitName().length() > this.maxNameLength) {
+			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", this.maxNameLength));
 		}
-		if(outfit.outfitDesc() != null && outfit.outfitDesc().length() > maxDescLength) {
-			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", maxDescLength));
+		if(outfit.outfitDesc() != null && outfit.outfitDesc().length() > this.maxDescLength) {
+			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", this.maxDescLength));
 		}
 
 		Outfit currentOutfit = this.getOutfit(outfit.outfitId());
@@ -174,6 +181,10 @@ public class OutfitService {
 			}
 		}
 
+		if(currentOutfit.getGarments().size() + addGarments.size() - removeGarments.size() > this.maxGarmentsPerOutfit) {
+			throw new IllegalArgumentException(String.format("Outfit can only have up to %s garments", this.maxGarmentsPerOutfit));
+		}
+
 		currentOutfit.addGarment(addGarments);
 		currentOutfit.removeGarment(removeGarments);
 		this.outfitRepository.save(currentOutfit);
@@ -190,8 +201,25 @@ public class OutfitService {
 		List<Tag> addTags = tagRepository.findAllById(outfitUpdate.addTagIds());
 		List<Tag> removeTags = tagRepository.findAllById(outfitUpdate.removeTagIds());
 
-		if (addTags.size() + removeTags.size() != outfitUpdate.addTagIds().size() + outfitUpdate.removeTagIds().size()) {
+		if(addTags.size() + removeTags.size() != outfitUpdate.addTagIds().size() + outfitUpdate.removeTagIds().size()) {
 			throw new EntityNotFoundException("One or more tags not found");
+		}
+
+		if(addTags.isEmpty() && removeTags.isEmpty()) {
+			throw new IllegalArgumentException("No tags to add or remove");
+		}
+
+		for(Tag tag : addTags) {
+			if(currentOutfit.getTags().contains(tag)) {
+				throw new IllegalArgumentException("One or more tags already in outfit");
+			}
+			if(removeTags.contains(tag)) {
+				throw new IllegalArgumentException("One or more tags in both add and remove lists");
+			}
+		}
+
+		if (currentOutfit.getTags().size() + addTags.size() - removeTags.size() > this.maxTagsPerOutfit) {
+			throw new IllegalArgumentException(String.format("Outfit can only have up to %s tags", this.maxTagsPerOutfit));
 		}
 
 		currentOutfit.addTag(addTags);

@@ -3,6 +3,7 @@ package com.fitcheckme.FitCheckMe.unit_tests.controllers;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,8 +55,8 @@ public class UserControllerTest {
 
 	@BeforeEach
 	public void setUp() {
-		this.user1 = Mockito.spy(new User("test_username1", "test1@email.com", "pass1", "test bio1"));
-		this.user2 = Mockito.spy(new User("test_username2", "test2@email.com", "pass2", "test bio2"));
+		this.user1 = Mockito.spy(new User("test_username1", "test1@email.com", "pass1", "test bio1", Set.of()));
+		this.user2 = Mockito.spy(new User("test_username2", "test2@email.com", "pass2", "test bio2", Set.of()));
 		Mockito.when(this.user1.getId()).thenReturn(1);
 		Mockito.when(this.user2.getId()).thenReturn(2);
 
@@ -116,7 +117,7 @@ public class UserControllerTest {
 
 	@Test
 	public void testCreateUser() throws Exception {
-		User newUser = Mockito.spy(new User("test_username3", "test3@email.com", "pass3", "test bio 3"));
+		User newUser = Mockito.spy(new User("test_username3", "test3@email.com", "pass3", "test bio 3", Set.of()));
 		Mockito.when(newUser.getId()).thenReturn(3);
 		UserRequestDTO newUserDTO = UserRequestDTO.toDTO(newUser);
 		Mockito.when(userService.createUser(UserCreateRequestDTO.toDTO(newUser))).thenReturn(newUserDTO);

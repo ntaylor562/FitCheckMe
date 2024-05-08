@@ -16,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,14 +47,26 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter{
 				filterChain.doFilter(req, res);
 				return;
 			}
-			Claims claims = jwtUtil.resolveClaims(req);
+			Claims claims = null;
+			try {
+				claims = jwtUtil.resolveClaims(req);
+			}
+			catch(ExpiredJwtException e) {
+				if(req.getServletPath().equals("/api/auth/refresh") 
+					|| req.getServletPath().equals("/api/auth/logout")
+					|| req.getServletPath().equals("/api/auth/login")
+					|| req.getServletPath().equals("/api/user/create")) {
+					filterChain.doFilter(req, res);
+					return;
+				}
+				else throw e;
+			}
 
 			if(claims != null && jwtUtil.validateClaims(claims)) {
 				UserDetails user = userDetailsService.loadUserByUsername(claims.getSubject());
 
-				//TODO implement roles
 				//Empty credentials because authentication was successful
-				Authentication authentication = new UsernamePasswordAuthenticationToken(user, "", null);
+				Authentication authentication = new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
 
 				//Marking authentication as successful
 				SecurityContextHolder.getContext().setAuthentication(authentication);

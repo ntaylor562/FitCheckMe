@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +66,7 @@ public class OutfitControllerTest {
 
 	@BeforeEach
 	public void setup() {
-		this.user = Mockito.spy(new User("test_username", "test@email.com", "pass", "test bio"));
+		this.user = Mockito.spy(new User("test_username", "test@email.com", "pass", "test bio", Set.of()));
 		this.tag1 = Mockito.spy(new Tag("tag1"));
 		this.tag2 = Mockito.spy(new Tag("tag1"));
 		this.garment1 = Mockito.spy(new Garment("garment_1", user, Arrays.asList("url1"), Arrays.asList(tag1)));

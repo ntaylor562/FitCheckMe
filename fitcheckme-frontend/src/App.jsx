@@ -56,21 +56,19 @@ function App() {
 
 	return (
 		<>
-			<AuthProvider>
-				<Routes>
-					<Route path="/" element={<TempNavigation routes={routes} />}>
-						<Route index element={<Home />} />
-						<Route path="login" element={<Login />} />
-						<Route path="register" element={<Register />} />
-						<Route path="profile" element={<Profile user={user} />} />
-						<Route path="testing" element={<Testing />} />
+			<Routes>
+				<Route path="/" element={<TempNavigation routes={routes} />}>
+					<Route index element={<Home />} />
+					<Route path="login" element={<Login />} />
+					<Route path="register" element={<Register />} />
+					<Route path="profile" element={<Profile user={user} />} />
+					<Route path="testing" element={<Testing />} />
 
-						<Route path="*" element={<NotFoundPage />} />
-					</Route>
-				</Routes>
-				{/* <Profile user={user} /> */}
-				{/* <OutfitCard outfit={outfit} /> */}
-			</AuthProvider>
+					<Route path="*" element={<NotFoundPage />} />
+				</Route>
+			</Routes>
+			{/* <Profile user={user} /> */}
+			{/* <OutfitCard outfit={outfit} /> */}
 		</>
 	)
 }

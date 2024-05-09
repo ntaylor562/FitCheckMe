@@ -11,8 +11,30 @@ import {
 	Text,
 	useColorModeValue,
 } from '@chakra-ui/react'
+import { useAuth } from '../backend/AuthContext';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
+	const { isAuthenticated, isLoading, login, logout } = useAuth();
+	const [username, setUsername] = useState('');
+	const [password, setPassword] = useState('');
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if(isAuthenticated) navigate('/');
+	})
+
+	const handleInputChange = (event) => {
+		if (event.target.name === 'username') setUsername(event.target.value);
+		else if (event.target.name === 'password') setPassword(event.target.value);
+	}
+
+	const handleSubmit = async (event) => {
+		event.preventDefault();
+		await login(username, password);
+	}
+
 	return (
 		<Flex
 			minH={'100%'}
@@ -27,33 +49,36 @@ export default function Login() {
 					bg={useColorModeValue('gray.50', 'gray.700')}
 					boxShadow={'xl'}
 					p={8}>
-					<Stack spacing={4}>
-						<FormControl id="email">
-							<FormLabel>Email address</FormLabel>
-							<Input type="email" />
-						</FormControl>
-						<FormControl id="password">
-							<FormLabel>Password</FormLabel>
-							<Input type="password" />
-						</FormControl>
-						<Stack spacing={10}>
-							<Stack
-								direction={{ base: 'column', sm: 'row' }}
-								align={'start'}
-								justify={'space-between'}>
-								<Checkbox>Remember me</Checkbox>
-								{/* <Text color={'blue.400'}>Forgot password?</Text> */}
+					<form onSubmit={handleSubmit} onChange={handleInputChange}>
+						<Stack spacing={4}>
+							<FormControl>
+								<FormLabel>Username/Email Address</FormLabel>
+								<Input name="username" />
+							</FormControl>
+							<FormControl>
+								<FormLabel>Password</FormLabel>
+								<Input name="password" type="password" />
+							</FormControl>
+							<Stack spacing={10}>
+								<Stack
+									direction={{ base: 'column', sm: 'row' }}
+									align={'start'}
+									justify={'space-between'}>
+									<Checkbox>Remember me</Checkbox>
+									{/* <Text color={'blue.400'}>Forgot password?</Text> */}
+								</Stack>
+								<Button
+									type='submit'
+									bg={'blue.400'}
+									color={'white'}
+									_hover={{
+										bg: 'blue.500',
+									}}>
+									Sign in
+								</Button>
 							</Stack>
-							<Button
-								bg={'blue.400'}
-								color={'white'}
-								_hover={{
-									bg: 'blue.500',
-								}}>
-								Sign in
-							</Button>
 						</Stack>
-					</Stack>
+					</form>
 				</Box>
 			</Stack>
 		</Flex>

@@ -24,12 +24,14 @@ export const AuthProvider = ({ children }) => {
 	const login = async (username, password) => {
 		return await auth_login(username, password).then((response) => {
 			if (response.ok) setAuthenticated(true);
+			return response;
 		});
 	}
 
 	const logout = async () => {
-		return await auth_logout().then((response) => {
+		return await auth_logout().then(async (response) => {
 			if (response.ok) setAuthenticated(false);
+			return response;
 		});
 	}
 

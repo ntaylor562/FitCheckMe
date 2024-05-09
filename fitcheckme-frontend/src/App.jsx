@@ -11,9 +11,8 @@ import Home from './pages/Home';
 import Testing from './pages/Testing';
 import NotFoundPage from './pages/NotFoundPage';
 import TempNavigation from './components/TempNavigation';
-import Login from './Login';
-import Register from './Register';
-import { AuthProvider } from './backend/AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 
 function App() {

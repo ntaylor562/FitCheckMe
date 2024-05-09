@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-	const { isAuthenticated, isLoading, login, logout } = useAuth();
+	const { isAuthenticated, login } = useAuth();
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const navigate = useNavigate();
@@ -40,7 +40,7 @@ export default function Login() {
 			minH={'100%'}
 			align={'center'}
 			justify={'center'}>
-			<Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
+			<Stack spacing={8} mx={'auto'} w={'md'} py={12} px={6}>
 				<Stack align={'center'}>
 					<Heading fontSize={'4xl'}>Sign in</Heading>
 				</Stack>

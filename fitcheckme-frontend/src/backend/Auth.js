@@ -27,3 +27,17 @@ export async function auth_refresh() {
 		credentials: 'include'
 	});
 }
+
+export async function auth_register(username, email, password) {
+	return await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/create`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			username: username,
+			email: email,
+			password: password
+		})
+	});
+}

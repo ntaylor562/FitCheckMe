@@ -8,6 +8,9 @@ export async function handleFetchException(response) {
 		return response;
 	}
 
-	console.error(response);
+	const contentType = response.headers.get("content-type");
+	const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
+
+	console.error(message);
 	return response;
 }

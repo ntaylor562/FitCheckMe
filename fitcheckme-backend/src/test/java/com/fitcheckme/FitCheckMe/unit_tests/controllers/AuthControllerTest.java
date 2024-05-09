@@ -60,7 +60,7 @@ public class AuthControllerTest {
 			.andExpect(MockMvcResultMatchers.cookie().exists("jwt-refresh-token"))
 			.andExpect(MockMvcResultMatchers.cookie().httpOnly("jwt-refresh-token", true))
 			.andExpect(MockMvcResultMatchers.cookie().secure("jwt-refresh-token", true))
-			.andExpect(MockMvcResultMatchers.cookie().path("jwt-refresh-token", "/"));
+			.andExpect(MockMvcResultMatchers.cookie().path("jwt-refresh-token", "/api/auth/refresh"));
 
 		//Testing with no body
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login"))

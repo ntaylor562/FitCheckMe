@@ -24,6 +24,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 
 @RestController
@@ -59,7 +61,7 @@ public class AuthController {
 	private Cookie getRefreshTokenCookie(String token) {
 		Cookie cookie = new Cookie("jwt-refresh-token", token);
 		cookie.setHttpOnly(true);
-		cookie.setPath("/");
+		cookie.setPath("/api/auth/refresh");
 		cookie.setSecure(true);
 		return cookie;
 	}
@@ -120,4 +122,10 @@ public class AuthController {
 		response.addCookie(refreshTokenCookie);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
+	@GetMapping("isAuthenticated")
+	public ResponseEntity<Boolean> isAuthenticated() {
+		return new ResponseEntity<>(true, HttpStatus.OK);
+	}
+	
 }

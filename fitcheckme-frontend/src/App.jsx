@@ -13,6 +13,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import TempNavigation from './components/TempNavigation';
 import Login from './Login';
 import Register from './Register';
+import { AuthProvider } from './backend/AuthContext';
+
 
 function App() {
 	const user = {
@@ -54,19 +56,21 @@ function App() {
 
 	return (
 		<>
-			<Routes>
-				<Route path="/" element={<TempNavigation routes={routes} />}>
-					<Route index element={<Home />} />
-					<Route path="login" element={<Login />} />
-					<Route path="register" element={<Register />} />
-					<Route path="profile" element={<Profile user={user}/>} />
-					<Route path="testing" element={<Testing />} />
+			<AuthProvider>
+				<Routes>
+					<Route path="/" element={<TempNavigation routes={routes} />}>
+						<Route index element={<Home />} />
+						<Route path="login" element={<Login />} />
+						<Route path="register" element={<Register />} />
+						<Route path="profile" element={<Profile user={user} />} />
+						<Route path="testing" element={<Testing />} />
 
-					<Route path="*" element={<NotFoundPage />} />
-				</Route>
-			</Routes>
-			{/* <Profile user={user} /> */}
-			{/* <OutfitCard outfit={outfit} /> */}
+						<Route path="*" element={<NotFoundPage />} />
+					</Route>
+				</Routes>
+				{/* <Profile user={user} /> */}
+				{/* <OutfitCard outfit={outfit} /> */}
+			</AuthProvider>
 		</>
 	)
 }

@@ -1,6 +1,5 @@
 
-
-export async function login(username, password) {
+export async function auth_login(username, password) {
 	return await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
 		method: 'POST',
 		credentials: 'include',
@@ -11,14 +10,19 @@ export async function login(username, password) {
 			username: username,
 			password: password
 		})
-	})
-	.then((response) => console.log(response));
+	});
 }
 
-export async function logout() {
+export async function auth_logout() {
 	return await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/logout`, {
 		method: 'POST',
 		credentials: 'include'
-	})
-	.then((response) => console.log(response));
+	});
+}
+
+export async function auth_refresh() {
+	return await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/refresh`, {
+		method: 'POST',
+		credentials: 'include'
+	});
 }

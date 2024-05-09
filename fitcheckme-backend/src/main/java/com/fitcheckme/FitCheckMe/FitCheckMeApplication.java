@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 //TODO Add tests
 //TODO Update controllers with better error handling, especially for the DB errors
 //TODO Ensure that before any DB checks for things like username, make checks on length and everything first so there's no unnecessary querying
+//TODO Find a way to auto delete expired refresh tokens
 @SpringBootApplication
 @EnableTransactionManagement
 @PropertySource("classpath:/.env")

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS community.user(
 );
 
 CREATE INDEX IF NOT EXISTS user_username ON community.user(username);
+CREATE INDEX IF NOT EXISTS user_email ON community.user(email);
 
 CREATE TABLE IF NOT EXISTS app.role(
 	role_id SERIAL PRIMARY KEY,

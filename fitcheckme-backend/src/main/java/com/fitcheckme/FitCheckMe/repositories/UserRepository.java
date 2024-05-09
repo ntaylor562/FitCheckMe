@@ -9,6 +9,7 @@ import com.fitcheckme.FitCheckMe.models.User;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
 	boolean existsByUsernameIgnoreCase(String username);
+	boolean existsByEmailIgnoreCase(String email);
 
 	Optional<User> findByUsernameIgnoreCase(String username);
 	Optional<User> findByEmailIgnoreCase(String email);

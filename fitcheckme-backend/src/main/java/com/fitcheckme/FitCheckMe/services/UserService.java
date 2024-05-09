@@ -79,6 +79,10 @@ public class UserService {
 		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
 			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
 		}
+		//Checking if email already exists
+		if(userRepository.existsByEmailIgnoreCase(user.email())) {
+			throw new DataIntegrityViolationException(String.format("Email '%s' is taken", user.email()));
+		}
 		User newUser = new User(user.username(), user.email().toLowerCase(), passwordEncoder.encode(user.password()), null, Set.of(roleRepository.findByRoleName("USER").get()));
 		this.userRepository.save(newUser);
 		return UserRequestDTO.toDTO(newUser);

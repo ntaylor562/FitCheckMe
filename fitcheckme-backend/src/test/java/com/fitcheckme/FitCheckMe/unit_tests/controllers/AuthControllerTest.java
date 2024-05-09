@@ -45,7 +45,6 @@ public class AuthControllerTest {
 		UserLoginRequestDTO requestDTO = new UserLoginRequestDTO("test", "test");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 
-
 		//Testing with valid credentials
 		Mockito.when(authService.userLogin(requestDTO)).thenReturn(new UserLoginReturnDTO(requestDTO.username(), "token", "refreshToken"));
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login")
@@ -60,7 +59,7 @@ public class AuthControllerTest {
 			.andExpect(MockMvcResultMatchers.cookie().exists("jwt-refresh-token"))
 			.andExpect(MockMvcResultMatchers.cookie().httpOnly("jwt-refresh-token", true))
 			.andExpect(MockMvcResultMatchers.cookie().secure("jwt-refresh-token", true))
-			.andExpect(MockMvcResultMatchers.cookie().path("jwt-refresh-token", "/api/auth/refresh"));
+			.andExpect(MockMvcResultMatchers.cookie().path("jwt-refresh-token", "/api/auth"));
 
 		//Testing with no body
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login"))

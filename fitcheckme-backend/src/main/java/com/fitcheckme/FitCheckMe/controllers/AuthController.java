@@ -61,7 +61,7 @@ public class AuthController {
 	private Cookie getRefreshTokenCookie(String token) {
 		Cookie cookie = new Cookie("jwt-refresh-token", token);
 		cookie.setHttpOnly(true);
-		cookie.setPath("/api/auth/refresh");
+		cookie.setPath("/api/auth");
 		cookie.setSecure(true);
 		return cookie;
 	}

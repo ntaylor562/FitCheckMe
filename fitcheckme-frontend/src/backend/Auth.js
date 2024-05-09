@@ -1,3 +1,4 @@
+import FetchWithRefreshRetry from "./FetchWithRefreshRetry";
 
 export async function auth_login(username, password) {
 	return await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
@@ -14,7 +15,7 @@ export async function auth_login(username, password) {
 }
 
 export async function auth_logout() {
-	return await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/logout`, {
+	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/auth/logout`, {
 		method: 'POST',
 		credentials: 'include'
 	});

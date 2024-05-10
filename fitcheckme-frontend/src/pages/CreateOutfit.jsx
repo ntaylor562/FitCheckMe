@@ -84,8 +84,6 @@ export default function CreateOutfit() {
 			});
 	}
 
-	const options = tags.map((tag) => { return { value: `${tag.tagId}`, label: toTitleCase(tag.tagName) } });
-
 	return (
 		<>
 			<Button colorScheme="teal" onClick={onOpen}>Create outfit</Button>
@@ -111,7 +109,7 @@ export default function CreateOutfit() {
 									<FormLabel>Tags</FormLabel>
 									<MultiSelect
 										name="tags"
-										options={options}
+										options={tags.map((tag) => { return { value: `${tag.tagId}`, label: toTitleCase(tag.tagName) } })}
 										value={formValues.tags}
 										onChange={handleMultiSelectChange}
 										placeholder='Select tags'

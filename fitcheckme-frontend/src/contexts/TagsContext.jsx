@@ -32,6 +32,7 @@ export const TagsProvider = ({ children }) => {
 	);
 }
 
+//Since this requires authentication, do not use this above login page as it will cause infinite redirects
 export function useTags() {
 	const context = useContext(TagsContext);
 	if (context === undefined) {

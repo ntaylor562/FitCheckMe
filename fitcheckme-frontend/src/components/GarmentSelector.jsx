@@ -3,6 +3,7 @@ import { MultiSelect } from "chakra-multiselect";
 import { useState } from "react";
 import { toTitleCase } from "../utils/StringUtil";
 import { useTags } from "../contexts/TagsContext";
+import CreateGarment from "./CreateGarment";
 
 
 export default function GarmentSelector({ selectedGarments, handleGarmentSelect }) {
@@ -83,7 +84,7 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 
 	return <FormControl>
 		<FormLabel>Garments</FormLabel>
-		<VStack w="100%">
+		<VStack w="100%" spacing={4}>
 			<Input name="search" value={formValues.search} onChange={handleSearchChange} placeholder="Search for garments" />
 			<FormControl>
 				<MultiSelect
@@ -99,6 +100,7 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 					return <GarmentCard key={garment.garmentId} garment={garment} selected={selectedGarments.has(garment.garmentId)} handleGarmentSelect={handleGarmentSelect} />
 				})}
 			</HStack>
+			<CreateGarment />
 		</VStack>
 	</FormControl>
 

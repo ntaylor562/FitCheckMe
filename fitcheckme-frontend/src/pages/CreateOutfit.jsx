@@ -115,7 +115,7 @@ export default function CreateOutfit() {
 										placeholder='Select tags'
 									/>
 								</FormControl>
-								<GarmentSelector handleGarmentSelect={handleGarmentSelect} selectedGarments={formValues.garments} tags={tags} />
+								<GarmentSelector handleGarmentSelect={handleGarmentSelect} selectedGarments={formValues.garments} />
 								<Button w="100%" type="submit" colorScheme="green" >Create</Button>
 							</VStack>
 						</form>

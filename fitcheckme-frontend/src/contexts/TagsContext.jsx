@@ -4,8 +4,7 @@ import { getTags } from "../backend/Application";
 
 const TagsContext = createContext({
 	tags: [],
-	isTagsLoading: true,
-	setTags: () => { }
+	isTagsLoading: true
 });
 
 export const TagsProvider = ({ children }) => {

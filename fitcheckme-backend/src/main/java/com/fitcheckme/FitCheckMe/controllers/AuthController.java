@@ -40,7 +40,7 @@ public class AuthController {
 
 	@ExceptionHandler(BadCredentialsException.class)
 	public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException e) {
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
 	}
 
 	private Optional<Cookie> getCookie(HttpServletRequest request, String name) {

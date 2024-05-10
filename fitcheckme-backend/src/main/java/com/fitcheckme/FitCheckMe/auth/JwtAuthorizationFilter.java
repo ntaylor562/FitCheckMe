@@ -79,6 +79,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter{
 			res.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
 			mapper.writeValue(res.getWriter(), errors);
+			return;
 		}
 		catch (Exception e) {
 			errors.put("message", "Authentication Error");
@@ -87,6 +88,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter{
 			res.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
 			mapper.writeValue(res.getWriter(), errors);
+			return;
 		}
 		filterChain.doFilter(req, res);
 	}

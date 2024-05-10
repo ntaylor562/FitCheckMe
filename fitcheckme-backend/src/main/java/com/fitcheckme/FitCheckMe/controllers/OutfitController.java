@@ -50,7 +50,7 @@ public class OutfitController {
 	}
 	
 
-	@PostMapping("")
+	@PostMapping("create")
 	@ResponseStatus(HttpStatus.CREATED)
 	public void createOutfit(@Valid @RequestBody OutfitCreateRequestDTO outfit, @AuthenticationPrincipal UserDetails userDetails) {
 		this.outfitService.createOutfit(outfit, userDetails);

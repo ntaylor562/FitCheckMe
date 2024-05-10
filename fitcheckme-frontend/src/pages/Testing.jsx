@@ -3,6 +3,7 @@ import { getGarments } from "../backend/Application"
 import { useState } from "react";
 import { useAuth } from "../backend/AuthContext";
 import CreateOutfit from "./CreateOutfit";
+import { auth_refresh } from "../backend/Auth";
 
 
 export default function Testing() {
@@ -22,6 +23,7 @@ export default function Testing() {
 						{isAuthenticated && <CreateOutfit />}
 					</HStack>
 			}
+			<Button colorScheme="gray" onClick={() => auth_refresh()}>Refresh token</Button>
 		</Box>
 	)
 }

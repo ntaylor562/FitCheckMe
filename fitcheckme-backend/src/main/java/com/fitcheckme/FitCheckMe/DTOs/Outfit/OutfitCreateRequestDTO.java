@@ -5,11 +5,12 @@ import java.util.List;
 import com.fitcheckme.FitCheckMe.models.Outfit;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record OutfitCreateRequestDTO (
 	@NotBlank
 	String outfitName,
-	@NotBlank
+	@NotNull
 	String outfitDesc,
 	List<Integer> outfitTags,
 	List<Integer> garments

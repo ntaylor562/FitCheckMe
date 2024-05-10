@@ -72,7 +72,7 @@ public class AuthControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(invalidRequestBody))
-			.andExpect(MockMvcResultMatchers.status().isBadRequest());
+			.andExpect(MockMvcResultMatchers.status().isUnauthorized());
 	}
 
 	@Test

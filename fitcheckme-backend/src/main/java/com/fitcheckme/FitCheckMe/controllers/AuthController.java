@@ -90,7 +90,7 @@ public class AuthController {
 		Cookie refreshTokenCookie = this.getCookie(request, "jwt-refresh-token").orElse(null);
 		if(refreshTokenCookie != null) {
 			try {
-				authService.deleteRefreshToken(refreshTokenCookie.getValue(), userDetails);
+				if(userDetails != null) authService.deleteRefreshToken(refreshTokenCookie.getValue(), userDetails);
 				response.addCookie(getDeleteCookie("jwt-refresh-token"));
 			}
 			catch(RuntimeException e) {

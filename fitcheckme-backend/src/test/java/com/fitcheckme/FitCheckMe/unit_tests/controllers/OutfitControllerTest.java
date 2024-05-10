@@ -149,25 +149,25 @@ public class OutfitControllerTest {
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 
 		//Testing the create outfit call is OK
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/outfit")
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/outfit/create")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isCreated());
 		
 		//Testing the create outfit call with no body
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/outfit"))
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/outfit/create"))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 		//Testing the create outfit call fails with illegal arguments
 		Mockito.when(outfitService.createOutfit(any(OutfitCreateRequestDTO.class), any(UserDetails.class))).thenThrow(IllegalArgumentException.class);
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/outfit")
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/outfit/create")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 		//Testing the create outfit call fails with entity not found
 		Mockito.when(outfitService.createOutfit(any(OutfitCreateRequestDTO.class), any(UserDetails.class))).thenThrow(EntityNotFoundException.class);
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/outfit")
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/outfit/create")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isNotFound());

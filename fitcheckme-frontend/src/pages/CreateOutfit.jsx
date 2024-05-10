@@ -1,8 +1,12 @@
-import { Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, FormControl, FormLabel, Input, VStack, useDisclosure, useToast } from "@chakra-ui/react"
+import { Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, FormControl, FormLabel, Input, VStack, background, useColorModeValue, useDisclosure, useToast } from "@chakra-ui/react"
+import { MultiSelect } from "chakra-multiselect"
 import { useState } from "react"
+import { toTitleCase } from "../utils/StringUtil";
 
 export default function CreateOutfit() {
 	const tempNumOutfits = 0;
+
+	const tempTags = ["casual", "formal", "workout", "beach", "winter", "summer"]
 
 	const defaultFormValues = {
 		outfitName: `Outfit ${tempNumOutfits + 1}`,
@@ -20,14 +24,25 @@ export default function CreateOutfit() {
 	}
 
 	const handleChange = (e) => {
+		console.log(e);
 		setFormValues({
 			...formValues,
 			[e.target.name]: e.target.value
 		})
 	}
+	const handleMultiSelectChange = (e) => {
+		console.log(e)
+		setFormValues({
+			...formValues,
+			tags: e
+		})
+	
+	}
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault()
+		formValues.tags = formValues.tags.map((tag) => tag.value);
+
 		//TODO handle submit
 		console.log(formValues)
 
@@ -61,6 +76,17 @@ export default function CreateOutfit() {
 								<FormControl>
 									<FormLabel>Description</FormLabel>
 									<Input name="outfitDesc" type="text" />
+								</FormControl>
+								<FormControl>
+									<FormLabel>Tags</FormLabel>
+									<MultiSelect
+										name="tags"
+										options={tempTags.map((tag) => { return { value: tag, label: toTitleCase(tag) } })}
+										value={formValues.tags}
+										onChange={handleMultiSelectChange}
+										label='Choose tags'
+										placeholder='Select tags'
+									/>
 								</FormControl>
 								<Button w="100%" type="submit" colorScheme="green" >Create</Button>
 							</VStack>

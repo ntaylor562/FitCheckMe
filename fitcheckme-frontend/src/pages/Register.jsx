@@ -48,7 +48,10 @@ export default function Register() {
 		event.preventDefault();
 		await auth_register(formValues.username, formValues.email, formValues.password)
 			.then(async (response) => {
-				if (!response.ok) throw new Error(`Failed to register: ${await response.text()}`);
+				if (!response.ok) {
+					throw new Error(`Failed to register: ${await response.text()}`);
+				}
+				return response;
 			})
 			.then(async () => {
 				await login(formValues.username, formValues.password)

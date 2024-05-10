@@ -4,12 +4,11 @@ import {
 	FormControl,
 	FormLabel,
 	Input,
-	Checkbox,
 	Stack,
 	Button,
 	Heading,
-	Text,
 	useColorModeValue,
+	FormErrorMessage,
 } from '@chakra-ui/react'
 import { useAuth } from '../backend/AuthContext';
 import { useEffect, useState } from 'react';
@@ -19,20 +18,35 @@ export default function Login() {
 	const { isAuthenticated, login } = useAuth();
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
+	const [formError, setFormError] = useState(null);
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		if(isAuthenticated) navigate('/');
+		if (isAuthenticated) navigate('/');
 	})
 
 	const handleInputChange = (event) => {
+		setFormError(null);
 		if (event.target.name === 'username') setUsername(event.target.value);
 		else if (event.target.name === 'password') setPassword(event.target.value);
 	}
 
 	const handleSubmit = async (event) => {
 		event.preventDefault();
-		await login(username, password);
+		await login(username, password)
+			.then(async (response) => {
+				if (!response.ok) {
+					throw new Error(`Failed to login: ${await response.text()}`);
+				}
+				return response;
+			})
+			.then(() => {
+				navigate('/');
+			})
+			.catch((error) => {
+				console.error(error);
+				setFormError(error.message);
+			})
 	}
 
 	return (
@@ -50,34 +64,30 @@ export default function Login() {
 					boxShadow={'xl'}
 					p={8}>
 					<form onSubmit={handleSubmit} onChange={handleInputChange}>
-						<Stack spacing={4}>
-							<FormControl>
-								<FormLabel>Username/Email Address</FormLabel>
-								<Input name="username" />
-							</FormControl>
-							<FormControl>
-								<FormLabel>Password</FormLabel>
-								<Input name="password" type="password" />
-							</FormControl>
-							<Stack spacing={10}>
-								<Stack
-									direction={{ base: 'column', sm: 'row' }}
-									align={'start'}
-									justify={'space-between'}>
-									<Checkbox>Remember me</Checkbox>
-									{/* <Text color={'blue.400'}>Forgot password?</Text> */}
-								</Stack>
-								<Button
-									type='submit'
-									bg={'blue.400'}
-									color={'white'}
-									_hover={{
-										bg: 'blue.500',
-									}}>
-									Sign in
-								</Button>
+						<FormControl isInvalid={formError}>
+							<Stack spacing={4}>
+								<FormControl>
+									<FormLabel>Username/Email Address</FormLabel>
+									<Input name="username" />
+								</FormControl>
+								<FormControl>
+									<FormLabel>Password</FormLabel>
+									<Input name="password" type="password" />
+								</FormControl>
+								<Flex direction="column">
+									<Button
+										type='submit'
+										bg={'blue.400'}
+										color={'white'}
+										_hover={{
+											bg: 'blue.500',
+										}}>
+										Sign in
+									</Button>
+								</Flex>
+								<FormErrorMessage>{formError}</FormErrorMessage>
 							</Stack>
-						</Stack>
+						</FormControl>
 					</form>
 				</Box>
 			</Stack>

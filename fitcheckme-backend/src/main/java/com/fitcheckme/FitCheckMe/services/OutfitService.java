@@ -46,14 +46,12 @@ public class OutfitService {
 	private final OutfitRepository outfitRepository;
 	private final GarmentRepository garmentRepository;
 	private final TagRepository tagRepository;
-	private final UserService userService;
 	private final UserRepository userRepository;
 
-	public OutfitService(OutfitRepository outfitRepository, GarmentRepository garmentRepository, TagRepository tagRepository, UserService userService, UserRepository userRepository) {
+	public OutfitService(OutfitRepository outfitRepository, GarmentRepository garmentRepository, TagRepository tagRepository, UserRepository userRepository) {
 		this.outfitRepository = outfitRepository;
 		this.garmentRepository = garmentRepository;
 		this.tagRepository = tagRepository;
-		this.userService = userService;
 		this.userRepository = userRepository;
 	}
 
@@ -90,10 +88,18 @@ public class OutfitService {
 
 	public List<OutfitRequestDTO> getUserOutfits(Integer userId) throws EntityNotFoundException {
 		// Checking the user exists
-		if(!userService.exists(userId)) {
+		if(!userRepository.existsById(userId)) {
 			throw new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(userId)));
 		}
 		return this.outfitRepository.findByUserId(userId).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
+	}
+
+	public List<OutfitRequestDTO> getUserOutfits(String username) throws EntityNotFoundException {
+		// Checking the user exists
+		if(!userRepository.existsByUsernameIgnoreCase(username)) {
+			throw new EntityNotFoundException(String.format("User not found with ID: %s", username));
+		}
+		return this.outfitRepository.findByUser_UsernameIgnoreCase(username).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
 	//TODO add auth

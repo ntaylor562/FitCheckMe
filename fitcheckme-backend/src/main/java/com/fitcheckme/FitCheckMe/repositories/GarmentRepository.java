@@ -10,6 +10,7 @@ import com.fitcheckme.FitCheckMe.models.Garment;
 
 public interface GarmentRepository extends JpaRepository<Garment, Integer> {
 	List<Garment> findByUserId(Integer userId);
+	List<Garment> findByUser_UsernameIgnoreCase(String username);
 	List<Garment> findAllByOrderByIdAsc();
 
 	@Query("SELECT g FROM Outfit o JOIN o.garments g WHERE o.id = :outfitId AND g.id IN :garmentIds")

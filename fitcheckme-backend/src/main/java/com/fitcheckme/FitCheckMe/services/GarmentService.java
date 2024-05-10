@@ -41,13 +41,11 @@ public class GarmentService {
 
 	private final GarmentRepository garmentRepository;
 	private final TagRepository tagRepository;
-	private final UserService userService;
 	private final UserRepository userRepository;
 
-	public GarmentService(GarmentRepository garmentRepository, TagRepository tagRepository, UserService userService, UserRepository userRepository) {
+	public GarmentService(GarmentRepository garmentRepository, TagRepository tagRepository, UserRepository userRepository) {
 		this.garmentRepository = garmentRepository;
 		this.tagRepository = tagRepository;
-		this.userService = userService;
 		this.userRepository = userRepository;
 	}
 
@@ -85,10 +83,18 @@ public class GarmentService {
 
 	public List<GarmentRequestDTO> getUserGarments(Integer userId) throws EntityNotFoundException {
 		//Checking the user exists
-		if(!this.userService.exists(userId)) {
+		if(!this.userRepository.existsById(userId)) {
 			throw new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(userId)));
 		}
 		return this.garmentRepository.findByUserId(userId).stream().map(garment -> GarmentRequestDTO.toDTO(garment)).toList();
+	}
+
+	public List<GarmentRequestDTO> getUserGarments(String username) throws EntityNotFoundException {
+		//Checking the user exists
+		if(!this.userRepository.existsByUsernameIgnoreCase(username)) {
+			throw new EntityNotFoundException(String.format("User not found with username: %s", username));
+		}
+		return this.garmentRepository.findByUser_UsernameIgnoreCase(username).stream().map(garment -> GarmentRequestDTO.toDTO(garment)).toList();
 	}
 	
 	/**

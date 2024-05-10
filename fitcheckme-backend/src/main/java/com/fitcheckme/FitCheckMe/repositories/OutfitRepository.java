@@ -8,5 +8,6 @@ import com.fitcheckme.FitCheckMe.models.Outfit;
 
 public interface OutfitRepository extends JpaRepository<Outfit, Integer> {
 	public List<Outfit> findByUserId(Integer userId);
+	public List<Outfit> findByUser_UsernameIgnoreCase(String username);
 	public List<Outfit> findAllByOrderByIdAsc();
 }

@@ -45,7 +45,10 @@ public class OutfitController {
 	}
 
 	@GetMapping("useroutfits")
-	public List<OutfitRequestDTO> getUserOutfits(@RequestParam Integer userId) {
+	public List<OutfitRequestDTO> getUserOutfits(@RequestParam(required = false) Integer userId, @AuthenticationPrincipal UserDetails userDetails) {
+		if(userId == null) {
+			return this.outfitService.getUserOutfits(userDetails.getUsername());
+		}
 		return this.outfitService.getUserOutfits(userId);
 	}
 	

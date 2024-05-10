@@ -130,6 +130,12 @@ public class GarmentControllerTest {
 		Mockito.when(garmentService.getUserGarments(3)).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment/usergarments?userId={userId}", 3))
 				.andExpect(MockMvcResultMatchers.status().isNotFound());
+
+		// Testing get user garment call with no user ID (to get the currently logged in user's garments)
+		Mockito.when(garmentService.getUserGarments(user.getUsername())).thenReturn(userGarments);
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/garment/usergarments"))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(1));
 	}
 
 	@Test

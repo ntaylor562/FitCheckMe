@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react'
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import { useEffect, useState } from 'react'
-import { useAuth } from '../backend/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { auth_register } from '../backend/Auth';
 

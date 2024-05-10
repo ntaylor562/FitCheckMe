@@ -2,9 +2,10 @@ import { Box, Card, Checkbox, FormControl, FormLabel, HStack, Input, VStack } fr
 import { MultiSelect } from "chakra-multiselect";
 import { useState } from "react";
 import { toTitleCase } from "../utils/StringUtil";
+import { useTags } from "../contexts/TagsContext";
 
 
-export default function GarmentSelector({ tags, selectedGarments, handleGarmentSelect }) {
+export default function GarmentSelector({ selectedGarments, handleGarmentSelect }) {
 	const defaultFormValues = {
 		search: "",
 		tags: [],
@@ -64,6 +65,7 @@ export default function GarmentSelector({ tags, selectedGarments, handleGarmentS
 
 	const [userGarments, setUserGarments] = useState([...tempGarments]);
 	const [formValues, setFormValues] = useState({ ...defaultFormValues });
+	const { tags } = useTags();
 
 	const handleMultiSelectChange = (e) => {
 		setFormValues({
@@ -99,11 +101,11 @@ export default function GarmentSelector({ tags, selectedGarments, handleGarmentS
 			</HStack>
 		</VStack>
 	</FormControl>
-	
+
 }
 
 function GarmentCard({ garment, selected, handleGarmentSelect }) {
-	return <Card _hover={{cursor: "pointer"}} p="10px" position="relative">
+	return <Card _hover={{ cursor: "pointer" }} p="10px" position="relative">
 		<Box boxSize="100px" onClick={() => handleGarmentSelect(garment.garmentId)}>{garment.garmentName}</Box>
 		<Checkbox pointerEvents="none" position="absolute" bottom="10px" right="10px" onChange={() => handleGarmentSelect(garment.garmentId)} isChecked={selected} />
 	</Card>

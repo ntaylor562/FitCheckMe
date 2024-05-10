@@ -10,7 +10,7 @@ import {
 	useColorModeValue,
 	FormErrorMessage,
 } from '@chakra-ui/react'
-import { useAuth } from '../backend/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 

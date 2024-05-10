@@ -1,14 +1,15 @@
 import { Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, FormControl, FormLabel, Input, VStack, background, useColorModeValue, useDisclosure, useToast } from "@chakra-ui/react"
 import { MultiSelect } from "chakra-multiselect"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { toTitleCase } from "../utils/StringUtil";
-import { createOutfit, getTags } from "../backend/Application";
+import { createOutfit } from "../backend/Application";
 import GarmentSelector from "../components/GarmentSelector";
+import { useTags } from "../contexts/TagsContext";
 
 export default function CreateOutfit() {
 	const tempNumOutfits = 0;
 
-	const [tags, setTags] = useState([]);
+	const { tags } = useTags();
 
 	const defaultFormValues = {
 		outfitName: `Outfit ${tempNumOutfits + 1}`,
@@ -21,14 +22,6 @@ export default function CreateOutfit() {
 	const [formValues, setFormValues] = useState({ ...defaultFormValues })
 
 	const toast = useToast();
-
-	const fetchTags = async () => {
-		let tags = await getTags();
-		setTags(tags);
-	}
-	useEffect(() => {
-		fetchTags();
-	}, [])
 
 	const handleClose = () => {
 		setFormValues({ ...defaultFormValues })
@@ -63,11 +56,11 @@ export default function CreateOutfit() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault()
-		formValues.tags = formValues.tags.map((tag) => parseInt(tag.value));
+		let res = { ...formValues, tags: formValues.tags.map((tag) => parseInt(tag.value)) }
 
-		await createOutfit(formValues.outfitName, formValues.outfitDesc, formValues.tags, Array.from(formValues.garments))
+		await createOutfit(res.outfitName, res.outfitDesc, res.tags, Array.from(res.garments))
 			.then(async (response) => {
-				if(!response.ok) {
+				if (!response.ok) {
 					const contentType = response.headers.get("content-type");
 					const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
 					toast({
@@ -102,7 +95,7 @@ export default function CreateOutfit() {
 					<DrawerCloseButton />
 					<DrawerHeader>Create outfit</DrawerHeader>
 					<DrawerBody>
-						<form onKeyDown={(e) => {e.key === "Enter" && e.preventDefault()}} onSubmit={handleSubmit}>
+						<form onKeyDown={(e) => { e.key === "Enter" && e.preventDefault() }} onSubmit={handleSubmit}>
 							<VStack align={"baseline"} spacing={4}>
 								<Flex>
 									<FormControl onChange={handleChange}>

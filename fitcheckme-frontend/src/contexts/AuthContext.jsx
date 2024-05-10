@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth_login, auth_logout } from "./Auth";
-import FetchWithRefreshRetry from "./FetchWithRefreshRetry";
+import { auth_login, auth_logout } from "../backend/Auth";
+import FetchWithRefreshRetry from "../backend/FetchWithRefreshRetry";
 
 
 const AuthContext = createContext({

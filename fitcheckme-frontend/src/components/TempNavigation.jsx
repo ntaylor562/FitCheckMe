@@ -1,7 +1,7 @@
 import { Box, List, ListItem, useColorModeValue } from "@chakra-ui/react"
 import { Link, Outlet } from "react-router-dom"
 import ThemeToggle from "./ThemeToggle"
-import { useIsAuthenticated } from "../backend/AuthContext"
+import { useIsAuthenticated } from "../contexts/AuthContext"
 
 
 export default function TempNavigation({ routes }) {

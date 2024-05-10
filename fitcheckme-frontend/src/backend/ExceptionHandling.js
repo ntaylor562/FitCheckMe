@@ -13,6 +13,5 @@ export async function handleFetchException(response) {
 	const contentType = response.headers.get("content-type");
 	const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
 
-	console.error(message);
-	return originalResponse;
+	throw new Error(message);
 }

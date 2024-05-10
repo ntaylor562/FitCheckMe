@@ -77,10 +77,11 @@ public class AuthController {
 
 	@PostMapping("login")
 	@ResponseStatus(HttpStatus.OK)
-	public void login(@Valid @RequestBody UserLoginRequestDTO user, HttpServletResponse response) {
+	public UserLoginReturnDTO login(@Valid @RequestBody UserLoginRequestDTO user, HttpServletResponse response) {
 		UserLoginReturnDTO userLoginReturnDTO = authService.userLogin(user);
 		response.addCookie(this.getAccessTokenCookie(userLoginReturnDTO.accessToken()));
 		response.addCookie(this.getRefreshTokenCookie(userLoginReturnDTO.refreshToken()));
+		return userLoginReturnDTO;
 	}
 
 	@PostMapping("logout")

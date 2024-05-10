@@ -6,16 +6,16 @@ import CreateOutfit from "./CreateOutfit";
 
 
 export default function Testing() {
-	const { isAuthenticated, isLoading, login, logout } = useAuth();
+	const { isAuthenticated, isLoading, currentUser, login, logout } = useAuth();
 
 	return (
 		<Box>
 			<Heading>Testing</Heading>
 			<Text>This is a test page.</Text>
+			{isAuthenticated && currentUser && <Text>Logged in as {currentUser.username}</Text>}
 			{
 				isLoading ? <Text>Loading...</Text> :
 					<HStack spacing={4}>
-						{isAuthenticated}
 						{!isAuthenticated && <Button colorScheme="green" onClick={async () => { login('test', 'test') }}>Login</Button>}
 						<Button colorScheme="blue" onClick={async () => { getGarments() }}>Test get garments</Button>
 						{isAuthenticated && <Button colorScheme="red" onClick={async () => { logout() }}>Logout</Button>}

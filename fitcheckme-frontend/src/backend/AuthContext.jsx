@@ -6,11 +6,14 @@ import FetchWithRefreshRetry from "./FetchWithRefreshRetry";
 const AuthContext = createContext({
 	isAuthenticated: false,
 	isLoading: true,
-	setAuthenticated: () => { }
+	currentUser: null,
+	login: () => { },
+	logout: () => { }
 });
 
 export const AuthProvider = ({ children }) => {
 	const [isAuthenticated, setAuthenticated] = useState(false);
+	const [currentUser, setCurrentUser] = useState(null);
 	const [isLoading, setLoading] = useState(true);
 	useEffect(() => {
 		const initializeAuth = async () => {
@@ -25,7 +28,13 @@ export const AuthProvider = ({ children }) => {
 		return await auth_login(username, password).then((response) => {
 			if (response.ok) setAuthenticated(true);
 			return response;
-		});
+		})
+		.then(async (response) => {
+			const res = response.clone();
+			if (response.ok) 
+				setCurrentUser(await response.json());
+			return res;
+		})
 	}
 
 	const logout = async () => {
@@ -40,6 +49,7 @@ export const AuthProvider = ({ children }) => {
 			value={{
 				isAuthenticated,
 				isLoading,
+				currentUser,
 				login,
 				logout
 			}}

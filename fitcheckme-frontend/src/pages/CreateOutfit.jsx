@@ -1,12 +1,13 @@
 import { Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, FormControl, FormLabel, Input, VStack, background, useColorModeValue, useDisclosure, useToast } from "@chakra-ui/react"
 import { MultiSelect } from "chakra-multiselect"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { toTitleCase } from "../utils/StringUtil";
+import { getTags } from "../backend/Application";
 
 export default function CreateOutfit() {
 	const tempNumOutfits = 0;
 
-	const tempTags = ["casual", "formal", "workout", "beach", "winter", "summer"]
+	const [tags, setTags] = useState([]);
 
 	const defaultFormValues = {
 		outfitName: `Outfit ${tempNumOutfits + 1}`,
@@ -17,6 +18,14 @@ export default function CreateOutfit() {
 	const [formValues, setFormValues] = useState({ ...defaultFormValues })
 
 	const toast = useToast();
+
+	const fetchTags = async () => {
+		let tags = await getTags();
+		setTags(tags);
+	}
+	useEffect(() => {
+		fetchTags();
+	}, [])
 
 	const handleClose = () => {
 		setFormValues({ ...defaultFormValues })
@@ -41,7 +50,7 @@ export default function CreateOutfit() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault()
-		formValues.tags = formValues.tags.map((tag) => tag.value);
+		formValues.tags = formValues.tags.map((tag) => parseInt(tag.value));
 
 		//TODO handle submit
 		console.log(formValues)
@@ -55,6 +64,8 @@ export default function CreateOutfit() {
 			isClosable: true,
 		})
 	}
+
+	const options = tags.map((tag) => { return { value: `${tag.tagId}`, label: toTitleCase(tag.tagName) } });
 
 	return (
 		<>
@@ -81,10 +92,9 @@ export default function CreateOutfit() {
 									<FormLabel>Tags</FormLabel>
 									<MultiSelect
 										name="tags"
-										options={tempTags.map((tag) => { return { value: tag, label: toTitleCase(tag) } })}
+										options={options}
 										value={formValues.tags}
 										onChange={handleMultiSelectChange}
-										label='Choose tags'
 										placeholder='Select tags'
 									/>
 								</FormControl>

@@ -46,7 +46,7 @@ export default function CreateGarment({addGarment}) {
 		})
 	}
 
-	const handleRemoveUrl = (url) => {
+	const handleRemoveURL = (url) => {
 		let newEnteredURLs = new Set(enteredURLs);
 		newEnteredURLs.delete(url);
 		setEnteredURLs(newEnteredURLs);
@@ -61,7 +61,6 @@ export default function CreateGarment({addGarment}) {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		console.log(formValues);
 		
 		await createGarment(formValues.garmentName, Array.from(enteredURLs), formValues.tags.map((tag) => parseInt(tag.value)))
 			.then(async (response) => {
@@ -74,17 +73,17 @@ export default function CreateGarment({addGarment}) {
 						status: 'error',
 						duration: 5000,
 						isClosable: true,
-					})
+					});
 				}
 				else {
-					handleClose()
+					handleClose();
 					toast({
 						title: 'Garment created.',
 						description: "Your outfit has been created and can now be added to your outfit.",
 						status: 'success',
 						duration: 5000,
 						isClosable: true,
-					})
+					});
 					addGarment(await response.json());
 				}
 			});
@@ -100,7 +99,7 @@ export default function CreateGarment({addGarment}) {
 					<ModalHeader>Create Garment</ModalHeader>
 					<ModalCloseButton />
 					<ModalBody>
-						<VStack saturate={4}>
+						<VStack spacing={4}>
 							<FormControl>
 								<FormLabel>Garment Name</FormLabel>
 								<Input required type='text' name='garmentName' value={formValues.garmentName} onChange={handleFormChange} />
@@ -113,7 +112,7 @@ export default function CreateGarment({addGarment}) {
 										return (
 											<InputGroup key={index}>
 												<Input isDisabled type='text' value={url} />
-												<InputRightAddon p="0px"><Button colorScheme="red" borderLeftRadius="0px" onClick={() => handleRemoveUrl(url)}><CloseIcon /></Button></InputRightAddon>
+												<InputRightAddon p="0px"><Button colorScheme="red" borderLeftRadius="0px" onClick={() => handleRemoveURL(url)}><CloseIcon /></Button></InputRightAddon>
 											</InputGroup>
 										)
 									})

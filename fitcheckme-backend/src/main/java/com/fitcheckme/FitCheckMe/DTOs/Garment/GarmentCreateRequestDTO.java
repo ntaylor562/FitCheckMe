@@ -10,7 +10,7 @@ public record GarmentCreateRequestDTO(
 	@NotBlank
 	String garmentName,
 	List<String> garmentURLs,
-	List<Integer> garmentTagIds
+	List<Integer> garmentTags
 ) {
 
 	public static GarmentCreateRequestDTO toDTO(Garment garment) {

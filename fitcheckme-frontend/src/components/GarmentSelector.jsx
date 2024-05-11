@@ -1,9 +1,10 @@
 import { Box, Card, Checkbox, FormControl, FormLabel, HStack, Input, VStack } from "@chakra-ui/react";
 import { MultiSelect } from "chakra-multiselect";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toTitleCase } from "../utils/StringUtil";
 import { useTags } from "../contexts/TagsContext";
 import CreateGarment from "./CreateGarment";
+import { getUserGarments } from "../backend/Application";
 
 
 export default function GarmentSelector({ selectedGarments, handleGarmentSelect }) {
@@ -13,60 +14,17 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 		garments: new Set()
 	}
 
-	const tempGarments = [
-		{
-			garmentId: 1,
-			garmentName: "Blue Shirt",
-			userId: 1,
-			urls: ["https://www.google.com", "https://www.youtube.com"],
-			garmentTags: [
-				{
-					tagId: 1,
-					tagName: "blue"
-				},
-				{
-					tagId: 2,
-					tagName: "shirt"
-				}
-			]
-		},
-		{
-			garmentId: 2,
-			garmentName: "Green Shirt",
-			userId: 1,
-			urls: ["https://www.google.com", "https://www.youtube.com"],
-			garmentTags: [
-				{
-					tagId: 1,
-					tagName: "green"
-				},
-				{
-					tagId: 2,
-					tagName: "shirt"
-				}
-			]
-		},
-		{
-			garmentId: 3,
-			garmentName: "Green Pants",
-			userId: 1,
-			urls: ["https://www.google.com", "https://www.youtube.com"],
-			garmentTags: [
-				{
-					tagId: 1,
-					tagName: "green"
-				},
-				{
-					tagId: 2,
-					tagName: "pants"
-				}
-			]
-		}
-	]
-
-	const [userGarments, setUserGarments] = useState([...tempGarments]);
+	const [userGarments, setUserGarments] = useState([]);
 	const [formValues, setFormValues] = useState({ ...defaultFormValues });
 	const { tags } = useTags();
+
+	useEffect(() => {
+		fetchGarments();
+	}, [])
+
+	const fetchGarments = async () => {
+		setUserGarments(await getUserGarments());
+	}
 
 	const handleMultiSelectChange = (e) => {
 		setFormValues({
@@ -82,6 +40,27 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 		})
 	}
 
+	//TODO improve search
+	const getSearchResults = () => {
+		const tagSet = new Set(formValues.tags.map((tag) => parseInt(tag.value)));
+		if(formValues.search === "" && tagSet.size === 0) {
+			return userGarments;
+		}
+
+		const searchLower = formValues.search.toLowerCase();
+		return userGarments.filter((garment) => {
+			if(formValues.search !== "" && !garment.garmentName.toLowerCase().includes(searchLower)) {
+				return false;
+			}
+			if(tagSet.size > 0 && !garment.garmentTags.some((tag) => tagSet.has(tag.tagId))) {
+				return false;
+			}
+			return true;
+		})
+	}
+
+	console.log(tags.map((tag) => { return { value: `${tag.tagName}`, label: toTitleCase(tag.tagName) } }));
+
 	return <FormControl>
 		<FormLabel>Garments</FormLabel>
 		<VStack w="100%" spacing={4}>
@@ -89,18 +68,18 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 			<FormControl>
 				<MultiSelect
 					name="tags"
-					options={tags.map((tag) => { return { value: tag.tagName, label: toTitleCase(tag.tagName) } })}
+					options={tags.map((tag) => { return { value: `${tag.tagId}`, label: toTitleCase(tag.tagName) } })}
 					value={formValues.tags}
 					onChange={handleMultiSelectChange}
 					placeholder='Select tags'
 				/>
 			</FormControl>
 			<HStack w="100%" wrap="wrap">
-				{userGarments.map((garment) => {
+				{getSearchResults().map((garment) => {
 					return <GarmentCard key={garment.garmentId} garment={garment} selected={selectedGarments.has(garment.garmentId)} handleGarmentSelect={handleGarmentSelect} />
 				})}
 			</HStack>
-			<CreateGarment />
+			<CreateGarment addGarment={(garment) => setUserGarments([...userGarments, garment])} />
 		</VStack>
 	</FormControl>
 

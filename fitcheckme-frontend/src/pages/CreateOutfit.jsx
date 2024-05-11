@@ -56,9 +56,8 @@ export default function CreateOutfit() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault()
-		let res = { ...formValues, tags: formValues.tags.map((tag) => parseInt(tag.value)) }
 
-		await createOutfit(res.outfitName, res.outfitDesc, res.tags, Array.from(res.garments))
+		await createOutfit(formValues.outfitName, formValues.outfitDesc, formValues.tags.map((tag) => parseInt(tag.value)), Array.from(formValues.garments))
 			.then(async (response) => {
 				if (!response.ok) {
 					const contentType = response.headers.get("content-type");

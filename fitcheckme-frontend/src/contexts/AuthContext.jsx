@@ -7,7 +7,7 @@ const AuthContext = createContext({
 	isAuthenticated: false,
 	isLoading: true,
 	currentUser: null,
-	login: () => { },
+	login: (username, password) => { },
 	logout: () => { }
 });
 
@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
 	const [isLoading, setLoading] = useState(true);
 	useEffect(() => {
 		const initializeAuth = async () => {
+			// @ts-ignore
 			const response = await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/auth/isAuthenticated`, {method: 'GET', credentials: 'include'});
 			setAuthenticated(response.status === 200);
 			setLoading(false);

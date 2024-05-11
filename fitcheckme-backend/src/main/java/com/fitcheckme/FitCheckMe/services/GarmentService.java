@@ -135,8 +135,8 @@ public class GarmentService {
 			throw new IllegalArgumentException(String.format("Garment URL too long, must be at most %d characters", maxGarmentURLLength));
 		}
 
-		if(garment.garmentTagIds() != null && !garment.garmentTagIds().isEmpty()) {
-			for(int id : garment.garmentTagIds()) {
+		if(garment.garmentTags() != null && !garment.garmentTags().isEmpty()) {
+			for(int id : garment.garmentTags()) {
 				tags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
 			}
 		}

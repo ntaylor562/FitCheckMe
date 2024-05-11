@@ -51,10 +51,10 @@ public class GarmentController {
 		return this.garmentService.getUserGarments(userId);
 	}
 	
-	@PostMapping("")
+	@PostMapping("create")
 	@ResponseStatus(HttpStatus.CREATED)
-	public void createGarment(@Valid @RequestBody GarmentCreateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
-		garmentService.createGarment(garment, userDetails);
+	public GarmentRequestDTO createGarment(@Valid @RequestBody GarmentCreateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
+		return garmentService.createGarment(garment, userDetails);
 	}
 
 	@PutMapping("")

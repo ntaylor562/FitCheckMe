@@ -2,8 +2,9 @@ import { handleFetchException } from "./ExceptionHandling";
 import FetchWithRefreshRetry from "./FetchWithRefreshRetry";
 
 
-export async function getGarments() {
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/garment/all`, {
+export async function getUserGarments() {
+	// @ts-ignore
+	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/garment/usergarments`, {
 		method: 'GET',
 		credentials: 'include'
 	})
@@ -12,6 +13,7 @@ export async function getGarments() {
 }
 
 export async function getTags() {
+	// @ts-ignore
 	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/tag/all`, {
 		method: 'GET',
 		credentials: 'include'
@@ -20,13 +22,30 @@ export async function getTags() {
 	.then((response) => response.json())
 }
 
+export async function createGarment(garmentName, urls=[], tags=[]) {
+	console.log({
+		garmentName: garmentName,
+		garmentURLs: urls,
+		garmentTags: tags
+	})
+	// @ts-ignore
+	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/garment/create`, {
+		method: 'POST',
+		credentials: 'include',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			garmentName: garmentName,
+			garmentURLs: urls,
+			garmentTags: tags
+		})
+	})
+	.then((response) => handleFetchException(response))
+}
+
 export async function createOutfit(outfitName, outfitDesc="", tags=[], garments=[]) {
-	console.log(JSON.stringify({
-		outfitName: outfitName,
-		outfitDesc: outfitDesc,
-		outfitTags: tags,
-		garments: garments
-	}));
+	// @ts-ignore
 	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/outfit/create`, {
 		method: 'POST',
 		credentials: 'include',

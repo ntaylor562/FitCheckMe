@@ -37,7 +37,7 @@ export default function Testing() {
 									{isAuthenticated && <Button colorScheme="red" onClick={async () => { logout() }}>Logout</Button>}
 									{isAuthenticated && <CreateOutfit />}
 								</HStack>
-								{isAuthenticated && userOutfits !== null && <EditOutfit outfit={userOutfits[userOutfits.length - 1]} handleOutfitUpdate={fetchUserOutfits} />}
+								{isAuthenticated && userOutfits !== null && userOutfits.length > 0 && <EditOutfit outfit={userOutfits[userOutfits.length - 1]} handleOutfitUpdate={fetchUserOutfits} />}
 							</>
 					}
 					<Button colorScheme="gray" onClick={() => auth_refresh()}>Refresh token</Button>

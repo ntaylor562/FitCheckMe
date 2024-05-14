@@ -120,7 +120,7 @@ public class AuthController {
 
 		response.addCookie(accessTokenCookie);
 		response.addCookie(refreshTokenCookie);
-		return new ResponseEntity<String>("Successfully refreshed token", HttpStatus.OK);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("isAuthenticated")

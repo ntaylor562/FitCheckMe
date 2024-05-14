@@ -48,7 +48,7 @@ public class TagController {
 	public ResponseEntity<?> createTag(@Valid @RequestBody TagCreateRequestDTO tag) {
 		try {
 			tagService.createTag(tag);
-			return new ResponseEntity<String>("Tag created", HttpStatus.CREATED);
+			return new ResponseEntity<>(HttpStatus.CREATED);
 		}
 		catch(DataIntegrityViolationException e) {
 			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Tagname already exists", String.format("Tag with name %s already exists", tag.tagName())), HttpStatus.CONFLICT);

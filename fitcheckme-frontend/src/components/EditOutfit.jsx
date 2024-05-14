@@ -6,9 +6,10 @@ import { toTitleCase } from "../utils/StringUtil";
 import { AddIcon, CloseIcon } from "@chakra-ui/icons";
 import { createGarment, editOutfit } from "../backend/Application";
 import OutfitCard from "./OutfitCard";
+import GarmentSelector from "./GarmentSelector";
 
 
-export default function EditOutfit({ outfit }) {
+export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 	const { tags } = useTags();
 
 	const defaultFormValues = {
@@ -22,6 +23,11 @@ export default function EditOutfit({ outfit }) {
 	const [formValues, setFormValues] = useState({ ...defaultFormValues })
 
 	const toast = useToast();
+
+	const handleOpen = () => {
+		setFormValues({ ...defaultFormValues });
+		onOpen();
+	}
 
 	const handleClose = () => {
 		setFormValues({ ...defaultFormValues });
@@ -40,6 +46,19 @@ export default function EditOutfit({ outfit }) {
 			...formValues,
 			tags: e
 		})
+	}
+
+	const handleGarmentSelect = (garmentId) => {
+		let newGarments = new Set(formValues.garments);
+		if (newGarments.has(garmentId)) {
+			newGarments.delete(garmentId);
+		} else {
+			newGarments.add(garmentId);
+		}
+		setFormValues({
+			...formValues,
+			garments: newGarments
+		});
 	}
 
 	const handleSubmit = async (e) => {
@@ -93,13 +112,14 @@ export default function EditOutfit({ outfit }) {
 						duration: 5000,
 						isClosable: true,
 					})
+					handleOutfitUpdate();
 				}
 			});
 	}
 
 	return (
 		<>
-			<Container _hover={{cursor: "pointer"}} onClick={onOpen} >
+			<Container _hover={{cursor: "pointer"}} onClick={handleOpen} >
 				<OutfitCard outfit={outfit} size={"lg"}/>
 			</Container>
 
@@ -128,7 +148,7 @@ export default function EditOutfit({ outfit }) {
 									placeholder='Select tags'
 								/>
 							</FormControl>
-							{/* TODO add garment selector and handle it */}
+							<GarmentSelector selectedGarments={formValues.garments} handleGarmentSelect={handleGarmentSelect} />
 						</VStack>
 					</ModalBody>
 					<ModalFooter>

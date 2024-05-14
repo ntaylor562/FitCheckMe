@@ -1,4 +1,4 @@
-import { Box, Card, Checkbox, FormControl, FormLabel, HStack, Input, VStack } from "@chakra-ui/react";
+import { Box, Card, Checkbox, FormControl, FormLabel, HStack, Input, Text, VStack } from "@chakra-ui/react";
 import { MultiSelect } from "chakra-multiselect";
 import { useEffect, useState } from "react";
 import { toTitleCase } from "../utils/StringUtil";
@@ -14,7 +14,7 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 		garments: new Set()
 	}
 
-	const [userGarments, setUserGarments] = useState([]);
+	const [userGarments, setUserGarments] = useState(null);
 	const [formValues, setFormValues] = useState({ ...defaultFormValues });
 	const { tags } = useTags();
 
@@ -59,8 +59,6 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 		})
 	}
 
-	console.log(tags.map((tag) => { return { value: `${tag.tagName}`, label: toTitleCase(tag.tagName) } }));
-
 	return <FormControl>
 		<FormLabel>Garments</FormLabel>
 		<VStack w="100%" spacing={4}>
@@ -74,11 +72,14 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 					placeholder='Select tags'
 				/>
 			</FormControl>
-			<HStack w="100%" wrap="wrap">
+			{ userGarments !== null && userGarments.length > 0 ?
+				<HStack w="100%" wrap="wrap">
 				{getSearchResults().map((garment) => {
 					return <GarmentCard key={garment.garmentId} garment={garment} selected={selectedGarments.has(garment.garmentId)} handleGarmentSelect={handleGarmentSelect} />
 				})}
 			</HStack>
+			: <Text>Loading garments...</Text>
+			}
 			<CreateGarment addGarment={(garment) => setUserGarments([...userGarments, garment])} />
 		</VStack>
 	</FormControl>

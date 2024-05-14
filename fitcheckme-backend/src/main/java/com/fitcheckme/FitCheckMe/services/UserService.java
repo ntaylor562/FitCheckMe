@@ -12,9 +12,11 @@ import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserRoleUpdateDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Following;
+import com.fitcheckme.FitCheckMe.models.Role;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.RoleRepository;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
@@ -126,6 +128,20 @@ public class UserService {
 		}
 		currentUser.setPassword(passwordEncoder.encode(user.newPassword()));
 		this.userRepository.save(currentUser);
+	}
+
+	public void addUserRole(UserRoleUpdateDTO userRole) throws EntityNotFoundException {
+		User user = this.getUserById(userRole.userId());
+		Role role = roleRepository.findByRoleNameIgnoreCase(userRole.role()).orElseThrow(() -> new EntityNotFoundException(String.format("Role not found with name: %s", userRole.role())));
+		user.addRole(role);
+		this.userRepository.save(user);
+	}
+
+	public void removeUserRole(UserRoleUpdateDTO userRole) throws EntityNotFoundException {
+		User user = this.getUserById(userRole.userId());
+		Role role = roleRepository.findByRoleNameIgnoreCase(userRole.role()).orElseThrow(() -> new EntityNotFoundException(String.format("Role not found with name: %s", userRole.role())));
+		user.removeRole(role);
+		this.userRepository.save(user);
 	}
 
 	//TODO add auth to make sure following can only be created by the follower

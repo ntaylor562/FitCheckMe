@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserRoleUpdateDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetailsService;
@@ -186,6 +187,52 @@ public class UserControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isConflict());
+	}
+
+	@Test
+	public void testAddUserRole() throws Exception {
+		UserRoleUpdateDTO requestDTO = new UserRoleUpdateDTO(1, "SUPER_ADMIN");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
+
+		//Testing the add user role call is accepted
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/addrole")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isAccepted());
+
+		//Testing the add user role call errors when it is given no body
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/addrole"))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+		// Testing the add user role call errors when user or role is not found
+		Mockito.doThrow(EntityNotFoundException.class).when(userService).addUserRole(any(UserRoleUpdateDTO.class));
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/addrole")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isNotFound());
+	}
+
+	@Test
+	public void testRemoveUserRole() throws Exception {
+		UserRoleUpdateDTO requestDTO = new UserRoleUpdateDTO(1, "SUPER_ADMIN");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
+
+		//Testing the remove user role call is accepted
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/removerole")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isAccepted());
+
+		//Testing the remove user role call errors when it is given no body
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/removerole"))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+		// Testing the remove user role call errors when user or role is not found
+		Mockito.doThrow(EntityNotFoundException.class).when(userService).removeUserRole(any(UserRoleUpdateDTO.class));
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/removerole")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}
 
 	@Test

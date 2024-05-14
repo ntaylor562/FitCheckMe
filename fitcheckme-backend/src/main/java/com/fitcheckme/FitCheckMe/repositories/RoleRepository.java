@@ -8,4 +8,5 @@ import com.fitcheckme.FitCheckMe.models.Role;
 
 public interface RoleRepository extends JpaRepository<Role, Integer>{
 	Optional<Role> findByRoleName(String roleName);
+	Optional<Role> findByRoleNameIgnoreCase(String roleName);
 }

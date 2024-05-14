@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserRoleUpdateDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
 import com.fitcheckme.FitCheckMe.services.UserService;
@@ -100,6 +102,20 @@ public class UserController {
 		catch(DataIntegrityViolationException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
 		}
+	}
+
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'USER_ADMIN')")
+	@PutMapping("addrole")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void addRole(@Valid @RequestBody UserRoleUpdateDTO userRole) {
+		userService.addUserRole(userRole);
+	}
+
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+	@PutMapping("removerole")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void removeRole(@Valid @RequestBody UserRoleUpdateDTO userRole) {
+		userService.removeUserRole(userRole);
 	}
 
 	@PutMapping("password")

@@ -1,9 +1,9 @@
 package com.fitcheckme.FitCheckMe.controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fitcheckme.FitCheckMe.DTOs.ExceptionResponseDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginReturnDTO;
 import com.fitcheckme.FitCheckMe.services.AuthService;
@@ -39,8 +39,8 @@ public class AuthController {
 	}
 
 	@ExceptionHandler(BadCredentialsException.class)
-	public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException e) {
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+	public ResponseEntity<ExceptionResponseDTO> handleBadCredentialsException(BadCredentialsException e) {
+		return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Bad Credentials", e.getMessage()), HttpStatus.UNAUTHORIZED);
 	}
 
 	private Optional<Cookie> getCookie(HttpServletRequest request, String name) {
@@ -76,12 +76,11 @@ public class AuthController {
 	}
 
 	@PostMapping("login")
-	@ResponseStatus(HttpStatus.OK)
-	public UserLoginReturnDTO login(@Valid @RequestBody UserLoginRequestDTO user, HttpServletResponse response) {
+	public ResponseEntity<UserLoginReturnDTO> login(@Valid @RequestBody UserLoginRequestDTO user, HttpServletResponse response) {
 		UserLoginReturnDTO userLoginReturnDTO = authService.userLogin(user);
 		response.addCookie(this.getAccessTokenCookie(userLoginReturnDTO.accessToken()));
 		response.addCookie(this.getRefreshTokenCookie(userLoginReturnDTO.refreshToken()));
-		return userLoginReturnDTO;
+		return new ResponseEntity<UserLoginReturnDTO>(userLoginReturnDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("logout")
@@ -94,7 +93,7 @@ public class AuthController {
 				response.addCookie(getDeleteCookie("jwt-refresh-token"));
 			}
 			catch(RuntimeException e) {
-				return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error logging out", e.getMessage()), HttpStatus.BAD_REQUEST);
 			}
 		}
 
@@ -106,14 +105,14 @@ public class AuthController {
 	@PostMapping("refresh")
 	public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
 		Cookie oldRefreshTokenCookie = this.getCookie(request, "jwt-refresh-token").orElse(null);
-		if(oldRefreshTokenCookie == null) return new ResponseEntity<String>("No refresh token provided", HttpStatus.BAD_REQUEST);
+		if(oldRefreshTokenCookie == null) return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error refreshing token", "No refresh token provided"), HttpStatus.BAD_REQUEST);
 
 		UserLoginReturnDTO userLoginReturnDTO;
 		try {
 			userLoginReturnDTO = authService.refreshToken(oldRefreshTokenCookie.getValue());
 		}
 		catch(RuntimeException e) {
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error refreshing token", e.getMessage()), HttpStatus.BAD_REQUEST);
 		}
 		
 		Cookie accessTokenCookie = getAccessTokenCookie(userLoginReturnDTO.accessToken());
@@ -121,12 +120,12 @@ public class AuthController {
 
 		response.addCookie(accessTokenCookie);
 		response.addCookie(refreshTokenCookie);
-		return new ResponseEntity<>(HttpStatus.OK);
+		return new ResponseEntity<String>("Successfully refreshed token", HttpStatus.OK);
 	}
 
 	@GetMapping("isAuthenticated")
 	public ResponseEntity<Boolean> isAuthenticated() {
-		return new ResponseEntity<>(true, HttpStatus.OK);
+		return new ResponseEntity<Boolean>(true, HttpStatus.OK);
 	}
 	
 }

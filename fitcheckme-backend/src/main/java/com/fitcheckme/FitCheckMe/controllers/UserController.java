@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fitcheckme.FitCheckMe.DTOs.ExceptionResponseDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRoleUpdateDTO;
@@ -40,24 +41,23 @@ public class UserController {
 	}
 
 	@GetMapping("all")
-	@ResponseStatus(HttpStatus.OK)
-	public List<UserRequestDTO> getAll() {
-		return this.userService.getAll();
+	public ResponseEntity<List<UserRequestDTO>> getAll() {
+		return new ResponseEntity<List<UserRequestDTO>>(this.userService.getAll(), HttpStatus.OK);
 	}
 
 	@GetMapping("")
 	public ResponseEntity<?> getUser(@RequestParam(required = false) Integer id, @RequestParam(required = false) String username) {
 		try {
 			if(id != null) {
-				return new ResponseEntity<>(this.userService.getById(id), HttpStatus.OK);
+				return new ResponseEntity<UserRequestDTO>(this.userService.getById(id), HttpStatus.OK);
 			}
 			if(username != null) {
-				return new ResponseEntity<>(this.userService.getByUsername(username), HttpStatus.OK);
+				return new ResponseEntity<UserRequestDTO>(this.userService.getByUsername(username), HttpStatus.OK);
 			}
-			return new ResponseEntity<>("No ID or username provided", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("No ID or username provided", "An ID or username is required"), HttpStatus.BAD_REQUEST);
 		}
 		catch(EntityNotFoundException e) {
-			return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("User not found", "User was not found"), HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -69,7 +69,7 @@ public class UserController {
 			return new ResponseEntity<>(HttpStatus.CREATED);
 		}
 		catch(DataIntegrityViolationException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error creating user", e.getMessage()), HttpStatus.CONFLICT);
 		}
 	}
 
@@ -100,7 +100,7 @@ public class UserController {
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		}
 		catch(DataIntegrityViolationException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error updating user details", e.getMessage()), HttpStatus.CONFLICT);
 		}
 	}
 

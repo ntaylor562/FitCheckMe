@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,33 +35,31 @@ public class GarmentController {
 	}
 
 	@GetMapping("all")
-	public List<GarmentRequestDTO> getAll() {
-		return this.garmentService.getAll();
+	public ResponseEntity<List<GarmentRequestDTO>> getAll() {
+		return new ResponseEntity<List<GarmentRequestDTO>>(this.garmentService.getAll(), HttpStatus.OK);
 	}
 
 	@GetMapping("")
-	public GarmentRequestDTO getById(@RequestParam Integer id) {
-		return this.garmentService.getById(id);
+	public ResponseEntity<GarmentRequestDTO> getById(@RequestParam Integer id) {
+		return new ResponseEntity<GarmentRequestDTO>(this.garmentService.getById(id), HttpStatus.OK);
 	}
 	
 	@GetMapping("usergarments")
-	public List<GarmentRequestDTO> getUserGarments(@RequestParam(required = false) Integer userId, @AuthenticationPrincipal UserDetails userDetails) {
+	public ResponseEntity<List<GarmentRequestDTO>> getUserGarments(@RequestParam(required = false) Integer userId, @AuthenticationPrincipal UserDetails userDetails) {
 		if(userId == null) {
-			return this.garmentService.getUserGarments(userDetails.getUsername());
+			return new ResponseEntity<List<GarmentRequestDTO>>(this.garmentService.getUserGarments(userDetails.getUsername()), HttpStatus.OK);
 		}
-		return this.garmentService.getUserGarments(userId);
+		return new ResponseEntity<List<GarmentRequestDTO>>(this.garmentService.getUserGarments(userId), HttpStatus.OK);
 	}
 	
 	@PostMapping("create")
-	@ResponseStatus(HttpStatus.CREATED)
-	public GarmentRequestDTO createGarment(@Valid @RequestBody GarmentCreateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
-		return garmentService.createGarment(garment, userDetails);
+	public ResponseEntity<GarmentRequestDTO> createGarment(@Valid @RequestBody GarmentCreateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
+		return new ResponseEntity<GarmentRequestDTO>(garmentService.createGarment(garment, userDetails), HttpStatus.CREATED);
 	}
 
 	@PutMapping("")
-	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void updateOutfit(@Valid @RequestBody GarmentUpdateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
-		this.garmentService.updateGarment(garment, userDetails);
+	public ResponseEntity<GarmentRequestDTO> updateOutfit(@Valid @RequestBody GarmentUpdateRequestDTO garment, @AuthenticationPrincipal UserDetails userDetails) {
+		return new ResponseEntity<GarmentRequestDTO>(this.garmentService.updateGarment(garment, userDetails), HttpStatus.ACCEPTED);
 	}
 	
 	@DeleteMapping("")

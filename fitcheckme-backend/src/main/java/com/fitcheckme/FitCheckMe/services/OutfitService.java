@@ -156,7 +156,7 @@ public class OutfitService {
 
 	//TODO add auth so only the owner can do this
 	@Transactional
-	public void editGarments(OutfitGarmentUpdateRequestDTO outfitUpdate, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+	public OutfitRequestDTO editGarments(OutfitGarmentUpdateRequestDTO outfitUpdate, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		Outfit currentOutfit = this.getOutfit(outfitUpdate.outfitId());
 
 		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {
@@ -194,6 +194,7 @@ public class OutfitService {
 		currentOutfit.addGarment(addGarments);
 		currentOutfit.removeGarment(removeGarments);
 		this.outfitRepository.save(currentOutfit);
+		return OutfitRequestDTO.toDTO(currentOutfit);
 	}
 
 	@Transactional

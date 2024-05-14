@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fitcheckme.FitCheckMe.DTOs.ExceptionResponseDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagRequestDTO;
 import com.fitcheckme.FitCheckMe.services.TagService;
@@ -28,29 +29,29 @@ public class TagController {
 	}
 
 	@GetMapping("all")
-	public List<TagRequestDTO> getAll() {
-		return this.tagService.getAll();
+	public ResponseEntity<List<TagRequestDTO>> getAll() {
+		return new ResponseEntity<List<TagRequestDTO>>(this.tagService.getAll(), HttpStatus.OK);
 	}
 
 	@GetMapping("")
 	public ResponseEntity<?> getTag(@RequestParam(required = false) Integer id, @RequestParam(required = false) String name) {
 		if(id != null) {
-			return new ResponseEntity<>(this.tagService.getById(id), HttpStatus.OK);
+			return new ResponseEntity<TagRequestDTO>(this.tagService.getById(id), HttpStatus.OK);
 		}
 		if(name != null) {
-			return new ResponseEntity<>(this.tagService.getByTagName(name), HttpStatus.OK);
+			return new ResponseEntity<TagRequestDTO>(this.tagService.getByTagName(name), HttpStatus.OK);
 		}
-		return new ResponseEntity<>("No ID or name provided", HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("No ID or name provided", "An ID or a tag name is required"), HttpStatus.BAD_REQUEST);
 	}
 
 	@PostMapping("create")
-	public ResponseEntity<String> createTag(@Valid @RequestBody TagCreateRequestDTO tag) {
+	public ResponseEntity<?> createTag(@Valid @RequestBody TagCreateRequestDTO tag) {
 		try {
 			tagService.createTag(tag);
-			return new ResponseEntity<>(HttpStatus.CREATED);
+			return new ResponseEntity<String>("Tag created", HttpStatus.CREATED);
 		}
 		catch(DataIntegrityViolationException e) {
-			return new ResponseEntity<>(String.format("Tag with name %s already exists", tag.tagName()), HttpStatus.CONFLICT);
+			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Tagname already exists", String.format("Tag with name %s already exists", tag.tagName())), HttpStatus.CONFLICT);
 		}
 	}
 }

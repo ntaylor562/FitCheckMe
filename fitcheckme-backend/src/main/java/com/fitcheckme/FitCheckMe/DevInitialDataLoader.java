@@ -36,7 +36,7 @@ public class DevInitialDataLoader implements CommandLineRunner {
 	@Override
 	public void run(String... args) {
 		//If the users, tags, and outfits are empty (supposed to be all tables but you know who has time to check all that)
-		if(userController.getAll().isEmpty() && tagController.getAll().isEmpty() && outfitController.getAll().isEmpty()) {
+		if(userController.getAll().getBody().isEmpty() && tagController.getAll().getBody().isEmpty() && outfitController.getAll().getBody().isEmpty()) {
 			Resource resource = new ClassPathResource(fileName);
 			try {
 				//Populate DB with sample data in data sql file

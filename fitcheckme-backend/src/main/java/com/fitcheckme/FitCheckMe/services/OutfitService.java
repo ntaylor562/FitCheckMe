@@ -11,9 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitGarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitTagUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Outfit;
@@ -102,7 +100,6 @@ public class OutfitService {
 		return this.outfitRepository.findByUser_UsernameIgnoreCase(username).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
-	//TODO add auth
 	@Transactional
 	public OutfitRequestDTO createOutfit(OutfitCreateRequestDTO outfit, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		if(outfit.outfitName().length() > this.maxNameLength) {
@@ -149,33 +146,32 @@ public class OutfitService {
 		if(outfit.outfitDesc() != null) {
 			currentOutfit.setDesc(outfit.outfitDesc());
 		}
+		if(outfit.addGarmentIds() != null || outfit.removeGarmentIds() != null) {
+			this.editGarments(currentOutfit, outfit.addGarmentIds(), outfit.removeGarmentIds(), userDetails);
+		}
+		if(outfit.addTagIds() != null || outfit.removeTagIds() != null) {
+			this.editTags(currentOutfit, outfit.addTagIds(), outfit.removeTagIds(), userDetails);
+		}
 		
 		this.outfitRepository.save(currentOutfit);
 		return OutfitRequestDTO.toDTO(currentOutfit);
 	}
 
-	//TODO add auth so only the owner can do this
 	@Transactional
-	public OutfitRequestDTO editGarments(OutfitGarmentUpdateRequestDTO outfitUpdate, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
-		Outfit currentOutfit = this.getOutfit(outfitUpdate.outfitId());
-
+	private void editGarments(Outfit currentOutfit, List<Integer> addGarmentIds, List<Integer> removeGarmentIds, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {
 			throw new IllegalArgumentException("User does not have permissions to edit this outfit");
 		}
 
-		Set<Garment> addGarments = outfitUpdate.addGarmentIds() != null && !outfitUpdate.addGarmentIds().isEmpty() ? new HashSet<>(garmentRepository.findAllById(outfitUpdate.addGarmentIds())) : new HashSet<Garment>();
-		Set<Garment> removeGarments = outfitUpdate.removeGarmentIds() != null && !outfitUpdate.removeGarmentIds().isEmpty() ? new HashSet<>(garmentRepository.findAllByOutfitIdAndId(outfitUpdate.removeGarmentIds(), currentOutfit.getId())) : new HashSet<Garment>();
+		Set<Garment> addGarments = addGarmentIds != null && !addGarmentIds.isEmpty() ? new HashSet<>(garmentRepository.findAllById(addGarmentIds)) : new HashSet<Garment>();
+		Set<Garment> removeGarments = removeGarmentIds != null && !removeGarmentIds.isEmpty() ? new HashSet<>(garmentRepository.findAllByOutfitIdAndId(removeGarmentIds, currentOutfit.getId())) : new HashSet<Garment>();
 
-		if(outfitUpdate.addGarmentIds() != null && addGarments.size() != outfitUpdate.addGarmentIds().size()) {
+		if(addGarments != null && addGarments.size() != addGarments.size()) {
 			throw new EntityNotFoundException("One or more garments not found in add list");
 		}
 		
-		if(outfitUpdate.removeGarmentIds() != null && removeGarments.size() != outfitUpdate.removeGarmentIds().size()) {
+		if(removeGarmentIds != null && removeGarments.size() != removeGarmentIds.size()) {
 			throw new EntityNotFoundException("One or more garments not found in remove list");
-		}
-
-		if(addGarments.isEmpty() && removeGarments.isEmpty()) {
-			throw new IllegalArgumentException("No garments to add or remove");
 		}
 
 		for(Garment garment : addGarments) {
@@ -194,26 +190,19 @@ public class OutfitService {
 		currentOutfit.addGarment(addGarments);
 		currentOutfit.removeGarment(removeGarments);
 		this.outfitRepository.save(currentOutfit);
-		return OutfitRequestDTO.toDTO(currentOutfit);
 	}
 
 	@Transactional
-	public void editTags(OutfitTagUpdateRequestDTO outfitUpdate, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
-		Outfit currentOutfit = this.getOutfit(outfitUpdate.outfitId());
-
+	private void editTags(Outfit currentOutfit, List<Integer> addTagIds, List<Integer> removeTagIds, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {
 			throw new IllegalArgumentException("User does not have permissions to edit this outfit");
 		}
 
-		List<Tag> addTags = tagRepository.findAllById(outfitUpdate.addTagIds());
-		List<Tag> removeTags = tagRepository.findAllById(outfitUpdate.removeTagIds());
+		List<Tag> addTags = tagRepository.findAllById(addTagIds);
+		List<Tag> removeTags = tagRepository.findAllById(removeTagIds);
 
-		if(addTags.size() + removeTags.size() != outfitUpdate.addTagIds().size() + outfitUpdate.removeTagIds().size()) {
+		if(addTags.size() + removeTags.size() != addTagIds.size() + removeTagIds.size()) {
 			throw new EntityNotFoundException("One or more tags not found");
-		}
-
-		if(addTags.isEmpty() && removeTags.isEmpty()) {
-			throw new IllegalArgumentException("No tags to add or remove");
 		}
 
 		for(Tag tag : addTags) {
@@ -226,7 +215,7 @@ public class OutfitService {
 		}
 
 		if (currentOutfit.getTags().size() + addTags.size() - removeTags.size() > this.maxTagsPerOutfit) {
-			throw new IllegalArgumentException(String.format("Outfit can only have up to %s tags", this.maxTagsPerOutfit));
+			throw new IllegalArgumentException(String.format("Outfit can only have up to %d tags", this.maxTagsPerOutfit));
 		}
 
 		currentOutfit.addTag(addTags);

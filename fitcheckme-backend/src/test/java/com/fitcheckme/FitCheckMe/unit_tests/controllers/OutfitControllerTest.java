@@ -182,7 +182,7 @@ public class OutfitControllerTest {
 
 	@Test
 	public void testUpdateOutfit() throws Exception {
-		OutfitUpdateRequestDTO requestDTO = new OutfitUpdateRequestDTO(outfit1.getId(), outfit1.getName() + "_updated", outfit1.getDesc() + "_updated");
+		OutfitUpdateRequestDTO requestDTO = new OutfitUpdateRequestDTO(outfit1.getId(), outfit1.getName() + "_updated", outfit1.getDesc() + "_updated", List.of(), List.of(), List.of(), List.of());
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 
 		//Testing the update outfit call is OK
@@ -205,36 +205,6 @@ public class OutfitControllerTest {
 		//Testing the update outfit call with illegal arguments
 		Mockito.when(outfitService.updateOutfit(any(OutfitUpdateRequestDTO.class), any(UserDetails.class))).thenThrow(IllegalArgumentException.class);
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit")
-			.contentType(MediaType.APPLICATION_JSON)
-			.content(requestBody))
-			.andExpect(MockMvcResultMatchers.status().isBadRequest());
-	}
-
-	@Test
-	public void testUpdateOutfitGarments() throws Exception {
-		OutfitGarmentUpdateRequestDTO requestDTO = new OutfitGarmentUpdateRequestDTO(outfit1.getId(), Arrays.asList(garment1.getId()), Arrays.asList(garment2.getId()));
-		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-
-		//Testing the update outfit garments call is OK
-		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit/editgarments")
-			.contentType(MediaType.APPLICATION_JSON)
-			.content(requestBody))
-			.andExpect(MockMvcResultMatchers.status().isAccepted());
-		
-		//Testing the update outfit garments call with no body
-		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit/editgarments"))
-			.andExpect(MockMvcResultMatchers.status().isBadRequest());
-
-		//Testing the update outfit garments call with entity not found
-		Mockito.doThrow(EntityNotFoundException.class).when(outfitService).editGarments(any(OutfitGarmentUpdateRequestDTO.class), any(UserDetails.class));
-		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit/editgarments")
-			.contentType(MediaType.APPLICATION_JSON)
-			.content(requestBody))
-			.andExpect(MockMvcResultMatchers.status().isNotFound());
-
-		//Testing the update outfit garments call with illegal arguments
-		Mockito.doThrow(IllegalArgumentException.class).when(outfitService).editGarments(any(OutfitGarmentUpdateRequestDTO.class), any(UserDetails.class));
-		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit/editgarments")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());

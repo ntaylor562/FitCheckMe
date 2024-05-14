@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitGarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.services.OutfitService;
@@ -62,11 +61,6 @@ public class OutfitController {
 	@PutMapping("")
 	public ResponseEntity<OutfitRequestDTO> updateOutfit(@Valid @RequestBody OutfitUpdateRequestDTO outfit, @AuthenticationPrincipal UserDetails userDetails) {
 		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.updateOutfit(outfit, userDetails), HttpStatus.ACCEPTED);
-	}
-
-	@PutMapping("editgarments")
-	public ResponseEntity<OutfitRequestDTO> updateOutfitGarments(@Valid @RequestBody OutfitGarmentUpdateRequestDTO outfit, @AuthenticationPrincipal UserDetails userDetails) {
-		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.editGarments(outfit, userDetails), HttpStatus.ACCEPTED);
 	}
 
 	@DeleteMapping("{id}")

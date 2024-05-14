@@ -39,7 +39,7 @@ export default function Login() {
 		await login(username, password)
 			.then(async (response) => {
 				if (!response.ok) {
-					throw new Error(`Failed to login: ${await response.text()}`);
+					throw new Error(`Failed to login: ${(await response.json()).message}`);
 				}
 				return response;
 			})

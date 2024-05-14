@@ -18,8 +18,23 @@ export const AuthProvider = ({ children }) => {
 	useEffect(() => {
 		const initializeAuth = async () => {
 			// @ts-ignore
-			const response = await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/auth/isAuthenticated`, { method: 'GET', credentials: 'include' });
-			setAuthenticated(response.status === 200);
+			await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/user/currentuser`, { method: 'GET', credentials: 'include' })
+				.then(async (response) => {
+					if (response.ok) {
+						setCurrentUser(await response.json());
+						setAuthenticated(true);
+					}
+					else {
+						setCurrentUser(null);
+						setAuthenticated(false);
+					}
+					return response;
+				})
+				.catch((error) => {
+					console.error(error);
+					setCurrentUser(null);
+					setAuthenticated(false);
+				})
 			setLoading(false);
 		};
 		initializeAuth();

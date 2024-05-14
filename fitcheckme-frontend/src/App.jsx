@@ -8,22 +8,11 @@ import NotFoundPage from './pages/NotFoundPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NavBar from './components/NavBar';
+import { useAuth } from "./contexts/AuthContext";
 
 
 function App() {
-	const user = {
-		userId: 1,
-		username: "bender",
-		bio: "test bio"
-	}
-	const outfit = {
-		outfitId: 1,
-		outfitName: "test outfit",
-		outfitDesc: "test outfit description",
-		creationDate: new Date().toISOString(),
-		outfitTags: [],
-		garments: []
-	}
+	const { currentUser } = useAuth();
 
 	let routes = [
 		{
@@ -48,6 +37,7 @@ function App() {
 		}
 	]
 
+	//TODO set up react router to require auth on the required pages (like profile)
 	return (
 		<>
 			<Routes>
@@ -55,7 +45,7 @@ function App() {
 					<Route index element={<Home />} />
 					<Route path="login" element={<Login />} />
 					<Route path="register" element={<Register />} />
-					<Route path="profile" element={<Profile user={user} />} />
+					<Route path="profile" element={<Profile user={currentUser} />} />
 					<Route path="testing" element={<Testing />} />
 
 					<Route path="*" element={<NotFoundPage />} />

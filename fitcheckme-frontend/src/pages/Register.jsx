@@ -48,7 +48,7 @@ export default function Register() {
 		await auth_register(formValues.username, formValues.email, formValues.password)
 			.then(async (response) => {
 				if (!response.ok) {
-					throw new Error(`Failed to register: ${await response.text()}`);
+					throw new Error(`Failed to register: ${(await response.json()).message}`);
 				}
 				return response;
 			})

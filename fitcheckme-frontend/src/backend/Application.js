@@ -72,19 +72,22 @@ export async function createOutfit(outfitName, outfitDesc="", tags=[], garments=
 	.then((response) => handleFetchException(response))
 }
 
-export async function editOutfit(outfitId, outfitName, outfitDesc="", tags=[], garments=[]) {
+export async function editOutfit(outfitId, outfitName, outfitDesc, addGarmentIds, removeGarmentIds, addTagIds, removeTagIds) {
 	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/outfit/edit/${outfitId}`, {
+	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/outfit/edit`, {
 		method: 'PUT',
 		credentials: 'include',
 		headers: {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
+			outfitId: outfitId,
 			outfitName: outfitName,
 			outfitDesc: outfitDesc,
-			outfitTags: tags,
-			garments: garments
+			addGarmentIds: addGarmentIds,
+			removeGarmentIds: removeGarmentIds,
+			addTagIds: addTagIds,
+			removeTagIds: removeTagIds
 		})
 	})
 	.then((response) => handleFetchException(response))

@@ -20,7 +20,6 @@ export default function EditOutfit({ outfit }) {
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const [formValues, setFormValues] = useState({ ...defaultFormValues })
-	const [enteredURLs, setEnteredURLs] = useState(new Set())
 
 	const toast = useToast();
 
@@ -45,10 +44,35 @@ export default function EditOutfit({ outfit }) {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		console.log(outfit.outfitId, formValues.outfitName, formValues.outfitDesc, formValues.tags.map((tag) => parseInt(tag.value)), Array.from(formValues.garments));
 
-		return;
-		await editOutfit(outfit.outfitId, formValues.outfitName, formValues.outfitDesc, formValues.tags.map((tag) => parseInt(tag.value)), Array.from(formValues.garments))
+		const existingGarmentIds = new Set(outfit.garments.map((garment) => garment.garmentId));
+		const existingTagIds = new Set(outfit.outfitTags.map((tag) => tag.tagId));
+		const formTagIds = new Set(formValues.tags.map((tag) => parseInt(tag.value)));
+
+		const addGarmentIds = Array.from(formValues.garments).filter((garmentId) => !existingGarmentIds.has(garmentId));
+		const removeGarmentIds = Array.from(existingGarmentIds).filter((garmentId) => !formValues.garments.has(garmentId));
+		const addTagIds = Array.from(formTagIds).filter((tagId) => !existingTagIds.has(tagId));
+		const removeTagIds = Array.from(existingTagIds).filter((tagId) => !formTagIds.has(tagId));
+
+		console.log(
+			outfit.outfitId,
+			outfit.outfitName === formValues.outfitName ? null : formValues.outfitName,
+			outfit.outfitDesc === formValues.outfitDesc ? null : formValues.outfitDesc,
+			addGarmentIds.length === 0 ? null : addGarmentIds,
+			removeGarmentIds.length === 0 ? null : removeGarmentIds,
+			addTagIds.length === 0 ? null : addTagIds,
+			removeTagIds.length === 0 ? null : removeTagIds
+		)
+
+		await editOutfit(
+			outfit.outfitId,
+			outfit.outfitName === formValues.outfitName ? null : formValues.outfitName,
+			outfit.outfitDesc === formValues.outfitDesc ? null : formValues.outfitDesc,
+			addGarmentIds.length === 0 ? null : addGarmentIds,
+			removeGarmentIds.length === 0 ? null : removeGarmentIds,
+			addTagIds.length === 0 ? null : addTagIds,
+			removeTagIds.length === 0 ? null : removeTagIds
+		)
 			.then(async (response) => {
 				if (!response.ok) {
 					const contentType = response.headers.get("content-type");
@@ -104,6 +128,7 @@ export default function EditOutfit({ outfit }) {
 									placeholder='Select tags'
 								/>
 							</FormControl>
+							{/* TODO add garment selector and handle it */}
 						</VStack>
 					</ModalBody>
 					<ModalFooter>

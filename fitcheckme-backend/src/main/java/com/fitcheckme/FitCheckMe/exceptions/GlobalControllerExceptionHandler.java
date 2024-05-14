@@ -10,6 +10,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.fitcheckme.FitCheckMe.DTOs.ExceptionResponseDTO;
 
@@ -48,6 +49,11 @@ public class GlobalControllerExceptionHandler {
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	public ResponseEntity<ExceptionResponseDTO> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
 		return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Method not allowed", "Requested method is not allowed"), HttpStatus.METHOD_NOT_ALLOWED);
+	}
+
+	@ExceptionHandler(NoResourceFoundException.class)
+	public ResponseEntity<ExceptionResponseDTO> handleNoResourceFoundException(NoResourceFoundException e) {
+		return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Endpoint not found", e.getMessage()), HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(MissingServletRequestParameterException.class)

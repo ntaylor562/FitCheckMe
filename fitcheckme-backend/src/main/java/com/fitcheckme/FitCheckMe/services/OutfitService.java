@@ -166,10 +166,9 @@ public class OutfitService {
 		Set<Garment> addGarments = addGarmentIds != null && !addGarmentIds.isEmpty() ? new HashSet<>(garmentRepository.findAllById(addGarmentIds)) : new HashSet<Garment>();
 		Set<Garment> removeGarments = removeGarmentIds != null && !removeGarmentIds.isEmpty() ? new HashSet<>(garmentRepository.findAllByOutfitIdAndId(removeGarmentIds, currentOutfit.getId())) : new HashSet<Garment>();
 
-		if(addGarments != null && addGarments.size() != addGarments.size()) {
+		if(addGarmentIds != null && addGarments.size() != addGarmentIds.size()) {
 			throw new EntityNotFoundException("One or more garments not found in add list");
 		}
-		
 		if(removeGarmentIds != null && removeGarments.size() != removeGarmentIds.size()) {
 			throw new EntityNotFoundException("One or more garments not found in remove list");
 		}
@@ -198,11 +197,14 @@ public class OutfitService {
 			throw new IllegalArgumentException("User does not have permissions to edit this outfit");
 		}
 
-		List<Tag> addTags = tagRepository.findAllById(addTagIds);
-		List<Tag> removeTags = tagRepository.findAllById(removeTagIds);
+		List<Tag> addTags = addTagIds != null && !addTagIds.isEmpty() ? tagRepository.findAllById(addTagIds) : new ArrayList<Tag>();
+		List<Tag> removeTags = removeTagIds != null && !removeTagIds.isEmpty() ? tagRepository.findAllById(removeTagIds) : new ArrayList<Tag>();
 
-		if(addTags.size() + removeTags.size() != addTagIds.size() + removeTagIds.size()) {
-			throw new EntityNotFoundException("One or more tags not found");
+		if(addTagIds != null && addTags.size() != addTagIds.size()) {
+			throw new EntityNotFoundException("One or more tags not found in add list");
+		}
+		if(removeTagIds != null && removeTags.size() != removeTagIds.size()) {
+			throw new EntityNotFoundException("One or more tags not found in remove list");
 		}
 
 		for(Tag tag : addTags) {

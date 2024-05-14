@@ -58,7 +58,7 @@ public class OutfitController {
 		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.createOutfit(outfit, userDetails), HttpStatus.CREATED);
 	}
 
-	@PutMapping("")
+	@PutMapping("edit")
 	public ResponseEntity<OutfitRequestDTO> updateOutfit(@Valid @RequestBody OutfitUpdateRequestDTO outfit, @AuthenticationPrincipal UserDetails userDetails) {
 		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.updateOutfit(outfit, userDetails), HttpStatus.ACCEPTED);
 	}

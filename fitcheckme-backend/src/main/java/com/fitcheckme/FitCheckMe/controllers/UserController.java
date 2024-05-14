@@ -61,6 +61,16 @@ public class UserController {
 		}
 	}
 
+	@GetMapping("currentuser")
+	public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+		try {
+			return new ResponseEntity<UserRequestDTO>(this.userService.getByUsername(userDetails.getUsername()), HttpStatus.OK);
+		}
+		catch(EntityNotFoundException e) {
+			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("User not found", "User was not found"), HttpStatus.NOT_FOUND);
+		}
+	}
+
 	//TODO add auth
 	@PostMapping("create")
 	public ResponseEntity<?> createUser(@Valid @RequestBody UserCreateRequestDTO user) {

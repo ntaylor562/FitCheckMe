@@ -117,6 +117,20 @@ public class UserControllerTest {
 	}
 
 	@Test
+	public void testGetCurrentUser() throws Exception {
+		//Testing the get current user call is OK
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/currentuser"))
+			.andExpect(MockMvcResultMatchers.status().isOk())
+			.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(user1.getUsername()))
+			.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value(user1.getBio()));
+		
+		//Testing the get current user call is not found
+		Mockito.when(userService.getByUsername(user1.getUsername())).thenThrow(EntityNotFoundException.class);
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/currentuser"))
+			.andExpect(MockMvcResultMatchers.status().isNotFound());
+	}
+
+	@Test
 	public void testCreateUser() throws Exception {
 		User newUser = Mockito.spy(new User("test_username3", "test3@email.com", "pass3", "test bio 3", Set.of()));
 		Mockito.when(newUser.getId()).thenReturn(3);

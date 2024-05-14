@@ -1,9 +1,13 @@
-import { Button, useColorMode } from '@chakra-ui/react'
+import { MoonIcon, SunIcon } from '@chakra-ui/icons'
+import { Button, Circle, useColorMode, useColorModeValue } from '@chakra-ui/react'
 
 export default function ThemeToggle() {
 	const { colorMode, toggleColorMode } = useColorMode()
+	const bgColor = useColorModeValue("gray.300", "gray.600")
 
 	return (
-		<Button size='sm' colorScheme='gray' onClick={toggleColorMode}>Toggle {colorMode === "light" ? "Dark" : "Light"}</Button>
+		<Button pos="relative" bg="transparent" borderRadius="full" _hover={{bg: bgColor}} onClick={toggleColorMode}>
+			{colorMode === "light" ? <MoonIcon pos="absolute" /> : <SunIcon pos="absolute" />}
+		</Button>
 	)
 }

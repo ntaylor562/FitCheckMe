@@ -4,11 +4,13 @@ import {
 	FormControl,
 	FormLabel,
 	Input,
+	Link,
 	Stack,
 	Button,
 	Heading,
 	useColorModeValue,
 	FormErrorMessage,
+	Text,
 } from '@chakra-ui/react'
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
@@ -19,6 +21,7 @@ export default function Login() {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [formError, setFormError] = useState(null);
+	const linkColor = useColorModeValue('blue.400', 'blue.200');
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -86,6 +89,9 @@ export default function Login() {
 									</Button>
 								</Flex>
 								<FormErrorMessage>{formError}</FormErrorMessage>
+								<Text align={'center'}>
+									Don't have an account? <Link color='blue.400' onClick={() => navigate('/register')}>Sign up</Link>
+								</Text>
 							</Stack>
 						</FormControl>
 					</form>

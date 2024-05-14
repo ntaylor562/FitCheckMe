@@ -217,7 +217,7 @@ public class OutfitControllerTest {
 
 		//Testing remove outfit call with no ID
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit"))
-			.andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
+			.andExpect(MockMvcResultMatchers.status().isNotFound());
 
 		// Testing remove outfit with bad ID
 		Mockito.doThrow(IllegalArgumentException.class).when(outfitService).deleteOutfit(anyInt(), any(UserDetails.class));

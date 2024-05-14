@@ -5,14 +5,13 @@ import {
 	FormLabel,
 	Input,
 	InputGroup,
-	HStack,
 	InputRightElement,
+	Link,
 	Stack,
 	Button,
 	Heading,
 	Text,
 	useColorModeValue,
-	Link,
 	FormErrorMessage,
 } from '@chakra-ui/react'
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
@@ -126,11 +125,9 @@ export default function Register() {
 									</Button>
 								</Stack>
 								<FormErrorMessage>{formError}</FormErrorMessage>
-								<Stack pt={6}>
-									<Text align={'center'}>
-										Already a user? <Link color={'blue.400'} href='/login'>Login</Link>
-									</Text>
-								</Stack>
+								<Text align={'center'}>
+									Already a user? <Link color={'blue.400'} onClick={() => navigate('/login')}>Login</Link>
+								</Text>
 							</Stack>
 						</FormControl>
 					</form>

@@ -1,4 +1,4 @@
-import { CheckIcon, EditIcon } from '@chakra-ui/icons'
+import { CheckIcon, CloseIcon, EditIcon } from '@chakra-ui/icons'
 import { Heading, Text, Image, Box, HStack, Button, Flex, Input, InputGroup, InputRightAddon, useToast } from '@chakra-ui/react'
 import { useState } from 'react';
 import { editUser } from '../backend/Application';
@@ -13,6 +13,11 @@ export default function Profile({ user, isCurrentUser }) {
 
 	const handleBioChange = (event) => {
 		setNewBio(event.target.value);
+	}
+
+	const handleCancelUpdateBio = () => {
+		setNewBio(user.bio);
+		setEditingBio(false);
 	}
 
 	const handleUpdateBio = async (e) => {
@@ -57,7 +62,12 @@ export default function Profile({ user, isCurrentUser }) {
 				{editingBio ?
 					<form style={{width: "100%"}} onSubmit={handleUpdateBio}>
 						<InputGroup>
-							<Input autoFocus value={newBio} onChange={handleBioChange} />
+							<Input autoFocus value={newBio} onChange={handleBioChange} onKeyDown={(e) => e.key === "Escape" && handleCancelUpdateBio()} />
+							<InputRightAddon p="0px" borderRadius="0px">
+								<Button onClick={handleCancelUpdateBio} colorScheme="blackAlpha" borderRadius="0px">
+									<CloseIcon />
+								</Button>
+							</InputRightAddon>
 							<InputRightAddon p="0px">
 								<Button type="submit" colorScheme="green" borderLeftRadius="0px">
 									<CheckIcon />

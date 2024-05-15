@@ -8,7 +8,8 @@ const AuthContext = createContext({
 	isLoading: true,
 	currentUser: null,
 	login: (username, password) => { return new Promise((resolve, reject) => { reject() }) },
-	logout: () => { return new Promise((resolve, reject) => { reject() }) }
+	logout: () => { return new Promise((resolve, reject) => { reject() }) },
+	setCurrentUser: (user) => { }
 });
 
 export const AuthProvider = ({ children }) => {
@@ -48,14 +49,17 @@ export const AuthProvider = ({ children }) => {
 			.then(async (response) => {
 				const res = response.clone();
 				if (response.ok)
-					setCurrentUser(await response.json());
+					setCurrentUser((await response.json()).user);
 				return res;
 			})
 	}
 
 	const logout = async () => {
 		return await auth_logout().then(async (response) => {
-			if (response.ok) setAuthenticated(false);
+			if (response.ok) {
+				setAuthenticated(false);
+				setCurrentUser(null);
+			}
 			return response;
 		});
 	}
@@ -67,7 +71,8 @@ export const AuthProvider = ({ children }) => {
 				isLoading,
 				currentUser,
 				login,
-				logout
+				logout,
+				setCurrentUser
 			}}
 		>
 			{children}

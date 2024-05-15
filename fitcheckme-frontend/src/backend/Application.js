@@ -92,3 +92,20 @@ export async function editOutfit(outfitId, outfitName, outfitDesc, addGarmentIds
 	})
 	.then((response) => handleFetchException(response))
 }
+
+export async function editUser(userId, username, userBio) {
+	// @ts-ignore
+	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/user/details`, {
+		method: 'PUT',
+		credentials: 'include',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			userId: userId,
+			username: username,
+			bio: userBio
+		})
+	})
+	.then((response) => handleFetchException(response))
+}

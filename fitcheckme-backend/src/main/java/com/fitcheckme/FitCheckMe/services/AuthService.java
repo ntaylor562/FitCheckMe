@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.JwtUserDTO;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginReturnDTO;
 import com.fitcheckme.FitCheckMe.auth.JwtUtil;
@@ -50,12 +51,11 @@ public class AuthService {
 	@Transactional
 	public UserLoginReturnDTO userLogin(UserLoginRequestDTO userDTO) throws BadCredentialsException {
 		Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDTO.username(), userDTO.password()));
-		String username = authentication.getName();
-		User user = userRepository.findByUsernameIgnoreCase(username).get();
+		User user = userRepository.findByUsernameIgnoreCase(authentication.getName()).get();
 		String accessToken = jwtUtil.createToken(JwtUserDTO.toDTO(user));
 		RefreshToken refreshToken = this.createRefreshToken(user);
 
-		return new UserLoginReturnDTO(username, accessToken, refreshToken.getRefreshToken());
+		return new UserLoginReturnDTO(UserRequestDTO.toDTO(user), accessToken, refreshToken.getRefreshToken());
 	}
 
 	@Transactional
@@ -71,7 +71,7 @@ public class AuthService {
 		String accessToken = jwtUtil.createToken(JwtUserDTO.toDTO(user));
 		RefreshToken newRefreshToken = this.createRefreshToken(user);
 		refreshTokenRepository.delete(oldRefreshToken);
-		return new UserLoginReturnDTO(user.getUsername(), accessToken, newRefreshToken.getRefreshToken());
+		return new UserLoginReturnDTO(UserRequestDTO.toDTO(user), accessToken, newRefreshToken.getRefreshToken());
 	}
 
 	@Transactional

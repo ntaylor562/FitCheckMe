@@ -45,7 +45,7 @@ function App() {
 					<Route index element={<Home />} />
 					<Route path="login" element={<Login />} />
 					<Route path="register" element={<Register />} />
-					<Route path="profile" element={<Profile user={currentUser} />} />
+					<Route path="profile" element={<Profile user={currentUser} isCurrentUser={true} />} />
 					<Route path="testing" element={<Testing />} />
 
 					<Route path="*" element={<NotFoundPage />} />

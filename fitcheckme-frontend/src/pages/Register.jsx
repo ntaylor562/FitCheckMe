@@ -58,14 +58,10 @@ export default function Register() {
 						navigate('/');
 					})
 					.catch((error) => {
-						//TODO popup error message
-						console.error(error);
 						setFormError(error.message);
 					})
 			})
 			.catch((error) => {
-				//TODO popup error message
-				console.error(error);
 				setFormError(error.message);
 			});
 	}

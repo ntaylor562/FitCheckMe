@@ -1,5 +1,7 @@
 package com.fitcheckme.FitCheckMe.unit_tests.controllers;
 
+import java.util.Set;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,10 +17,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginReturnDTO;
 import com.fitcheckme.FitCheckMe.auth.JwtAuthorizationFilter;
 import com.fitcheckme.FitCheckMe.controllers.AuthController;
+import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.services.AuthService;
 
 import jakarta.servlet.http.Cookie;
@@ -35,9 +39,11 @@ public class AuthControllerTest {
 	@MockBean
 	private JwtAuthorizationFilter jwtAuthorizationFilter;
 
+	private User user;
+
 	@BeforeEach
 	public void setup() {
-
+		this.user = Mockito.spy(new User("test_user", "test@email.com", "pass", "test bio", Set.of()));
 	}
 
 	@Test
@@ -46,7 +52,8 @@ public class AuthControllerTest {
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 
 		//Testing with valid credentials
-		Mockito.when(authService.userLogin(requestDTO)).thenReturn(new UserLoginReturnDTO(requestDTO.username(), "token", "refreshToken"));
+		UserLoginReturnDTO returnDTO = new UserLoginReturnDTO(UserRequestDTO.toDTO(user), "token", "refreshToken");
+		Mockito.when(authService.userLogin(requestDTO)).thenReturn(returnDTO);
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))

@@ -3,6 +3,7 @@ package com.fitcheckme.FitCheckMe.config;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -85,5 +86,12 @@ public class SecurityConfig {
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(bCryptPasswordEncoderStrength);
+	}
+
+	@Bean
+	public FilterRegistrationBean<JwtAuthorizationFilter> tenantFilterRegistration(JwtAuthorizationFilter filter) {
+		FilterRegistrationBean<JwtAuthorizationFilter> registration = new FilterRegistrationBean<>(filter);
+		registration.setEnabled(false);
+		return registration;
 	}
 }

@@ -25,8 +25,6 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRoleUpdateDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
-import com.fitcheckme.FitCheckMe.auth.CustomUserDetailsService;
-import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.UserController;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.services.UserService;
@@ -44,12 +42,6 @@ public class UserControllerTest {
 
 	@MockBean
 	private UserService userService;
-
-	@MockBean
-	private JwtUtil jwtUtil;
-
-	@MockBean
-	private CustomUserDetailsService userDetailsService;
 
 	private User user1;
 	private User user2;

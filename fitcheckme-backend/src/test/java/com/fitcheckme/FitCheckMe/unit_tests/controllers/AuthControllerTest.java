@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginReturnDTO;
-import com.fitcheckme.FitCheckMe.auth.JwtAuthorizationFilter;
 import com.fitcheckme.FitCheckMe.controllers.AuthController;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.services.AuthService;
@@ -35,9 +34,6 @@ public class AuthControllerTest {
 
 	@MockBean
 	private AuthService authService;
-
-	@MockBean
-	private JwtAuthorizationFilter jwtAuthorizationFilter;
 
 	private User user;
 

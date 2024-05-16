@@ -20,8 +20,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagRequestDTO;
-import com.fitcheckme.FitCheckMe.auth.CustomUserDetailsService;
-import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.TagController;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.services.TagService;
@@ -36,12 +34,6 @@ public class TagControllerTest {
 
 	@MockBean
 	private TagService tagService;
-
-	@MockBean
-	private JwtUtil jwtUtil;
-
-	@MockBean
-	private CustomUserDetailsService userDetailsService;
 
 	private Tag tag1;
 	private Tag tag2;

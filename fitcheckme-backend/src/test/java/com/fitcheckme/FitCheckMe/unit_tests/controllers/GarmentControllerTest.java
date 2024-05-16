@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
-import com.fitcheckme.FitCheckMe.auth.CustomUserDetailsService;
-import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.controllers.GarmentController;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Tag;
@@ -43,12 +41,6 @@ public class GarmentControllerTest {
 
 	@MockBean
 	private GarmentService garmentService;
-
-	@MockBean
-	private JwtUtil jwtUtil;
-
-	@MockBean
-	private CustomUserDetailsService userDetailsService;
 
 	private User user;
 	private Tag tag1;

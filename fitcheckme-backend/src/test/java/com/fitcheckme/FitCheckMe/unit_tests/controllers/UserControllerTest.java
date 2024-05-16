@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -157,7 +158,6 @@ public class UserControllerTest {
 				.andExpect(MockMvcResultMatchers.status().isConflict());
 	}
 
-	//TODO test auth once implemented
 	@Test
 	public void testUpdateUserDetails() throws Exception {
 		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
@@ -193,6 +193,13 @@ public class UserControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isConflict());
+
+		// Testing the update user call errors when user does not have permission
+		Mockito.doThrow(AccessDeniedException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isForbidden());
 	}
 
 	@Test
@@ -269,6 +276,13 @@ public class UserControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+		// Testing the update user password call errors when user does not have permission
+		Mockito.doThrow(AccessDeniedException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(UserDetails.class));
+		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isForbidden());
 	}
 
 	// TODO test auth once implemented

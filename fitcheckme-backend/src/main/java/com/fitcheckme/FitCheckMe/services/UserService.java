@@ -5,8 +5,9 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -34,15 +35,16 @@ public class UserService {
 
 	@Value("${fitcheckme.max-user-bio-length}")
 	private Integer maxBioLength;
+
 	
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final PasswordEncoder passwordEncoder;
 
-	public UserService(UserRepository userRepository, RoleRepository roleRepository, @Value("${fitcheckme.bcrypt-password-encoder-strength}") Integer bCryptPasswordEncoderStrength) {
+	public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
 		this.userRepository = userRepository;
 		this.roleRepository = roleRepository;
-		this.passwordEncoder = new BCryptPasswordEncoder(bCryptPasswordEncoderStrength);
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	public List<UserRequestDTO> getAll() {
@@ -55,7 +57,6 @@ public class UserService {
 
 	private User getUserById(Integer id) throws EntityNotFoundException {
 		return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
-	
 	}
 
 	public UserRequestDTO getByUsername(String username) throws EntityNotFoundException {
@@ -74,6 +75,9 @@ public class UserService {
 		if(user.username().length() > this.maxUsernameLength) {
 			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
 		}
+		if(!isValidUsername(user.username())) {
+			throw new IllegalArgumentException("Username must only contain letters, numbers, and underscores");
+		}
 		if (user.email().length() > this.maxEmailLength) {
 			throw new IllegalArgumentException(String.format("Email must be at most %d characters", this.maxEmailLength));
 		}
@@ -85,43 +89,47 @@ public class UserService {
 		if(userRepository.existsByEmailIgnoreCase(user.email())) {
 			throw new DataIntegrityViolationException(String.format("Email '%s' is taken", user.email()));
 		}
-		User newUser = new User(user.username(), user.email().toLowerCase(), passwordEncoder.encode(user.password()), null, Set.of(roleRepository.findByRoleName("USER").get()));
-		this.userRepository.save(newUser);
-		return UserRequestDTO.toDTO(newUser);
+
+		User newUser = new User(user.username(), user.email(), passwordEncoder.encode(user.password()), null, Set.of(roleRepository.findByRoleName("USER").get()));
+
+		return UserRequestDTO.toDTO(this.userRepository.save(newUser));
 	}
 
-	public void updateUserDetails(UserUpdateDetailsRequestDTO user, UserDetails userDetails) throws DataIntegrityViolationException, IllegalArgumentException {
-		if(user.username() != null && user.username().length() > this.maxUsernameLength) {
-			throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
+	public UserRequestDTO updateUserDetails(UserUpdateDetailsRequestDTO user, UserDetails userDetails) throws DataIntegrityViolationException, IllegalArgumentException, AccessDeniedException {
+		if(user.username() != null) {
+			if(user.username().length() > this.maxUsernameLength) {
+				throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
+			}
+			if(!isValidUsername(user.username())) {
+				throw new IllegalArgumentException("Username must only contain letters, numbers, and underscores");
+			}
+			if(userRepository.existsByUsernameIgnoreCase(user.username())) {
+				throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
+			}
 		}
 		if(user.bio() != null && user.bio().length() > this.maxBioLength) {
 			throw new IllegalArgumentException(String.format("User bio must be at most %d characters", this.maxBioLength));
 		}
-		//Checking if username already exists
-		if(userRepository.existsByUsernameIgnoreCase(user.username())) {
-			throw new DataIntegrityViolationException(String.format("Username '%s' is taken", user.username()));
-		}
+
 		User currentUser = this.getUserById(user.userId());
-		if(!currentUser.getUsername().equals(userDetails.getUsername())) {
-			throw new IllegalArgumentException("User does not have permission to update details");
+		if(!currentUser.getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+			throw new AccessDeniedException("User does not have permission to update details");
 		}
+
 		if(user.username() != null) {
-			if(!isValidUsername(user.username())) {
-				throw new IllegalArgumentException("Username must only contain letters, numbers, and underscores");
-			}
-			currentUser.setUsername(user.username().toLowerCase());
+			currentUser.setUsername(user.username());
 		}
 		if(user.bio() != null) {
 			currentUser.setBio(user.bio());
 		}
 		
-		this.userRepository.save(currentUser);
+		return UserRequestDTO.toDTO(this.userRepository.save(currentUser));
 	}
 
 	public void updatePassword(UserUpdatePasswordRequestDTO user, UserDetails userDetails) throws IllegalArgumentException {
 		User currentUser = this.getUserById(user.userId());
-		if(!currentUser.getUsername().equals(userDetails.getUsername())) {
-			throw new IllegalArgumentException("User does not have permission to update password");
+		if(!currentUser.getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+			throw new AccessDeniedException("User does not have permission to update password");
 		}
 		if(!passwordEncoder.matches(user.oldPassword(), currentUser.getPassword())) {
 			throw new IllegalArgumentException("Old password is incorrect");
@@ -130,6 +138,7 @@ public class UserService {
 		this.userRepository.save(currentUser);
 	}
 
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	public void addUserRole(UserRoleUpdateDTO userRole) throws EntityNotFoundException {
 		User user = this.getUserById(userRole.userId());
 		Role role = roleRepository.findByRoleNameIgnoreCase(userRole.role()).orElseThrow(() -> new EntityNotFoundException(String.format("Role not found with name: %s", userRole.role())));
@@ -137,6 +146,7 @@ public class UserService {
 		this.userRepository.save(user);
 	}
 
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	public void removeUserRole(UserRoleUpdateDTO userRole) throws EntityNotFoundException {
 		User user = this.getUserById(userRole.userId());
 		Role role = roleRepository.findByRoleNameIgnoreCase(userRole.role()).orElseThrow(() -> new EntityNotFoundException(String.format("Role not found with name: %s", userRole.role())));

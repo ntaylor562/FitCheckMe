@@ -45,17 +45,18 @@ public class TagService {
 		return res.stream().map(tag -> TagRequestDTO.toDTO(tag)).toList();
 	}
 
+	public TagRequestDTO getByTagName(String tagName) {
+		return TagRequestDTO.toDTO(this.tagRepository.findByTagNameIgnoreCase(tagName).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with name: %s", String.valueOf(tagName)))));
+	}
+
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	public TagRequestDTO createTag(TagCreateRequestDTO tag) throws EntityNotFoundException, DataIntegrityViolationException {
 		if(tagRepository.existsByTagNameIgnoreCase(tag.tagName())) {
 			throw new DataIntegrityViolationException(String.format("Tagname '%s' is already used", tag.tagName()));
 		}
-		Tag newTag = new Tag(tag.tagName().toLowerCase());
-		this.tagRepository.save(newTag);
-		return TagRequestDTO.toDTO(newTag);
-	}
 
-	public TagRequestDTO getByTagName(String tagName) {
-		return TagRequestDTO.toDTO(this.tagRepository.findByTagNameIgnoreCase(tagName).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with name: %s", String.valueOf(tagName)))));
+		Tag newTag = new Tag(tag.tagName());
+		
+		return TagRequestDTO.toDTO(this.tagRepository.save(newTag));
 	}
 }

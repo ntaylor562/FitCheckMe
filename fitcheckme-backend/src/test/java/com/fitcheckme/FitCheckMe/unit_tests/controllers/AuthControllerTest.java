@@ -104,5 +104,9 @@ public class AuthControllerTest {
 			.andExpect(MockMvcResultMatchers.cookie().path("jwt-refresh-token", "/"))
 			.andExpect(MockMvcResultMatchers.cookie().maxAge("jwt-refresh-token", 0))
 			.andExpect(MockMvcResultMatchers.cookie().value("jwt-refresh-token", Matchers.equalTo(null)));
+
+			//TODO test with auth service entity not found exception
 	}
+
+	// TODO test refresh token
 }

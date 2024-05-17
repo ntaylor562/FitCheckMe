@@ -21,6 +21,7 @@ import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.RefreshTokenRepository;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -44,8 +45,7 @@ public class AuthService {
 	@Transactional
 	private RefreshToken createRefreshToken(User user) {
 		RefreshToken refreshToken = new RefreshToken(UUID.randomUUID().toString(), user, LocalDateTime.now().plusSeconds(refreshTokenValidity));
-		refreshTokenRepository.save(refreshToken);
-		return refreshToken;
+		return refreshTokenRepository.save(refreshToken);
 	}
 
 	@Transactional
@@ -59,10 +59,10 @@ public class AuthService {
 	}
 
 	@Transactional
-	public UserLoginReturnDTO refreshToken(String refreshToken) throws RuntimeException {
+	public UserLoginReturnDTO refreshToken(String refreshToken) throws RuntimeException, EntityNotFoundException {
 		//TODO decide whether to require access token to refresh token
 		//Validating the token exists and is not expired
-		RefreshToken oldRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken).orElseThrow(() -> new RuntimeException("Refresh token not found"));
+		RefreshToken oldRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken).orElseThrow(() -> new EntityNotFoundException("Refresh token not found"));
 		if(oldRefreshToken.getExpireDate().isBefore(LocalDateTime.now())) {
 			refreshTokenRepository.delete(oldRefreshToken);
 			throw new RuntimeException("Refresh token expired");
@@ -75,8 +75,8 @@ public class AuthService {
 	}
 
 	@Transactional
-	public void deleteRefreshToken(String refreshToken, UserDetails userDetails) throws RuntimeException {
-		refreshTokenRepository.delete(refreshTokenRepository.findByUser_UsernameAndRefreshToken(userDetails.getUsername(), refreshToken).orElseThrow(() -> new RuntimeException("Refresh token not found")));
+	public void deleteRefreshToken(String refreshToken, UserDetails userDetails) throws EntityNotFoundException {
+		refreshTokenRepository.delete(refreshTokenRepository.findByUser_UsernameAndRefreshToken(userDetails.getUsername(), refreshToken).orElseThrow(() -> new EntityNotFoundException("Refresh token not found")));
 	}
 
 }

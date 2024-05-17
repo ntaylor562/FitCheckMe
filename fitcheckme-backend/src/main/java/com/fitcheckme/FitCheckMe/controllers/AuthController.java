@@ -8,6 +8,7 @@ import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginReturnDTO;
 import com.fitcheckme.FitCheckMe.services.AuthService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -92,8 +93,9 @@ public class AuthController {
 				if(userDetails != null) authService.deleteRefreshToken(refreshTokenCookie.getValue(), userDetails);
 				response.addCookie(getDeleteCookie("jwt-refresh-token"));
 			}
-			catch(RuntimeException e) {
-				return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error logging out", e.getMessage()), HttpStatus.BAD_REQUEST);
+			catch(EntityNotFoundException e) {
+				//eturn new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error deleting refresh token", e.getMessage()), HttpStatus.NOT_FOUND);
+				//TODO log error
 			}
 		}
 
@@ -110,6 +112,9 @@ public class AuthController {
 		UserLoginReturnDTO userLoginReturnDTO;
 		try {
 			userLoginReturnDTO = authService.refreshToken(oldRefreshTokenCookie.getValue());
+		}
+		catch(EntityNotFoundException e) {
+			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error refreshing token", "Token provided was not found"), HttpStatus.NOT_FOUND);
 		}
 		catch(RuntimeException e) {
 			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error refreshing token", e.getMessage()), HttpStatus.BAD_REQUEST);

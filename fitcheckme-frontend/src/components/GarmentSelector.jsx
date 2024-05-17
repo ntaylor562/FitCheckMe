@@ -59,6 +59,8 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 		})
 	}
 
+	console.log(userGarments);
+
 	return <FormControl>
 		<FormLabel>Garments</FormLabel>
 		<VStack w="100%" spacing={4}>
@@ -78,7 +80,7 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 					return <GarmentCard key={garment.garmentId} garment={garment} selected={selectedGarments.has(garment.garmentId)} handleGarmentSelect={handleGarmentSelect} />
 				})}
 			</HStack>
-			: <Text>Loading garments...</Text>
+			: <></>
 			}
 			<CreateGarment addGarment={(garment) => setUserGarments([...userGarments, garment])} />
 		</VStack>

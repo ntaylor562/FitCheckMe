@@ -15,5 +15,4 @@ public interface GarmentRepository extends JpaRepository<Garment, Integer> {
 
 	@Query("SELECT g FROM Outfit o JOIN o.garments g WHERE o.id = :outfitId AND g.id IN :garmentIds")
 	List<Garment> findAllByOutfitIdAndId(@Param("garmentIds") List<Integer> garmentIds, @Param("outfitId") Integer outfitId);
-	
 }

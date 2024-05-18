@@ -41,6 +41,9 @@ public class Garment {
 	@Column(name = "garment_url")
 	private Set<String> urls;
 
+	@ManyToMany(mappedBy="garments")
+	private Set<Outfit> outfits;
+
 	@ManyToMany
 	@JoinTable(
 		name = "garment_tag",
@@ -83,6 +86,26 @@ public class Garment {
 
 	public void setName(String name) {
 		this.garmentName = name;
+	}
+
+	public void addOutfit(Outfit outfit) {
+		this.outfits.add(outfit);
+	}
+
+	public void addOutfit(Collection<Outfit> outfit) {
+		this.outfits.addAll(outfit);
+	}
+
+	public void removeOutfit(Integer outfitId) {
+		this.outfits.removeIf(outfit -> outfit.getId() == outfitId);
+	}
+
+	public void removeOutfit(Collection<Outfit> outfit) {
+		this.outfits.removeAll(outfit);
+	}
+
+	public void removeOutfit(Outfit outfit) {
+		this.outfits.remove(outfit);
 	}
 
 	public void addTag(Tag tag) {

@@ -16,11 +16,9 @@ import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentTagUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentURLUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Garment;
-import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
-import com.fitcheckme.FitCheckMe.repositories.OutfitRepository;
 import com.fitcheckme.FitCheckMe.repositories.TagRepository;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 
@@ -44,13 +42,11 @@ public class GarmentService {
 	private final GarmentRepository garmentRepository;
 	private final TagRepository tagRepository;
 	private final UserRepository userRepository;
-	private final OutfitRepository outfitRepository;
 
-	public GarmentService(GarmentRepository garmentRepository, TagRepository tagRepository, UserRepository userRepository, OutfitRepository outfitRepository) {
+	public GarmentService(GarmentRepository garmentRepository, TagRepository tagRepository, UserRepository userRepository) {
 		this.garmentRepository = garmentRepository;
 		this.tagRepository = tagRepository;
 		this.userRepository = userRepository;
-		this.outfitRepository = outfitRepository;
 	}
 
 	public List<GarmentRequestDTO> getAll() {
@@ -241,13 +237,7 @@ public class GarmentService {
 			throw new IllegalArgumentException("User does not have permission to delete this garment");
 		}
 
-		//Updating all outfits with this garment to remove this garment
-		List<Outfit> outfitsWithGarment = outfitRepository.findAllByGarments_GarmentId(garmentId);
-		for(Outfit outfit : outfitsWithGarment) {
-			outfit.removeGarment(currentGarment);
-			outfitRepository.save(outfit);
-		}
-
+		garmentRepository.deleteGarmentFromOutfits(garmentId);
 		garmentRepository.delete(currentGarment);
 	}
 }

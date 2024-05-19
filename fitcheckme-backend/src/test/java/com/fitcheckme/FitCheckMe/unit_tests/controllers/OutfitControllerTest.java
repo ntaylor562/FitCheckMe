@@ -202,23 +202,23 @@ public class OutfitControllerTest {
 	}
 
 	@Test
-	public void testRemoveOutfit() throws Exception {
+	public void testDeleteOutfit() throws Exception {
 		//Testing remove outfit call is OK
-		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit/{id}", this.outfit1.getId()))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit?id={id}", this.outfit1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isAccepted());
 
 		//Testing remove outfit call with no ID
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit"))
-			.andExpect(MockMvcResultMatchers.status().isNotFound());
+			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		// Testing remove outfit with bad ID
 		Mockito.doThrow(IllegalArgumentException.class).when(outfitService).deleteOutfit(anyInt(), any(UserDetails.class));
-		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit/{id}", this.outfit1.getId()))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit?id={id}", this.outfit1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 		// Testing remove outfit with bad ID
 		Mockito.doThrow(EntityNotFoundException.class).when(outfitService).deleteOutfit(anyInt(), any(UserDetails.class));
-		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit/{id}", this.outfit1.getId()))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit?id={id}", this.outfit1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}
 }

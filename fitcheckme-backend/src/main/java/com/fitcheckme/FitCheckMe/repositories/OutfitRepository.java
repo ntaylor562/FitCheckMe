@@ -20,8 +20,12 @@ public interface OutfitRepository extends JpaRepository<Outfit, Integer> {
 	public void deleteAllByUserId(Integer userId);
 
 	@Modifying
+	@Query(value = "DELETE FROM app.outfit_garment WHERE outfit_id = ?1", nativeQuery = true)
+	public void deleteOutfitFromGarments(Integer outfitId);
+
+	@Modifying
 	@Query(value = "DELETE FROM app.outfit_garment WHERE outfit_id IN ?1", nativeQuery = true)
-	public void deleteAllOutfitsFromGarments(List<Integer> garmentIds);
+	public void deleteAllOutfitsFromGarments(List<Integer> outfitIds);
 
 	@Modifying
 	@Query(value = "DELETE FROM app.outfit_tag WHERE outfit_id IN ?1", nativeQuery = true)

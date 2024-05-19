@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -229,12 +230,12 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public void deleteGarment(Integer garmentId, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+	public void deleteGarment(Integer garmentId, UserDetails userDetails) throws EntityNotFoundException, AccessDeniedException {
 		Garment currentGarment = this.getGarment(garmentId);
 
 		//Checking user is the owner of this garment
 		if(!userDetails.getUsername().toLowerCase().equals(currentGarment.getUser().getUsername())) {
-			throw new IllegalArgumentException("User does not have permission to delete this garment");
+			throw new AccessDeniedException("User does not have permission to delete this garment");
 		}
 
 		garmentRepository.deleteGarmentFromOutfits(garmentId);

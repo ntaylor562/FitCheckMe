@@ -63,9 +63,9 @@ public class OutfitController {
 		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.updateOutfit(outfit, userDetails), HttpStatus.ACCEPTED);
 	}
 
-	@DeleteMapping("{id}")
+	@DeleteMapping("")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void removeOutfit(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) {
+	public void removeOutfit(@RequestParam Integer id, @AuthenticationPrincipal UserDetails userDetails) {
 		this.outfitService.deleteOutfit(id, userDetails);
 	}
 }

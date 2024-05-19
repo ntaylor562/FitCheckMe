@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +58,7 @@ public class OutfitService {
 		return outfitRepository.findAllByOrderByIdAsc().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
+	@Transactional
 	private Outfit getOutfit(Integer id) throws EntityNotFoundException {
 		return outfitRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Outfit not found with ID: %s", String.valueOf(id))));
 	}
@@ -226,8 +228,15 @@ public class OutfitService {
 		this.outfitRepository.save(currentOutfit);
 	}
 
-	//TODO implement (must update all dependent tables)
-	public void deleteOutfit(Integer id, UserDetails userDetails) {
-		
+	@Transactional
+	public void deleteOutfit(Integer id, UserDetails userDetails) throws AccessDeniedException {
+		Outfit currentOutfit = this.getOutfit(id);
+
+		if(!currentOutfit.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+			throw new AccessDeniedException("User does not have permissions to delete this outfit");
+		}
+
+		this.outfitRepository.deleteOutfitFromGarments(id);
+		this.outfitRepository.deleteById(id);
 	}
 }

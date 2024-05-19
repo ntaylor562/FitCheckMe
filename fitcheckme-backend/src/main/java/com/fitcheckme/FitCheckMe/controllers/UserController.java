@@ -137,7 +137,7 @@ public class UserController {
 	//TODO add auth
 	@DeleteMapping("")
 	@ResponseStatus(HttpStatus.OK)
-	public void deleteUser(@RequestParam Integer id) {
-		userService.deleteUser(id);
+	public void deleteUser(@RequestParam Integer id, @AuthenticationPrincipal UserDetails userDetails) {
+		userService.deleteUser(id, userDetails);
 	}
 }

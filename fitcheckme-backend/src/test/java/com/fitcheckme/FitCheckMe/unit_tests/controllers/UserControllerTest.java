@@ -1,6 +1,7 @@
 package com.fitcheckme.FitCheckMe.unit_tests.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 
 import java.util.List;
 import java.util.Set;
@@ -293,7 +294,7 @@ public class UserControllerTest {
 			.andExpect(MockMvcResultMatchers.status().isOk());
 
 		//Testing the delete user call is not found
-		Mockito.doThrow(EntityNotFoundException.class).when(userService).deleteUser(3);
+		Mockito.doThrow(EntityNotFoundException.class).when(userService).deleteUser(anyInt(), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user?id={id}", 3))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}

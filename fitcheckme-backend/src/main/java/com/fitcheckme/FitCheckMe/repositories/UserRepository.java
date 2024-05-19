@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import com.fitcheckme.FitCheckMe.models.User;
 
@@ -14,4 +16,16 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	Optional<User> findByUsernameIgnoreCase(String username);
 	Optional<User> findByEmailIgnoreCase(String email);
 	List<User> findAllByOrderByIdAsc();
+
+	@Modifying
+	@Query(value = "DELETE FROM app.user_following WHERE user_id = ?1 OR following_id = ?1", nativeQuery = true)
+	void deleteUserFollowings(Integer userId);
+
+	@Modifying
+	@Query(value = "DELETE FROM app.user_role WHERE user_id = ?1", nativeQuery = true)
+	void deleteUserRoles(Integer userId);
+
+	@Modifying
+	@Query(value = "DELETE FROM app.garment WHERE user_id = ?1", nativeQuery = true)
+	void deleteUserGarments(Integer userId);
 }

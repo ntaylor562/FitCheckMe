@@ -23,4 +23,20 @@ public interface GarmentRepository extends JpaRepository<Garment, Integer> {
 	@Modifying
 	@Query(value = "DELETE FROM app.outfit_garment WHERE garment_id = ?1", nativeQuery = true)
 	void deleteGarmentFromOutfits(Integer garmentId);
+
+	@Modifying
+	@Query(value = "DELETE FROM app.outfit_garment WHERE garment_id IN ?1", nativeQuery = true)
+	void deleteAllGarmentsFromOutfits(List<Integer> garmentIds);
+
+	@Modifying
+	@Query(value = "DELETE FROM app.garment WHERE user_id = ?1", nativeQuery = true)
+	void deleteAllByUserId(Integer userId);
+
+	@Modifying
+	@Query(value = "DELETE FROM app.garment_url WHERE garment_id IN ?1", nativeQuery = true)
+	void deleteAllGarmentURLsByGarmentIds(List<Integer> garmentIds);
+
+	@Modifying
+	@Query(value = "DELETE FROM app.garment_tag WHERE garment_id IN ?1", nativeQuery = true)
+	void deleteAllGarmentTagsByGarmentIds(List<Integer> garmentIds);
 }

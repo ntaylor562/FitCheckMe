@@ -19,10 +19,14 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Following;
 import com.fitcheckme.FitCheckMe.models.Role;
 import com.fitcheckme.FitCheckMe.models.User;
+import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
+import com.fitcheckme.FitCheckMe.repositories.OutfitRepository;
+import com.fitcheckme.FitCheckMe.repositories.RefreshTokenRepository;
 import com.fitcheckme.FitCheckMe.repositories.RoleRepository;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
@@ -39,12 +43,18 @@ public class UserService {
 	
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
+	private final RefreshTokenRepository refreshTokenRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final OutfitRepository outfitRepository;
+	private final GarmentRepository garmentRepository;
 
-	public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+	public UserService(UserRepository userRepository, RoleRepository roleRepository, RefreshTokenRepository refreshTokenRepository, PasswordEncoder passwordEncoder, OutfitRepository outfitRepository, GarmentRepository garmentRepository) {
 		this.userRepository = userRepository;
 		this.roleRepository = roleRepository;
+		this.refreshTokenRepository = refreshTokenRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.outfitRepository = outfitRepository;
+		this.garmentRepository = garmentRepository;
 	}
 
 	public List<UserRequestDTO> getAll() {
@@ -55,6 +65,7 @@ public class UserService {
 		return UserRequestDTO.toDTO(userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id)))));
 	}
 
+	@Transactional
 	private User getUserById(Integer id) throws EntityNotFoundException {
 		return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(id))));
 	}
@@ -173,9 +184,28 @@ public class UserService {
 		this.userRepository.save(followee);
 	}
 
-	//TODO edit this to delete all outfits and garments associated with the user and other actions that need to be performed when deleting an entity
-	public void deleteUser(Integer id) {
-		//this.getById(id);
+	@Transactional
+	public void deleteUser(Integer id, UserDetails userDetails) throws AccessDeniedException, EntityNotFoundException {
+		User currentUser = this.getUserById(id);
+
+		if(!currentUser.getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+			throw new AccessDeniedException("User does not have permission to delete user");
+		}
+
+		List<Integer> garmentIds = garmentRepository.findByUserId(id).stream().map(g -> g.getId()).toList();
+		List<Integer> outfitIds = outfitRepository.findByUserId(id).stream().map(o -> o.getId()).toList();
+		//TODO when following is implemented, delete all followings
+		this.refreshTokenRepository.deleteAllByUserId(id);
+
+		this.garmentRepository.deleteAllGarmentURLsByGarmentIds(garmentIds);
+		this.garmentRepository.deleteAllGarmentTagsByGarmentIds(garmentIds);
+		this.garmentRepository.deleteAllGarmentsFromOutfits(garmentIds);
+		this.garmentRepository.deleteAllByUserId(id);
+
+		this.outfitRepository.deleteAllOutfitsFromGarments(outfitIds);
+		this.outfitRepository.deleteAllOutfitTagsByOutfitIds(outfitIds);
+		this.outfitRepository.deleteAllByUserId(id);
+
 		this.userRepository.deleteById(id);
 	}
 

@@ -23,7 +23,6 @@ public class TagService {
 		this.tagRepository = tagRepository;
 	}
 
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TAG_ADMIN')")
 	public List<TagRequestDTO> getAll() {
 		return tagRepository.findAllByOrderByIdAsc().stream().map(tag -> TagRequestDTO.toDTO(tag)).toList();
 	}

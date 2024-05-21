@@ -60,8 +60,6 @@ public class UserControllerTest {
 		UserRequestDTO userDTO2 = UserRequestDTO.toDTO(this.user2);
 		Mockito.when(userService.getById(2)).thenReturn(userDTO2);
 
-		Mockito.when(userService.getById(3)).thenThrow(EntityNotFoundException.class);
-
 		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
 			.username(user1.getUsername())
 			.password("")
@@ -81,44 +79,50 @@ public class UserControllerTest {
 	public void testGetAllUsers() throws Exception {
 		List<UserRequestDTO> userList = List.of(UserRequestDTO.toDTO(user1), UserRequestDTO.toDTO(user2));
 		Mockito.when(userService.getAll()).thenReturn(userList);
-		//Testing the get all users call is OK
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/all"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2));
 	}
 
 	@Test
-	public void testGetUser() throws Exception {
-		//Testing the get user by id call is OK
+	public void testGetUserById() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?id={id}", user1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(user1.getUsername()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value(user1.getBio()));
-			
-		//Testing the get user by id call is not found
+	}
+
+	@Test
+	public void testGetUserAndExpectEntityNotFoundException() throws Exception {
+		Mockito.when(userService.getById(3)).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?id={id}", 3))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
+	}
 
-		//Testing the get user by username call is OK
+	@Test
+	public void testGetUserByUsername() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?username={username}", user1.getUsername()))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(user1.getUsername()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value(user1.getBio()));
+	}
 
-		//Testing the get user by username call is not found
+	@Test
+	public void testGetUserByUsernameAndExpectEntityNotFoundException() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user?username={username}", "not_a_user"))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}
 
 	@Test
 	public void testGetCurrentUser() throws Exception {
-		//Testing the get current user call is OK
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/currentuser"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(user1.getUsername()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.bio").value(user1.getBio()));
-		
-		//Testing the get current user call is not found
+	}
+
+	@Test
+	public void testGetCurrentUserAndExpectEntityNotFoundException() throws Exception {
 		Mockito.when(userService.getByUsername(user1.getUsername())).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/currentuser"))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
@@ -134,24 +138,44 @@ public class UserControllerTest {
 		UserCreateRequestDTO requestDTO = UserCreateRequestDTO.toDTO(newUser);
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 
-		//Testing the create user call is OK
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/user/create")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isCreated());
+	}
 
-		//Testing the create user call errors when it is given no body
+	@Test
+	public void testCreateUserWithNoBody() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/user/create"))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
 
-		// Testing the create user call errors when illegal arguments passed
+	@Test
+	public void testCreateUserAndExpectIllegalArgumentsException() throws Exception {
+		User newUser = Mockito.spy(new User("test_username3", "test3@email.com", "pass3", "test bio 3", Set.of()));
+		Mockito.when(newUser.getId()).thenReturn(3);
+		UserRequestDTO newUserDTO = UserRequestDTO.toDTO(newUser);
+		Mockito.when(userService.createUser(UserCreateRequestDTO.toDTO(newUser))).thenReturn(newUserDTO);
+
+		UserCreateRequestDTO requestDTO = UserCreateRequestDTO.toDTO(newUser);
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
+
 		Mockito.doThrow(IllegalArgumentException.class).when(userService).createUser(any(UserCreateRequestDTO.class));
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/user/create")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
 
-		// Testing the create user call errors when username is taken
+	@Test
+	public void testCreateUserWithConflictingUsername() throws Exception {
+		User newUser = Mockito.spy(new User("test_username3", "test3@email.com", "pass3", "test bio 3", Set.of()));
+		Mockito.when(newUser.getId()).thenReturn(3);
+		UserRequestDTO newUserDTO = UserRequestDTO.toDTO(newUser);
+		Mockito.when(userService.createUser(UserCreateRequestDTO.toDTO(newUser))).thenReturn(newUserDTO);
+
+		UserCreateRequestDTO requestDTO = UserCreateRequestDTO.toDTO(newUser);
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(DataIntegrityViolationException.class).when(userService).createUser(any(UserCreateRequestDTO.class));
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/user/create")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -163,39 +187,55 @@ public class UserControllerTest {
 	public void testUpdateUserDetails() throws Exception {
 		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-
-		//Testing the update user call is accepted
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isAccepted());
+	}
 
-		//Testing the update user call errors when it is given no body
+	@Test
+	public void testUpdateUserDetailsWithNoBody() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details"))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
-		
-		// Testing the update user call errors when user is not found
+	}
+
+	@Test
+	public void testUpdateUserDetailsAndExpectEntityNotFoundException() throws Exception {
+		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(EntityNotFoundException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isNotFound());
+	}
 
-		// Testing the update user call errors when illegal arguments passed
+	@Test
+	public void testUpdateUserDetailsAndExpectIllegalArgumentsException() throws Exception {
+		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(IllegalArgumentException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
 
-		// Testing the update user call errors when username is taken
+	@Test
+	public void testUpdateUserDetailsWithConflictingUsername() throws Exception {
+		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(DataIntegrityViolationException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isConflict());
+	}
 
-		// Testing the update user call errors when user does not have permission
+	@Test
+	public void testUpdateUserDetailsAndExpectAccessDeniedException() throws Exception {
+		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(AccessDeniedException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -207,18 +247,22 @@ public class UserControllerTest {
 	public void testAddUserRole() throws Exception {
 		UserRoleUpdateDTO requestDTO = new UserRoleUpdateDTO(1, "SUPER_ADMIN");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-
-		//Testing the add user role call is accepted
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/addrole")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isAccepted());
+	}
 
-		//Testing the add user role call errors when it is given no body
+	@Test
+	public void testAddUserRoleWithNoBody() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/addrole"))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
 
-		// Testing the add user role call errors when user or role is not found
+	@Test
+	public void testAddUserRoleAndExpectEntityNotFoundException() throws Exception {
+		UserRoleUpdateDTO requestDTO = new UserRoleUpdateDTO(1, "SUPER_ADMIN");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(EntityNotFoundException.class).when(userService).addUserRole(any(UserRoleUpdateDTO.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/addrole")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -230,18 +274,22 @@ public class UserControllerTest {
 	public void testRemoveUserRole() throws Exception {
 		UserRoleUpdateDTO requestDTO = new UserRoleUpdateDTO(1, "SUPER_ADMIN");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-
-		//Testing the remove user role call is accepted
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/removerole")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isAccepted());
+	}
 
-		//Testing the remove user role call errors when it is given no body
+	@Test
+	public void testRemoveUserRoleWithNoBody() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/removerole"))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
 
-		// Testing the remove user role call errors when user or role is not found
+	@Test
+	public void testRemoveUserRoleAndExpectEntityNotFoundException() throws Exception {
+		UserRoleUpdateDTO requestDTO = new UserRoleUpdateDTO(1, "SUPER_ADMIN");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(EntityNotFoundException.class).when(userService).removeUserRole(any(UserRoleUpdateDTO.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/removerole")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -253,32 +301,44 @@ public class UserControllerTest {
 	public void testUpdateUserPassword() throws Exception {
 		UserUpdatePasswordRequestDTO requestDTO = new UserUpdatePasswordRequestDTO(1, "passw", "pass3");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-
-		//Testing the update user password call is accepted
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isAccepted());
+	}
 
-		//Testing the update user password call errors when it is given no body
+	@Test
+	public void testUpdateUserPasswordWithNoBody() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password"))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
 
-		// Testing the update user password call errors when user is not found
+	@Test
+	public void testUpdateUserPasswordAndExpectEntityNotFoundException() throws Exception {
+		UserUpdatePasswordRequestDTO requestDTO = new UserUpdatePasswordRequestDTO(1, "passw", "pass3");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(EntityNotFoundException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isNotFound());
+	}
 
-		// Testing the update user password call errors when illegal arguments passed
+	@Test
+	public void testUpdateUserPasswordAndExpectIllegalArgumentsException() throws Exception {
+		UserUpdatePasswordRequestDTO requestDTO = new UserUpdatePasswordRequestDTO(1, "passw", "pass3");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(IllegalArgumentException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
 
-		// Testing the update user password call errors when user does not have permission
+	@Test
+	public void testUpdateUserPasswordAndExpectAccessDeniedException() throws Exception {
+		UserUpdatePasswordRequestDTO requestDTO = new UserUpdatePasswordRequestDTO(1, "passw", "pass3");
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(AccessDeniedException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -286,17 +346,24 @@ public class UserControllerTest {
 				.andExpect(MockMvcResultMatchers.status().isForbidden());
 	}
 
-	// TODO test auth once implemented
 	@Test
 	public void testDeleteUser() throws Exception {
-		//Testing the delete user call is OK
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user?id={id}", user1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isOk());
+	}
 
-		//Testing the delete user call is not found
+	@Test
+	public void testDeleteUserAndExpectEntityNotFoundException() throws Exception {
 		Mockito.doThrow(EntityNotFoundException.class).when(userService).deleteUser(anyInt(), any(UserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user?id={id}", 3))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
+	}
+
+	@Test
+	public void testDeleteUserAndExpectAccessDeniedException() throws Exception {
+		Mockito.doThrow(AccessDeniedException.class).when(userService).deleteUser(anyInt(), any(UserDetails.class));
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user?id={id}", user1.getId()))
+			.andExpect(MockMvcResultMatchers.status().isForbidden());
 	}
 
 }

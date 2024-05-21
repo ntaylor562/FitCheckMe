@@ -57,7 +57,6 @@ public class TagControllerTest {
 	public void testGetAllTags() throws Exception {
 		List<TagRequestDTO> tagList = List.of(TagRequestDTO.toDTO(tag1), TagRequestDTO.toDTO(tag2));
 		Mockito.when(tagService.getAll()).thenReturn(tagList);
-		//Testing get all
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/tag/all"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$[0].tagId").isNumber())
@@ -66,28 +65,37 @@ public class TagControllerTest {
 	}
 
 	@Test
-	public void testGetTag() throws Exception {
-		//Testing get by ID
+	public void testGetTagById() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/tag?id={id}", 1))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$.tagId").value(tag1.getId()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.tagName").value(tag1.getName()));
+	}
 
-		//Testing get by tag name
+	@Test
+	public void testGetTagByName() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/tag?name={name}", "test tag 1"))
 			.andExpect(MockMvcResultMatchers.status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$.tagId").value(tag1.getId()))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.tagName").value(tag1.getName()));
-		
-		//Testing get tag has error when no ID or name specified
+	}
+
+	@Test
+	public void testGetTagWithNoIdOrName() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/tag"))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
 
+	@Test
+	public void testGetTagWithInvalidId() throws Exception {
 		//Testing handling no ID found
 		Mockito.when(tagService.getById(5)).thenThrow(new EntityNotFoundException("Tag not found"));
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/tag?id={id}", 5))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
+	}
 
+	@Test
+	public void testGetTagWithInvalidName() throws Exception {
 		//Testing handling no tag name found
 		Mockito.when(tagService.getByTagName("sample tag name")).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/tag?name={name}", "sample tag name"))
@@ -98,18 +106,24 @@ public class TagControllerTest {
 	public void testCreateTag() throws Exception {
 		TagCreateRequestDTO requestDTO = TagCreateRequestDTO.toDTO(this.tag1);
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-
-		//Testing creating tag
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/tag/create")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isCreated());
+	}
 
+	@Test
+	public void testCreateTagWithNoBody() throws Exception {
 		//Testing create tag call with no body
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/tag/create"))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
-		
+	}
+
+	@Test
+	public void testCreateTagWithConflictingName() throws Exception {
 		//Testing create tag fails with conflict
+		TagCreateRequestDTO requestDTO = TagCreateRequestDTO.toDTO(this.tag1);
+		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.when(tagService.createTag(any(TagCreateRequestDTO.class))).thenThrow(DataIntegrityViolationException.class);
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/tag/create")
 			.contentType(MediaType.APPLICATION_JSON)

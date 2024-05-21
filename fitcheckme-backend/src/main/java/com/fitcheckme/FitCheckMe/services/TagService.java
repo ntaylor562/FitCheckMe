@@ -13,6 +13,7 @@ import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.repositories.TagRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 @Service
 public class TagService {
@@ -58,5 +59,17 @@ public class TagService {
 		Tag newTag = new Tag(tag.tagName());
 		
 		return TagRequestDTO.toDTO(this.tagRepository.save(newTag));
+	}
+
+	@Transactional
+	@PreAuthorize("hasRole('SUPER_ADMIN')")
+	public void deleteTag(Integer id) throws EntityNotFoundException {
+		if(!tagRepository.existsById(id)) {
+			throw new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)));
+		}
+
+		tagRepository.deleteGarmentTags(id);
+		tagRepository.deleteOutfitTags(id);
+		tagRepository.deleteById(id);
 	}
 }

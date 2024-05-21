@@ -2,6 +2,7 @@ package com.fitcheckme.FitCheckMe.unit_tests.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.util.List;
 import java.util.Optional;
@@ -133,5 +134,24 @@ public class TagServiceTest {
 		Mockito.when(tagRepository.existsByTagNameIgnoreCase("tag1")).thenReturn(true);
 		assertThatExceptionOfType(Exception.class)
 				.isThrownBy(() -> tagService.createTag(new TagCreateRequestDTO("tag1")));
+	}
+
+	@Test
+	@WithMockUser(roles = "SUPER_ADMIN")
+	public void testDeleteTag() {
+		Mockito.when(tagRepository.existsById(1)).thenReturn(true);
+		
+		assertThatNoException().isThrownBy(() -> tagService.deleteTag(1));
+		Mockito.verify(tagRepository, Mockito.times(1)).deleteGarmentTags(1);
+		Mockito.verify(tagRepository, Mockito.times(1)).deleteOutfitTags(1);
+		Mockito.verify(tagRepository, Mockito.times(1)).deleteById(1);
+	}
+
+	@Test
+	@WithMockUser(roles = "SUPER_ADMIN")
+	public void testDeleteTagAndExpectEntityNotFoundException() {
+		Mockito.when(tagRepository.existsById(2)).thenReturn(false);
+		assertThatExceptionOfType(EntityNotFoundException.class)
+				.isThrownBy(() -> tagService.deleteTag(2));
 	}
 }

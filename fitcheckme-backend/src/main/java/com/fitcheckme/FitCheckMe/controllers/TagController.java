@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import com.fitcheckme.FitCheckMe.DTOs.Tag.TagCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagRequestDTO;
 import com.fitcheckme.FitCheckMe.services.TagService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -52,6 +54,17 @@ public class TagController {
 		}
 		catch(DataIntegrityViolationException e) {
 			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Tagname already exists", String.format("Tag with name %s already exists", tag.tagName())), HttpStatus.CONFLICT);
+		}
+	}
+
+	@DeleteMapping("delete")
+	public ResponseEntity<?> deleteTag(@RequestParam Integer id) {
+		try {
+			tagService.deleteTag(id);
+			return new ResponseEntity<>(HttpStatus.OK);
+		}
+		catch(EntityNotFoundException e) {
+			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Tag not found", String.format("Tag with ID %d not found", id)), HttpStatus.NOT_FOUND);
 		}
 	}
 }

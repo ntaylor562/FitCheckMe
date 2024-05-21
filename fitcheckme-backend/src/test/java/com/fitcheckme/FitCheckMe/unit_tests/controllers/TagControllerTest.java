@@ -130,4 +130,23 @@ public class TagControllerTest {
 			.content(requestBody))
 			.andExpect(MockMvcResultMatchers.status().isConflict());
 	}
+
+	@Test
+	public void testDeleteTag() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/tag/delete?id={id}", 1))
+			.andExpect(MockMvcResultMatchers.status().isOk());
+	}
+
+	@Test
+	public void testDeleteTagWithNoId() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/tag/delete"))
+			.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
+
+	@Test
+	public void testDeleteTagAndExpectEntityNotFoundException() throws Exception {
+		Mockito.doThrow(EntityNotFoundException.class).when(tagService).deleteTag(1);
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/tag/delete?id={id}", 1))
+			.andExpect(MockMvcResultMatchers.status().isNotFound());
+	}
 }

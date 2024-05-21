@@ -24,6 +24,7 @@ import com.fitcheckme.FitCheckMe.controllers.AuthController;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.services.AuthService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.Cookie;
 
 @WebMvcTest(AuthController.class)
@@ -47,7 +48,6 @@ public class AuthControllerTest {
 		UserLoginRequestDTO requestDTO = new UserLoginRequestDTO("test", "test");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 
-		//Testing with valid credentials
 		UserLoginReturnDTO returnDTO = new UserLoginReturnDTO(UserRequestDTO.toDTO(user), "token", "refreshToken");
 		Mockito.when(authService.userLogin(requestDTO)).thenReturn(returnDTO);
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login")
@@ -63,12 +63,16 @@ public class AuthControllerTest {
 			.andExpect(MockMvcResultMatchers.cookie().httpOnly("jwt-refresh-token", true))
 			.andExpect(MockMvcResultMatchers.cookie().secure("jwt-refresh-token", true))
 			.andExpect(MockMvcResultMatchers.cookie().path("jwt-refresh-token", "/api/auth"));
+	}
 
-		//Testing with no body
+	@Test
+	public void testLoginWithNoBody() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login"))
 			.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
 
-		//Testing with invalid credentials
+	@Test
+	public void testLoginAndExpectBadCredentialsException() throws Exception {
 		UserLoginRequestDTO invalidRequestDTO = new UserLoginRequestDTO("invalid", "invalid");
 		String invalidRequestBody = new ObjectMapper().writeValueAsString(invalidRequestDTO);
 		Mockito.when(authService.userLogin(invalidRequestDTO)).thenThrow(BadCredentialsException.class);
@@ -79,12 +83,13 @@ public class AuthControllerTest {
 	}
 
 	@Test
-	public void testLogout() throws Exception {
-		//Testing with no cookies
+	public void testLogoutWithNoCookies() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/logout"))
 			.andExpect(MockMvcResultMatchers.status().isOk());
+	}
 
-		//Testing with cookies
+	@Test
+	public void testLogoutWithCookies() throws Exception {
 		Cookie accessToken = new Cookie("jwt-access-token", "token");
 		Cookie refreshToken = new Cookie("jwt-refresh-token", "refreshToken");
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/logout")
@@ -104,9 +109,59 @@ public class AuthControllerTest {
 			.andExpect(MockMvcResultMatchers.cookie().path("jwt-refresh-token", "/"))
 			.andExpect(MockMvcResultMatchers.cookie().maxAge("jwt-refresh-token", 0))
 			.andExpect(MockMvcResultMatchers.cookie().value("jwt-refresh-token", Matchers.equalTo(null)));
-
-			//TODO test with auth service entity not found exception
 	}
 
-	// TODO test refresh token
+	@Test
+	public void testRefreshToken() throws Exception {
+		Cookie accessToken = new Cookie("jwt-access-token", "token");
+		Cookie refreshToken = new Cookie("jwt-refresh-token", "refreshToken");
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/logout")
+			.cookie(accessToken)
+			.cookie(refreshToken))
+			.andExpect(MockMvcResultMatchers.status().isOk())
+			.andExpect(MockMvcResultMatchers.cookie().exists("jwt-access-token"))
+			.andExpect(MockMvcResultMatchers.cookie().httpOnly("jwt-access-token", true))
+			.andExpect(MockMvcResultMatchers.cookie().secure("jwt-access-token", true))
+			.andExpect(MockMvcResultMatchers.cookie().path("jwt-access-token", "/"))
+			.andExpect(MockMvcResultMatchers.cookie().maxAge("jwt-access-token", 0))
+			.andExpect(MockMvcResultMatchers.cookie().value("jwt-access-token", Matchers.equalTo(null)))
+			
+			.andExpect(MockMvcResultMatchers.cookie().exists("jwt-refresh-token"))
+			.andExpect(MockMvcResultMatchers.cookie().httpOnly("jwt-refresh-token", true))
+			.andExpect(MockMvcResultMatchers.cookie().secure("jwt-refresh-token", true))
+			.andExpect(MockMvcResultMatchers.cookie().path("jwt-refresh-token", "/"))
+			.andExpect(MockMvcResultMatchers.cookie().maxAge("jwt-refresh-token", 0))
+			.andExpect(MockMvcResultMatchers.cookie().value("jwt-refresh-token", Matchers.equalTo(null)));
+	}
+
+	@Test
+	public void testRefreshTokenWithNoCookies() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/refresh"))
+			.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
+
+	@Test
+	public void testRefreshTokenAndExpectEntityNotFoundException() throws Exception {
+		Cookie refreshToken = new Cookie("jwt-refresh-token", "refreshToken");
+		Mockito.when(authService.refreshToken("refreshToken")).thenThrow(EntityNotFoundException.class);
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/refresh")
+			.cookie(refreshToken))
+			.andExpect(MockMvcResultMatchers.status().isNotFound());
+	}
+
+	@Test
+	public void testRefreshTokenAndExpectRuntimeException() throws Exception {
+		Cookie refreshToken = new Cookie("jwt-refresh-token", "refreshToken");
+		Mockito.when(authService.refreshToken("refreshToken")).thenThrow(RuntimeException.class);
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/refresh")
+			.cookie(refreshToken))
+			.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
+
+	@Test
+	public void testIsAuthenticatedAndExpectTrue() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/auth/isAuthenticated"))
+			.andExpect(MockMvcResultMatchers.status().isOk())
+			.andExpect(MockMvcResultMatchers.content().string("true"));
+	}
 }

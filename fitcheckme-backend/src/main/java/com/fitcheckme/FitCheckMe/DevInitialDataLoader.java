@@ -11,23 +11,26 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileCopyUtils;
 
-import com.fitcheckme.FitCheckMe.controllers.OutfitController;
-import com.fitcheckme.FitCheckMe.controllers.TagController;
-import com.fitcheckme.FitCheckMe.controllers.UserController;
+import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
+import com.fitcheckme.FitCheckMe.repositories.OutfitRepository;
+import com.fitcheckme.FitCheckMe.repositories.TagRepository;
+import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 
 @Profile("dev")
 @Component
 public class DevInitialDataLoader implements CommandLineRunner {
-	private final UserController userController;
-	private final TagController tagController;
-	private final OutfitController outfitController;
+	private final UserRepository userRepository;
+	private final TagRepository tagRepository;
+	private final OutfitRepository outfitRepository;
+	private final GarmentRepository garmentRepository;
 	private final JdbcTemplate jdbcTemplate;
 
 
-	public DevInitialDataLoader(UserController userController, TagController tagController, OutfitController outfitController, JdbcTemplate jdbcTemplate) {
-		this.userController = userController;
-		this.tagController = tagController;
-		this.outfitController = outfitController;
+	public DevInitialDataLoader(UserRepository userRepository, TagRepository tagRepository, OutfitRepository outfitRepository, GarmentRepository garmentRepository, JdbcTemplate jdbcTemplate) {
+		this.userRepository = userRepository;
+		this.tagRepository = tagRepository;
+		this.outfitRepository = outfitRepository;
+		this.garmentRepository = garmentRepository;
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
@@ -36,7 +39,7 @@ public class DevInitialDataLoader implements CommandLineRunner {
 	@Override
 	public void run(String... args) {
 		//If the users, tags, and outfits are empty (supposed to be all tables but you know who has time to check all that)
-		if(userController.getAll().getBody().isEmpty() && tagController.getAll().getBody().isEmpty() && outfitController.getAll().getBody().isEmpty()) {
+		if(userRepository.count() == 0 && tagRepository.count() == 0 && outfitRepository.count() == 0 && garmentRepository.count() == 0) {
 			Resource resource = new ClassPathResource(fileName);
 			try {
 				//Populate DB with sample data in data sql file

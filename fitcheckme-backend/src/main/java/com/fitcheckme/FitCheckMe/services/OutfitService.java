@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +55,7 @@ public class OutfitService {
 		this.userRepository = userRepository;
 	}
 
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OUTFIT_ADMIN')")
 	public List<OutfitRequestDTO> getAll() {
 		return outfitRepository.findAllByOrderByIdAsc().stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}

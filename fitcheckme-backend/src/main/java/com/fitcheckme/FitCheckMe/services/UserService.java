@@ -57,6 +57,7 @@ public class UserService {
 		this.garmentRepository = garmentRepository;
 	}
 
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'USER_ADMIN')")
 	public List<UserRequestDTO> getAll() {
 		return userRepository.findAllByOrderByIdAsc().stream().map((user) -> UserRequestDTO.toDTO(user)).toList();
 	}

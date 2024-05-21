@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +31,13 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRoleUpdateDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
+import com.fitcheckme.FitCheckMe.models.Garment;
+import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.models.Role;
 import com.fitcheckme.FitCheckMe.models.User;
+import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
+import com.fitcheckme.FitCheckMe.repositories.OutfitRepository;
+import com.fitcheckme.FitCheckMe.repositories.RefreshTokenRepository;
 import com.fitcheckme.FitCheckMe.repositories.RoleRepository;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 import com.fitcheckme.FitCheckMe.services.UserService;
@@ -49,6 +55,15 @@ public class UserServiceTest {
 
 	@Mock
 	private RoleRepository roleRepository;
+
+	@Mock
+	private RefreshTokenRepository refreshTokenRepository;
+
+	@Mock
+	private GarmentRepository garmentRepository;
+
+	@Mock
+	private OutfitRepository outfitRepository;
 
 	@Mock
 	private PasswordEncoder passwordEncoder;
@@ -456,5 +471,51 @@ public class UserServiceTest {
 				.isThrownBy(() -> userService.removeUserRole(new UserRoleUpdateDTO(1, "USER_ADMIN")));
 	}
 
-	//TODO test follow user and delete user
+	@Test
+	public void testDeleteUser() {
+		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
+		Mockito.when(user1.getId()).thenReturn(1);
+		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of(), List.of()));
+		Mockito.when(garment1.getId()).thenReturn(1);
+		Outfit outfit1 = Mockito
+				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), List.of(), List.of()));
+		Mockito.when(outfit1.getId()).thenReturn(1);
+
+		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+				.username("user1")
+				.password("")
+				.build();
+
+		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
+		Mockito.when(garmentRepository.findByUserId(1)).thenReturn(List.of(garment1));
+		Mockito.when(outfitRepository.findByUserId(1)).thenReturn(List.of(outfit1));
+
+		assertThatNoException().isThrownBy(() -> userService.deleteUser(1, userDetails));
+
+		Mockito.verify(garmentRepository, Mockito.times(1)).deleteAllGarmentURLsByGarmentIds(List.of(garment1.getId()));
+		Mockito.verify(garmentRepository, Mockito.times(1)).deleteAllGarmentTagsByGarmentIds(List.of(garment1.getId()));
+		Mockito.verify(garmentRepository, Mockito.times(1)).deleteAllGarmentsFromOutfits(List.of(garment1.getId()));
+		Mockito.verify(garmentRepository, Mockito.times(1)).deleteAllByUserId(user1.getId());
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).deleteAllOutfitsFromGarments(List.of(outfit1.getId()));
+		Mockito.verify(outfitRepository, Mockito.times(1)).deleteAllOutfitTagsByOutfitIds(List.of(outfit1.getId()));
+		Mockito.verify(outfitRepository, Mockito.times(1)).deleteAllByUserId(user1.getId());
+
+		Mockito.verify(userRepository, Mockito.times(1)).deleteById(user1.getId());
+	}
+
+	@Test
+	public void testDeleteUserAndExpectEntityNotFoundException() {
+		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+				.username("user1")
+				.password("")
+				.build();
+
+		Mockito.when(userRepository.findById(2)).thenReturn(Optional.empty());
+
+		assertThatExceptionOfType(EntityNotFoundException.class)
+				.isThrownBy(() -> userService.deleteUser(2, userDetails));
+	}
+
+	// TODO test follow user and delete user
 }

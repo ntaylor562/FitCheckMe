@@ -59,8 +59,6 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 		})
 	}
 
-	console.log(userGarments);
-
 	return <FormControl>
 		<FormLabel>Garments</FormLabel>
 		<VStack w="100%" spacing={4}>

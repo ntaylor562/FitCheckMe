@@ -73,16 +73,6 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 		const addTagIds = Array.from(formTagIds).filter((tagId) => !existingTagIds.has(tagId));
 		const removeTagIds = Array.from(existingTagIds).filter((tagId) => !formTagIds.has(tagId));
 
-		console.log(
-			outfit.outfitId,
-			outfit.outfitName === formValues.outfitName ? null : formValues.outfitName,
-			outfit.outfitDesc === formValues.outfitDesc ? null : formValues.outfitDesc,
-			addGarmentIds.length === 0 ? null : addGarmentIds,
-			removeGarmentIds.length === 0 ? null : removeGarmentIds,
-			addTagIds.length === 0 ? null : addTagIds,
-			removeTagIds.length === 0 ? null : removeTagIds
-		)
-
 		await editOutfit(
 			outfit.outfitId,
 			outfit.outfitName === formValues.outfitName ? null : formValues.outfitName,

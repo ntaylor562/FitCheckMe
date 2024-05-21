@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 export default function Profile({ user, isCurrentUser }) {
 	if (user === null) return isCurrentUser ? <div /> : <Text>Loading...</Text>
 	const [editingBio, setEditingBio] = useState(false);
-	const [newBio, setNewBio] = useState(user.bio);
+	const [newBio, setNewBio] = useState(user.bio !== null ? user.bio : "");
 	const { setCurrentUser } = isCurrentUser ? useAuth() : { setCurrentUser: () => { } };
 	const toast = useToast();
 

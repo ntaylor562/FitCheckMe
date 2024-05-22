@@ -159,8 +159,8 @@ public class UserServiceTest {
 		Mockito.when(userRepository.existsByUsernameIgnoreCase("user1")).thenReturn(false);
 		Mockito.when(userRepository.existsByEmailIgnoreCase(user1.getEmail())).thenReturn(false);
 		Mockito.when(roleRepository.findByRoleName("USER")).thenReturn(Optional.of(new Role("USER")));
-
 		Mockito.when(userRepository.save(any(User.class))).thenReturn(user1);
+		
 		UserRequestDTO result = userService.createUser(UserCreateRequestDTO.toDTO(user1));
 		assertThat(result).isNotNull()
 				.isEqualTo(UserRequestDTO.toDTO(user1));
@@ -515,6 +515,23 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(() -> userService.deleteUser(2, userDetails));
+	}
+
+	@Test
+	public void testDeleteUserAndExpectAccessDeniedException() {
+		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
+
+		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+				.username("user2")
+				.password("")
+				.build();
+
+		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
+
+		assertThatExceptionOfType(AccessDeniedException.class)
+				.isThrownBy(() -> userService.deleteUser(1, userDetails));
+
+		Mockito.verify(userRepository, Mockito.never()).deleteById(1);
 	}
 
 	// TODO test follow user and delete user

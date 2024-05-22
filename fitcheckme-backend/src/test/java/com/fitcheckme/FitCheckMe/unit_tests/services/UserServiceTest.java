@@ -475,7 +475,7 @@ public class UserServiceTest {
 	public void testDeleteUser() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
 		Mockito.when(user1.getId()).thenReturn(1);
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of(), List.of()));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of(), List.of()));
 		Mockito.when(garment1.getId()).thenReturn(1);
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), List.of(), List.of()));

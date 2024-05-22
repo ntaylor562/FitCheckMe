@@ -51,8 +51,8 @@ public class GarmentControllerTest {
 	public void setup() {
 		this.user = Mockito.spy(new User("test_user", "test@email.com", "pass", "test bio", Set.of()));
 		this.tag1 = Mockito.spy(new Tag("tag 1"));
-		this.garment1 = Mockito.spy(new Garment("garment 1", user, List.of("url1"), List.of(tag1)));
-		this.garment2 = Mockito.spy(new Garment("garment 2", user, List.of("url2"), List.of(tag1)));
+		this.garment1 = Mockito.spy(new Garment(user, "garment 1", List.of("url1"), List.of(tag1)));
+		this.garment2 = Mockito.spy(new Garment(user, "garment 2", List.of("url2"), List.of(tag1)));
 
 		Mockito.when(this.user.getId()).thenReturn(1);
 		Mockito.when(this.tag1.getId()).thenReturn(1);

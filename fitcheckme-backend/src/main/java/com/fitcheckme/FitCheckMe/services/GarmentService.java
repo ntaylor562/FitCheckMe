@@ -151,7 +151,7 @@ public class GarmentService {
 		}
 		
 		//TODO think about performing security checks on URLs
-		Garment newGarment = new Garment(garment.garmentName(), user, garmentURLs, tags);
+		Garment newGarment = new Garment(user, garment.garmentName(), garmentURLs, tags);
 		return GarmentRequestDTO.toDTO(garmentRepository.save(newGarment));
 	}
 

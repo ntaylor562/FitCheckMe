@@ -62,8 +62,8 @@ public class GarmentServiceTest {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
 		Tag tag1 = Mockito.spy(new Tag("tag1"));
 		Mockito.when(tag1.getId()).thenReturn(1);
-		Garment garment1 = new Garment("garment 1", user1, List.of("url1", "url2"), List.of(tag1));
-		Garment garment2 = new Garment("garment 2", user1, List.of("url3", "url4"), List.of(tag1));
+		Garment garment1 = new Garment(user1, "garment 1", List.of("url1", "url2"), List.of(tag1));
+		Garment garment2 = new Garment(user1, "garment 2", List.of("url3", "url4"), List.of(tag1));
 
 		Mockito.when(garmentRepository.findAllByOrderByIdAsc()).thenReturn(List.of(garment1, garment2));
 		List<GarmentRequestDTO> result = garmentService.getAll();
@@ -82,7 +82,7 @@ public class GarmentServiceTest {
 	@Test
 	public void testGetByIdAndExpectGarment() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of(), List.of()));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of(), List.of()));
 		Mockito.when(garment1.getId()).thenReturn(1);
 
 		Mockito.when(garmentRepository.findById(1)).thenReturn(Optional.of(garment1));
@@ -102,8 +102,8 @@ public class GarmentServiceTest {
 	@Test
 	public void givenListOfIds_whenGetById_thenReturnGarments() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of(), List.of()));
-		Garment garment2 = Mockito.spy(new Garment("garment 2", user1, List.of(), List.of()));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of(), List.of()));
+		Garment garment2 = Mockito.spy(new Garment(user1, "garment 2", List.of(), List.of()));
 		Mockito.when(garment1.getId()).thenReturn(1);
 		Mockito.when(garment2.getId()).thenReturn(2);
 
@@ -129,8 +129,8 @@ public class GarmentServiceTest {
 	@Test
 	public void testGetUserGarmentsByUserIdAndExpectListOfGarments() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of(), List.of()));
-		Garment garment2 = Mockito.spy(new Garment("garment 2", user1, List.of(), List.of()));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of(), List.of()));
+		Garment garment2 = Mockito.spy(new Garment(user1, "garment 2", List.of(), List.of()));
 		Mockito.when(user1.getId()).thenReturn(1);
 		Mockito.when(garment1.getId()).thenReturn(1);
 		Mockito.when(garment2.getId()).thenReturn(2);
@@ -165,8 +165,8 @@ public class GarmentServiceTest {
 	@Test
 	public void testGetUserGarmentsByUsernameAndExpectListOfGarments() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of(), List.of()));
-		Garment garment2 = Mockito.spy(new Garment("garment 2", user1, List.of(), List.of()));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of(), List.of()));
+		Garment garment2 = Mockito.spy(new Garment(user1, "garment 2", List.of(), List.of()));
 		Mockito.when(garment1.getId()).thenReturn(1);
 		Mockito.when(garment2.getId()).thenReturn(2);
 
@@ -210,7 +210,7 @@ public class GarmentServiceTest {
 				.password("")
 				.build();
 		Tag tag1 = Mockito.spy(new Tag("tag1"));
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of("url1"), List.of(tag1)));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of("url1"), List.of(tag1)));
 		Mockito.when(tag1.getId()).thenReturn(1);
 		Mockito.when(garment1.getId()).thenReturn(1);
 
@@ -250,7 +250,7 @@ public class GarmentServiceTest {
 				.password("")
 				.build();
 		Tag tag1 = Mockito.spy(new Tag("tag1"));
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of(), List.of(tag1)));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of(), List.of(tag1)));
 		Mockito.when(tag1.getId()).thenReturn(1);
 
 		Mockito.when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(Optional.of(user1));
@@ -269,7 +269,7 @@ public class GarmentServiceTest {
 				.username("user1")
 				.password("")
 				.build();
-		Garment garment1 = Mockito.spy(new Garment("garment 1".repeat(100), user1, List.of(), List.of()));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1".repeat(100), List.of(), List.of()));
 
 		Mockito.when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(Optional.of(user1));
 
@@ -289,7 +289,7 @@ public class GarmentServiceTest {
 				.password("")
 				.build();
 		List<String> urls = IntStream.range(1, 100).mapToObj(n -> "url" + n).toList();
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, urls, List.of()));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", urls, List.of()));
 
 		Mockito.when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(Optional.of(user1));
 
@@ -308,7 +308,7 @@ public class GarmentServiceTest {
 				.username("user1")
 				.password("")
 				.build();
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of("url".repeat(100)), List.of()));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of("url".repeat(100)), List.of()));
 
 		Mockito.when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(Optional.of(user1));
 
@@ -329,7 +329,7 @@ public class GarmentServiceTest {
 				.password("")
 				.build();
 		List<Tag> tags = IntStream.range(1, 100).mapToObj(n -> new Tag("tag" + n)).toList();
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of(), tags));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of(), tags));
 
 		Mockito.when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(Optional.of(user1));
 
@@ -350,8 +350,8 @@ public class GarmentServiceTest {
 				.password("")
 				.build();
 		Tag tag1 = Mockito.spy(new Tag("tag1"));
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of("url1"), List.of(tag1)));
-		Garment garment2 = Mockito.spy(new Garment("garment 2", user1, List.of("url2"), List.of(tag1)));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of("url1"), List.of(tag1)));
+		Garment garment2 = Mockito.spy(new Garment(user1, "garment 2", List.of("url2"), List.of(tag1)));
 		Mockito.when(tag1.getId()).thenReturn(1);
 		Mockito.when(garment1.getId()).thenReturn(1);
 		Mockito.when(garment2.getId()).thenReturn(2);
@@ -386,7 +386,7 @@ public class GarmentServiceTest {
 				.password("")
 				.build();
 		Tag tag1 = Mockito.spy(new Tag("tag1"));
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of("url1"), List.of(tag1)));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of("url1"), List.of(tag1)));
 
 		Mockito.when(garmentRepository.findById(1)).thenReturn(Optional.of(garment1));
 
@@ -418,7 +418,7 @@ public class GarmentServiceTest {
 				.password("")
 				.build();
 		Tag tag1 = Mockito.spy(new Tag("tag1"));
-		Garment garment1 = Mockito.spy(new Garment("garment 1", user1, List.of("url1"), List.of(tag1)));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of("url1"), List.of(tag1)));
 
 		Mockito.when(garmentRepository.findById(1)).thenReturn(Optional.of(garment1));
 

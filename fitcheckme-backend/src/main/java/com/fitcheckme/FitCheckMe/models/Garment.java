@@ -57,7 +57,7 @@ public class Garment {
 
 	}
 
-	public Garment(String garmentName, User user, Collection<String> urls, Collection<Tag> tags) {
+	public Garment(User user, String garmentName, Collection<String> urls, Collection<Tag> tags) {
 		this.garmentName = garmentName;
 		this.user = user;
 		this.urls = new HashSet<>(urls);

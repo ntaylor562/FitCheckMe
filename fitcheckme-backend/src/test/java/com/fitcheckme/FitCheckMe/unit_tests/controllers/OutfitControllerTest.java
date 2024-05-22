@@ -60,8 +60,8 @@ public class OutfitControllerTest {
 		this.user = Mockito.spy(new User("test_username", "test@email.com", "pass", "test bio", Set.of()));
 		this.tag1 = Mockito.spy(new Tag("tag1"));
 		this.tag2 = Mockito.spy(new Tag("tag1"));
-		this.garment1 = Mockito.spy(new Garment("garment_1", user, Arrays.asList("url1"), Arrays.asList(tag1)));
-		this.garment2 = Mockito.spy(new Garment("garment_2", user, Arrays.asList("url2"), Arrays.asList(tag2)));
+		this.garment1 = Mockito.spy(new Garment(user, "garment_1", Arrays.asList("url1"), Arrays.asList(tag1)));
+		this.garment2 = Mockito.spy(new Garment(user, "garment_2", Arrays.asList("url2"), Arrays.asList(tag2)));
 		LocalDateTime now = LocalDateTime.of(2024, 1, 30, 12, 13, 14);
 		this.outfit1 = Mockito.spy(new Outfit(user, "test_outfit1", "test description 1", now, new HashSet<>(Arrays.asList(garment1)), Arrays.asList(tag1)));
 		this.outfit2 = Mockito.spy(new Outfit(user, "test_outfit2", "test description 2", now, new HashSet<>(Arrays.asList(garment1, garment2)), Arrays.asList(tag2)));

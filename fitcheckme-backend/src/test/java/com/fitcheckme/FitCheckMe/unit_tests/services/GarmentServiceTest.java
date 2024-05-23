@@ -117,6 +117,14 @@ public class GarmentServiceTest {
 	}
 
 	@Test
+	public void givenListOfNonExistingIds_whenGetById_thenExpectEntityNotFoundException() {
+		Mockito.when(garmentRepository.findAllById(List.of(1, 2))).thenReturn(List.of());
+
+		assertThatExceptionOfType(EntityNotFoundException.class)
+				.isThrownBy(() -> garmentService.getById(List.of(1, 2)));
+	}
+
+	@Test
 	public void testGarmentExistsAndExpectTrue() {
 		Mockito.when(garmentRepository.existsById(1)).thenReturn(true);
 		assertThat(garmentService.exists(1)).isTrue();
@@ -271,7 +279,7 @@ public class GarmentServiceTest {
 				.username("user1")
 				.password("")
 				.build();
-		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1".repeat(100), List.of(), List.of()));
+		Garment garment1 = Mockito.spy(new Garment(user1, "a".repeat(this.maxGarmentNameLength + 1), List.of(), List.of()));
 
 		Mockito.when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(Optional.of(user1));
 
@@ -290,7 +298,7 @@ public class GarmentServiceTest {
 				.username("user1")
 				.password("")
 				.build();
-		List<String> urls = IntStream.range(1, 100).mapToObj(n -> "url" + n).toList();
+		List<String> urls = IntStream.range(0, this.maxURLsPerGarment + 1).mapToObj(n -> "url" + n).toList();
 		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", urls, List.of()));
 
 		Mockito.when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(Optional.of(user1));
@@ -310,7 +318,7 @@ public class GarmentServiceTest {
 				.username("user1")
 				.password("")
 				.build();
-		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of("url".repeat(100)), List.of()));
+		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of("a".repeat(this.maxGarmentURLLength + 1)), List.of()));
 
 		Mockito.when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(Optional.of(user1));
 
@@ -330,7 +338,7 @@ public class GarmentServiceTest {
 				.username("user1")
 				.password("")
 				.build();
-		Set<Tag> tags = IntStream.range(1, 100).mapToObj(n -> {
+		Set<Tag> tags = IntStream.range(0, this.maxTagsPerGarment + 1).mapToObj(n -> {
 			Tag tag = Mockito.spy(new Tag("tag" + n));
 			Mockito.when(tag.getId()).thenReturn(n);
 			return tag;
@@ -381,7 +389,8 @@ public class GarmentServiceTest {
 
 	@Test
 	public void testUpdateGarmentAndExpectGarment() {
-		//TODO implement test after changing updateGarment to be like outfit's update method where it allows updating multiple fields through one method
+		// TODO implement test after changing updateGarment to be like outfit's update
+		// method where it allows updating multiple fields through one method
 	}
 
 	@Test
@@ -430,7 +439,7 @@ public class GarmentServiceTest {
 
 		assertThatExceptionOfType(AccessDeniedException.class)
 				.isThrownBy(() -> garmentService.deleteGarment(1, userDetails));
-		
+
 		Mockito.verify(garmentRepository, Mockito.never()).deleteGarmentFromOutfits(1);
 	}
 

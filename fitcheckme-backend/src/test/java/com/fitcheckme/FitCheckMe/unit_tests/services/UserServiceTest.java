@@ -195,7 +195,7 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.createUser(new UserCreateRequestDTO("user1".repeat(100), "user1@test.com", "password1")));
+						.createUser(new UserCreateRequestDTO("a".repeat(this.maxUsernameLength + 1), "user1@test.com", "password1")));
 	}
 
 	@Test
@@ -217,7 +217,7 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.createUser(new UserCreateRequestDTO("user1", "user1@test.com".repeat(100), "password1")));
+						.createUser(new UserCreateRequestDTO("user1", "a".repeat(this.maxEmailLength + 1), "password1")));
 	}
 
 	@Test
@@ -272,7 +272,7 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2".repeat(100), null), userDetails));
+						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "a".repeat(this.maxUsernameLength + 1), null), userDetails));
 	}
 
 	@Test
@@ -326,7 +326,7 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, null, "new bio".repeat(100)),
+						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, null, "a".repeat(this.maxBioLength + 1)),
 								userDetails));
 	}
 

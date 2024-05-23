@@ -7,6 +7,8 @@ import static org.mockito.ArgumentMatchers.any;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -234,7 +236,7 @@ public class GarmentServiceTest {
 
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(() -> garmentService
-						.createGarment(new GarmentCreateRequestDTO("garment 1", List.of(), List.of()), userDetails));
+						.createGarment(new GarmentCreateRequestDTO("garment 1", Set.of(), Set.of()), userDetails));
 	}
 
 	@Test
@@ -328,7 +330,11 @@ public class GarmentServiceTest {
 				.username("user1")
 				.password("")
 				.build();
-		List<Tag> tags = IntStream.range(1, 100).mapToObj(n -> new Tag("tag" + n)).toList();
+		Set<Tag> tags = IntStream.range(1, 100).mapToObj(n -> {
+			Tag tag = Mockito.spy(new Tag("tag" + n));
+			Mockito.when(tag.getId()).thenReturn(n);
+			return tag;
+		}).collect(Collectors.toSet());
 		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of(), tags));
 
 		Mockito.when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(Optional.of(user1));

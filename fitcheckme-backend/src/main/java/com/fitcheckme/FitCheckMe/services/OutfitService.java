@@ -162,7 +162,7 @@ public class OutfitService {
 	}
 
 	@Transactional
-	private void editGarments(Outfit currentOutfit, List<Integer> addGarmentIds, List<Integer> removeGarmentIds, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+	private void editGarments(Outfit currentOutfit, Set<Integer> addGarmentIds, Set<Integer> removeGarmentIds, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {
 			throw new IllegalArgumentException("User does not have permissions to edit this outfit");
 		}
@@ -196,7 +196,7 @@ public class OutfitService {
 	}
 
 	@Transactional
-	private void editTags(Outfit currentOutfit, List<Integer> addTagIds, List<Integer> removeTagIds, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+	private void editTags(Outfit currentOutfit, Set<Integer> addTagIds, Set<Integer> removeTagIds, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {
 			throw new IllegalArgumentException("User does not have permissions to edit this outfit");
 		}

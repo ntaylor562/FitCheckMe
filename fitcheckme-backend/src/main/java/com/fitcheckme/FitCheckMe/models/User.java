@@ -1,7 +1,6 @@
 package com.fitcheckme.FitCheckMe.models;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -50,10 +49,10 @@ public class User {
 	private Set<Role> roles;
 
 	@OneToMany(mappedBy = "follower")
-	private List<Following> followers;
+	private Set<Following> followers;
 
 	@OneToMany(mappedBy = "followee")
-	private List<Following> following;
+	private Set<Following> following;
 
 	public User() {
 
@@ -91,11 +90,11 @@ public class User {
 		return this.roles;
 	}
 
-	public List<Following> getFollowers() {
+	public Set<Following> getFollowers() {
 		return this.followers;
 	}
 
-	public List<Following> getFollowing() {
+	public Set<Following> getFollowing() {
 		return this.following;
 	}
 

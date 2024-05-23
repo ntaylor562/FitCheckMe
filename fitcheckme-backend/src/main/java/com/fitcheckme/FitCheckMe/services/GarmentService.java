@@ -109,14 +109,14 @@ public class GarmentService {
 	 * @param removeURLs The list of URLs to be removed.
 	 * @throws IllegalArgumentException If the number of URLs exceeds the maximum limit or if a URL is too long.
 	 */
-	private void validateURLInput(Garment garment, List<String> addURLs, List<String> removeURLs) throws IllegalArgumentException {
+	private void validateURLInput(Garment garment, Set<String> addURLs, Set<String> removeURLs) throws IllegalArgumentException {
 		if(addURLs.size() + garment.getURLs().size() - removeURLs.size() > this.maxURLsPerGarment) {
 			throw new IllegalArgumentException(String.format("Too many URLs provided when creating a garment, must be at most %d URLs", this.maxURLsPerGarment));
 		}
 
-		for(int i = 0; i < addURLs.size(); ++i) {
-			if(addURLs.get(i).length() > maxGarmentURLLength) {
-				throw new IllegalArgumentException(String.format("Garment URL %s too long, must be at most %d characters", addURLs.get(i), this.maxGarmentURLLength));
+		for(String url : addURLs) {
+			if(url.length() > maxGarmentURLLength) {
+				throw new IllegalArgumentException(String.format("Garment URL %s too long, must be at most %d characters", url, this.maxGarmentURLLength));
 			}
 		}
 	}
@@ -145,7 +145,7 @@ public class GarmentService {
 				throw new IllegalArgumentException(String.format("Too many tags provided when creating a garment, must be at most %d tags", this.maxTagsPerGarment));
 			}
 
-			for(int id : garment.garmentTags()) {
+			for(Integer id : garment.garmentTags()) {
 				tags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
 			}
 		}
@@ -225,13 +225,10 @@ public class GarmentService {
 			throw new IllegalArgumentException("User does not have permission to edit this garment");
 		}
 
-		List<String> addURLs = garmentUpdate.addURLs();
-		List<String> removeURLs = garmentUpdate.removeURLs();
+		this.validateURLInput(garment, garmentUpdate.addURLs(), garmentUpdate.removeURLs());
 
-		this.validateURLInput(garment, addURLs, removeURLs);
-
-		garment.addURL(addURLs);
-		garment.removeURL(removeURLs);
+		garment.addURL(garmentUpdate.addURLs());
+		garment.removeURL(garmentUpdate.removeURLs());
 
 		garmentRepository.save(garment);
 	}

@@ -1,12 +1,12 @@
 package com.fitcheckme.FitCheckMe.DTOs.Tag;
 
-import java.util.List;
+import java.util.Set;
 
 import jakarta.validation.constraints.NotNull;
 
 public record TagGarmentUpdateRequestDTO(
 	@NotNull
 	Integer tagId,
-	List<Integer> addGarmentIds,
-	List<Integer> removeGarmentIds
+	Set<Integer> addGarmentIds,
+	Set<Integer> removeGarmentIds
 ) {}

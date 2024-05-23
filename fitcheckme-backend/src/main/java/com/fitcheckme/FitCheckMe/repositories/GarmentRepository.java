@@ -17,7 +17,7 @@ public interface GarmentRepository extends JpaRepository<Garment, Integer> {
 	List<Garment> findAllByOrderByIdAsc();
 
 	@Query("SELECT g FROM Outfit o JOIN o.garments g WHERE o.id = :outfitId AND g.id IN :garmentIds")
-	List<Garment> findAllByOutfitIdAndId(@Param("garmentIds") List<Integer> garmentIds,
+	List<Garment> findAllByOutfitIdAndId(@Param("garmentIds") Iterable<Integer> garmentIds,
 			@Param("outfitId") Integer outfitId);
 
 	@Modifying
@@ -26,7 +26,7 @@ public interface GarmentRepository extends JpaRepository<Garment, Integer> {
 
 	@Modifying
 	@Query(value = "DELETE FROM app.outfit_garment WHERE garment_id IN ?1", nativeQuery = true)
-	void deleteAllGarmentsFromOutfits(List<Integer> garmentIds);
+	void deleteAllGarmentsFromOutfits(Iterable<Integer> garmentIds);
 
 	@Modifying
 	@Query(value = "DELETE FROM app.garment WHERE user_id = ?1", nativeQuery = true)
@@ -34,9 +34,9 @@ public interface GarmentRepository extends JpaRepository<Garment, Integer> {
 
 	@Modifying
 	@Query(value = "DELETE FROM app.garment_url WHERE garment_id IN ?1", nativeQuery = true)
-	void deleteAllGarmentURLsByGarmentIds(List<Integer> garmentIds);
+	void deleteAllGarmentURLsByGarmentIds(Iterable<Integer> garmentIds);
 
 	@Modifying
 	@Query(value = "DELETE FROM app.garment_tag WHERE garment_id IN ?1", nativeQuery = true)
-	void deleteAllGarmentTagsByGarmentIds(List<Integer> garmentIds);
+	void deleteAllGarmentTagsByGarmentIds(Iterable<Integer> garmentIds);
 }

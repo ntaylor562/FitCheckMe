@@ -184,7 +184,7 @@ public class OutfitControllerTest {
 
 	@Test
 	public void testUpdateOutfit() throws Exception {
-		OutfitUpdateRequestDTO requestDTO = new OutfitUpdateRequestDTO(outfit1.getId(), outfit1.getName() + "_updated", outfit1.getDesc() + "_updated", List.of(), List.of(), List.of(), List.of());
+		OutfitUpdateRequestDTO requestDTO = new OutfitUpdateRequestDTO(outfit1.getId(), outfit1.getName() + "_updated", outfit1.getDesc() + "_updated", Set.of(), Set.of(), Set.of(), Set.of());
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit/edit")
 			.contentType(MediaType.APPLICATION_JSON)
@@ -200,7 +200,7 @@ public class OutfitControllerTest {
 
 	@Test
 	public void testUpdateOutfitAndExpectEntityNotFoundException() throws Exception {
-		OutfitUpdateRequestDTO requestDTO = new OutfitUpdateRequestDTO(outfit1.getId(), outfit1.getName() + "_updated", outfit1.getDesc() + "_updated", List.of(), List.of(), List.of(), List.of());
+		OutfitUpdateRequestDTO requestDTO = new OutfitUpdateRequestDTO(outfit1.getId(), outfit1.getName() + "_updated", outfit1.getDesc() + "_updated", Set.of(), Set.of(), Set.of(), Set.of());
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.when(outfitService.updateOutfit(any(OutfitUpdateRequestDTO.class), any(UserDetails.class))).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit/edit")
@@ -212,7 +212,7 @@ public class OutfitControllerTest {
 	@Test
 	public void testUpdateOutfitAndExpectIllegalArgumentException() throws Exception {
 		//Testing the update outfit call with illegal arguments
-		OutfitUpdateRequestDTO requestDTO = new OutfitUpdateRequestDTO(outfit1.getId(), outfit1.getName() + "_updated", outfit1.getDesc() + "_updated", List.of(), List.of(), List.of(), List.of());
+		OutfitUpdateRequestDTO requestDTO = new OutfitUpdateRequestDTO(outfit1.getId(), outfit1.getName() + "_updated", outfit1.getDesc() + "_updated", Set.of(), Set.of(), Set.of(), Set.of());
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.when(outfitService.updateOutfit(any(OutfitUpdateRequestDTO.class), any(UserDetails.class))).thenThrow(IllegalArgumentException.class);
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit/edit")

@@ -54,7 +54,7 @@ export default function Profile({ user, isCurrentUser }) {
 	}
 
 	return (
-		<div className="page profile-page">
+		<div className="subpage profile-page">
 			<Image src='https://placehold.co/500x500' borderRadius='full' boxSize='150px' alt='profile-picture' />
 			<Heading paddingBottom='10px'>{user.username}'s Profile</Heading>
 			<HStack spacing={2} alignItems="center" paddingBottom="10px">

@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, Flex, HStack, Image, Menu, MenuButton, MenuItem, MenuList, Spacer, Text, useColorModeValue, useToast } from "@chakra-ui/react";
+import { Avatar, Box, Flex, HStack, Image, Menu, MenuButton, MenuItem, MenuList, Spacer, Text, useColorModeValue, useToast } from "@chakra-ui/react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "../contexts/AuthContext";
@@ -57,11 +57,11 @@ export default function NavBar({ routes }) {
 	}
 
 	return (
-		<>
-			<Flex h="4.5em" minWidth="max-content" alignItems="center" paddingBlock="10px" paddingInline="20px" bg={backgroundColor}>
+		<Box h="full">
+			<Flex h="10vh" minWidth="max-content" alignItems="center" paddingBlock="10px" paddingInline="20px" bg={backgroundColor}>
 				<HStack spacing={4}>
 					<Link to="/"><Image boxSize="50px" objectFit="fill" src={FCMLogo} alt="Logo" borderRadius="full" /></Link>
-					{routes.map((route) => { return <Link key={route.path} to={route.path}><Text _hover={{textDecor: "underline"}}>{route.name}</Text></Link> })}
+					{routes.map((route) => <Link key={route.path} to={route.path}><Text _hover={{textDecor: "underline"}}>{route.name}</Text></Link> )}
 				</HStack>
 				<Spacer />
 				<HStack spacing={4}>
@@ -70,6 +70,6 @@ export default function NavBar({ routes }) {
 				</HStack>
 			</Flex>
 			<Outlet />
-		</>
+		</Box>
 	)
 }

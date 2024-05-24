@@ -1,8 +1,12 @@
 .page {
-	width: 100%;
-	padding: 20px;
+	display: flex;
+	height: 90vh;
 	/* border: 3px solid; */
+}
+
+.subpage {
 	display: block;
+	padding: 20px;
 }
 
 .placeholder-image {

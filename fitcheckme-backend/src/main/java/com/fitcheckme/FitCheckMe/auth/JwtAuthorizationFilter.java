@@ -1,8 +1,6 @@
 package com.fitcheckme.FitCheckMe.auth;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -16,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fitcheckme.FitCheckMe.DTOs.ExceptionResponseDTO;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -42,8 +41,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter{
 
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest req, @NonNull HttpServletResponse res, @NonNull FilterChain filterChain) throws ServletException, IOException {
-		Map<String, Object> errors = new HashMap<>();
-		
 		try {
 			String accessToken = jwtUtil.resolveToken(req);
 			if(accessToken == null) {
@@ -76,21 +73,17 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter{
 			}
 		}
 		catch (ExpiredJwtException e) {
-			errors.put("message", "Token Expired");
-			errors.put("details", e.getMessage());
 			res.setStatus(HttpStatus.UNAUTHORIZED.value());
 			res.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-			mapper.writeValue(res.getWriter(), errors);
+			mapper.writeValue(res.getWriter(), new ExceptionResponseDTO("Token Expired", e.getMessage()));
 			return;
 		}
 		catch (Exception e) {
-			errors.put("message", "Authentication Error");
-			errors.put("details", e.getMessage());
 			res.setStatus(HttpStatus.FORBIDDEN.value());
 			res.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-			mapper.writeValue(res.getWriter(), errors);
+			mapper.writeValue(res.getWriter(), new ExceptionResponseDTO("Authentication Error", e.getMessage()));
 			return;
 		}
 		filterChain.doFilter(req, res);

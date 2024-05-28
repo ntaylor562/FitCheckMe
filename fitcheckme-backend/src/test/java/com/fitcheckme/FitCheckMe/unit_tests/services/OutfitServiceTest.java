@@ -20,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.verification.VerificationMode;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -67,6 +68,13 @@ public class OutfitServiceTest {
 
 	}
 
+	private void verifyRepositoryCallsOnCreateOutfit(VerificationMode mode) {
+		Mockito.verify(tagRepository, mode).findAllById(any());
+		Mockito.verify(garmentRepository, mode).findAllById(any());
+		Mockito.verify(userRepository, mode).findByUsernameIgnoreCase(any());
+		Mockito.verify(outfitRepository, mode).save(any());
+	}
+
 	@Test
 	public void testGetAllAndExpectListOfOutfits() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
@@ -88,6 +96,8 @@ public class OutfitServiceTest {
 		List<OutfitRequestDTO> outfits = outfitService.getAll();
 		assertThat(outfits).hasSize(2)
 				.allMatch(outfit -> outfit.getClass().equals(OutfitRequestDTO.class));
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findAllByOrderByIdAsc();
 	}
 
 	@Test
@@ -96,6 +106,8 @@ public class OutfitServiceTest {
 
 		List<OutfitRequestDTO> outfits = outfitService.getAll();
 		assertThat(outfits).isEmpty();
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findAllByOrderByIdAsc();
 	}
 
 	@Test
@@ -114,13 +126,18 @@ public class OutfitServiceTest {
 
 		OutfitRequestDTO result = outfitService.getById(1);
 		assertThat(result).isEqualTo(OutfitRequestDTO.toDTO(outfit1));
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 	}
 
 	@Test
 	public void testGetByIdAndExpectEntityNotFoundException() {
 		Mockito.when(outfitRepository.findById(1)).thenReturn(java.util.Optional.empty());
 
-		assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> outfitService.getById(1));
+		assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> outfitService.getById(1))
+				.withMessage("Outfit not found with ID: 1");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 	}
 
 	@Test
@@ -144,13 +161,18 @@ public class OutfitServiceTest {
 		List<OutfitRequestDTO> outfits = outfitService.getById(List.of(1, 2));
 		assertThat(outfits).hasSize(2)
 				.allMatch(outfit -> outfit.getClass().equals(OutfitRequestDTO.class));
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findAllById(any());
 	}
 
 	@Test
 	public void givenListOfNonExistingIds_whenGetById_thenExpectEntityNotFoundException() {
 		Mockito.when(outfitRepository.findAllById(List.of(1, 2))).thenReturn(List.of());
 
-		assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> outfitService.getById(List.of(1, 2)));
+		assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> outfitService.getById(List.of(1, 2)))
+				.withMessage("Outfits not found with IDs: [1, 2]");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findAllById(any());
 	}
 
 	@Test
@@ -158,6 +180,8 @@ public class OutfitServiceTest {
 		Mockito.when(outfitRepository.existsById(1)).thenReturn(true);
 
 		assertThat(outfitService.exists(1)).isTrue();
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).existsById(any());
 	}
 
 	@Test
@@ -165,6 +189,8 @@ public class OutfitServiceTest {
 		Mockito.when(outfitRepository.existsById(1)).thenReturn(false);
 
 		assertThat(outfitService.exists(1)).isFalse();
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).existsById(any());
 	}
 
 	@Test
@@ -189,6 +215,9 @@ public class OutfitServiceTest {
 		List<OutfitRequestDTO> result = outfitService.getUserOutfits(user1.getId());
 		assertThat(result).hasSize(2)
 				.allMatch(outfit -> outfit.getClass().equals(OutfitRequestDTO.class));
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsById(any());
+		Mockito.verify(outfitRepository, Mockito.times(1)).findByUserId(any());
 	}
 
 	@Test
@@ -201,13 +230,20 @@ public class OutfitServiceTest {
 
 		List<OutfitRequestDTO> result = outfitService.getUserOutfits(user1.getId());
 		assertThat(result).isEmpty();
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsById(any());
+		Mockito.verify(outfitRepository, Mockito.times(1)).findByUserId(any());
 	}
 
 	@Test
 	public void testGetUserOutfitsByUserIdAndExpectEntityNotFoundException() {
 		Mockito.when(userRepository.existsById(1)).thenReturn(false);
 		assertThatExceptionOfType(EntityNotFoundException.class)
-				.isThrownBy(() -> outfitService.getUserOutfits(1));
+				.isThrownBy(() -> outfitService.getUserOutfits(1))
+				.withMessage("User not found with ID: 1");
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsById(any());
+		Mockito.verify(outfitRepository, Mockito.never()).findByUserId(any());
 	}
 
 	@Test
@@ -233,6 +269,9 @@ public class OutfitServiceTest {
 		List<OutfitRequestDTO> result = outfitService.getUserOutfits(user1.getUsername());
 		assertThat(result).hasSize(2)
 				.allMatch(outfit -> outfit.getClass().equals(OutfitRequestDTO.class));
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
+		Mockito.verify(outfitRepository, Mockito.times(1)).findByUser_UsernameIgnoreCase(any());
 	}
 
 	@Test
@@ -244,13 +283,20 @@ public class OutfitServiceTest {
 
 		List<OutfitRequestDTO> result = outfitService.getUserOutfits(user1.getUsername());
 		assertThat(result).isEmpty();
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
+		Mockito.verify(outfitRepository, Mockito.times(1)).findByUser_UsernameIgnoreCase(any());
 	}
 
 	@Test
 	public void testGetUserOutfitsByUsernameAndExpectEntityNotFoundException() {
 		Mockito.when(userRepository.existsByUsernameIgnoreCase("user1")).thenReturn(false);
 		assertThatExceptionOfType(EntityNotFoundException.class)
-				.isThrownBy(() -> outfitService.getUserOutfits("user1"));
+				.isThrownBy(() -> outfitService.getUserOutfits("user1"))
+				.withMessage("User not found with username: user1");
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
+		Mockito.verify(outfitRepository, Mockito.never()).findByUser_UsernameIgnoreCase(any());
 	}
 
 	@Test
@@ -284,6 +330,8 @@ public class OutfitServiceTest {
 
 		OutfitRequestDTO result = outfitService.createOutfit(OutfitCreateRequestDTO.toDTO(outfit1), userDetails);
 		assertThat(result).isEqualTo(OutfitRequestDTO.toDTO(outfit1));
+
+		verifyRepositoryCallsOnCreateOutfit(Mockito.times(1));
 	}
 
 	@Test
@@ -293,7 +341,10 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(
 						() -> outfitService.createOutfit(new OutfitCreateRequestDTO("a".repeat(this.maxNameLength + 1),
-								"desc", null, null), null));
+								"desc", null, null), null))
+				.withMessage("Outfit name must be at most %d characters", this.maxNameLength);
+
+		verifyRepositoryCallsOnCreateOutfit(Mockito.never());
 	}
 
 	@Test
@@ -304,7 +355,10 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(
 						() -> outfitService.createOutfit(new OutfitCreateRequestDTO("outfit 1",
-								"a".repeat(this.maxDescLength + 1), null, null), null));
+								"a".repeat(this.maxDescLength + 1), null, null), null))
+				.withMessage("Outfit description must be at most %d characters", this.maxDescLength);
+
+		verifyRepositoryCallsOnCreateOutfit(Mockito.never());
 	}
 
 	@Test
@@ -325,7 +379,14 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(
 						() -> outfitService.createOutfit(new OutfitCreateRequestDTO("outfit 1",
-								"desc", tagIds, null), null));
+								"desc", tagIds, null), null))
+				.withMessage("Too many tags provided when creating outfit, must be at most %d tags",
+						this.maxTagsPerOutfit);
+
+		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(userRepository, Mockito.never()).findByUsernameIgnoreCase(any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -349,7 +410,14 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(
 						() -> outfitService.createOutfit(new OutfitCreateRequestDTO("outfit 1",
-								"desc", null, garmentIds), null));
+								"desc", null, garmentIds), null))
+				.withMessage("Too many garments provided when creating outfit, must be at most %d garments",
+						this.maxGarmentsPerOutfit);
+
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(userRepository, Mockito.never()).findByUsernameIgnoreCase(any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -362,7 +430,13 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(
 						() -> outfitService.createOutfit(new OutfitCreateRequestDTO("outfit 1",
-								"a".repeat(this.maxNameLength + 1), Set.of(1, 2), null), null));
+								"a".repeat(this.maxNameLength + 1), Set.of(1, 2), null), null))
+				.withMessageContaining("Tags not found with IDs: ");
+
+		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(userRepository, Mockito.never()).findByUsernameIgnoreCase(any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -375,7 +449,13 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(
 						() -> outfitService.createOutfit(new OutfitCreateRequestDTO("outfit 1",
-								"a".repeat(this.maxNameLength + 1), null, Set.of(1, 2)), null));
+								"a".repeat(this.maxNameLength + 1), null, Set.of(1, 2)), null))
+				.withMessageContaining("Garments not found with IDs: ");
+
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(userRepository, Mockito.never()).findByUsernameIgnoreCase(any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -392,7 +472,13 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(
 						() -> outfitService.createOutfit(new OutfitCreateRequestDTO("outfit 1",
-								"a".repeat(this.maxNameLength + 1), null, null), userDetails));
+								"a".repeat(this.maxNameLength + 1), null, null), userDetails))
+				.withMessage("User not found with username: user1");
+
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(userRepository, Mockito.times(1)).findByUsernameIgnoreCase(any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -443,6 +529,12 @@ public class OutfitServiceTest {
 						Set.of(garment2.getId()), Set.of(garment1.getId()), Set.of(tag2.getId()), Set.of(tag1.getId())),
 				userDetails);
 		assertThat(result.outfitName()).isEqualTo(updatedOutfit1.getName());
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.times(2)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.times(3)).save(any());
 	}
 
 	@Test
@@ -461,7 +553,11 @@ public class OutfitServiceTest {
 		assertThatNoException().isThrownBy(() -> outfitService.updateOutfit(
 				new OutfitUpdateRequestDTO(1, null, null, null, null, null, null), userDetails));
 
-		Mockito.verify(outfitRepository, Mockito.never()).save(any(Outfit.class));
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -483,7 +579,14 @@ public class OutfitServiceTest {
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
 								new OutfitUpdateRequestDTO(outfit1.getId(), "test", null, null, null, null, null),
-								userDetails));
+								userDetails))
+				.withMessage("User does not have permission to edit this outfit");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -496,7 +599,14 @@ public class OutfitServiceTest {
 								new OutfitUpdateRequestDTO(1, "a".repeat(this.maxNameLength + 1), null, null, null,
 										null,
 										null),
-								null));
+								null))
+				.withMessage("Outfit name must be at most %d characters", this.maxNameLength);
+
+		Mockito.verify(outfitRepository, Mockito.never()).findById(any());
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -508,7 +618,14 @@ public class OutfitServiceTest {
 						() -> outfitService.updateOutfit(
 								new OutfitUpdateRequestDTO(1, null,
 										"a".repeat(this.maxDescLength + 1), null, null, null, null),
-								null));
+								null))
+				.withMessage("Outfit description must be at most %d characters", this.maxDescLength);
+
+		Mockito.verify(outfitRepository, Mockito.never()).findById(any());
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -537,7 +654,15 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
-								new OutfitUpdateRequestDTO(1, null, null, garmentIds, null, null, null), userDetails));
+								new OutfitUpdateRequestDTO(1, null, null, garmentIds, null, null, null), userDetails))
+				.withMessage("Too many garments provided when updating outfit, must be at most %d garments",
+						this.maxGarmentsPerOutfit);
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -566,7 +691,15 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
-								new OutfitUpdateRequestDTO(1, null, null, null, null, tagIds, null), userDetails));
+								new OutfitUpdateRequestDTO(1, null, null, null, null, tagIds, null), userDetails))
+				.withMessage("Too many tags provided when updating outfit, must be at most %d tags",
+						this.maxTagsPerOutfit);
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -586,7 +719,14 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
-								new OutfitUpdateRequestDTO(1, null, null, Set.of(1), null, null, null), userDetails));
+								new OutfitUpdateRequestDTO(1, null, null, Set.of(1), null, null, null), userDetails))
+				.withMessage("One or more garments not found in add list");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -606,7 +746,14 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
-								new OutfitUpdateRequestDTO(1, null, null, null, Set.of(1), null, null), userDetails));
+								new OutfitUpdateRequestDTO(1, null, null, null, Set.of(1), null, null), userDetails))
+				.withMessage("One or more garments not found in remove list");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -626,7 +773,14 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
-								new OutfitUpdateRequestDTO(1, null, null, null, null, Set.of(1), null), userDetails));
+								new OutfitUpdateRequestDTO(1, null, null, null, null, Set.of(1), null), userDetails))
+				.withMessage("One or more tags not found in add list");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -646,7 +800,14 @@ public class OutfitServiceTest {
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
-								new OutfitUpdateRequestDTO(1, null, null, null, null, null, Set.of(1)), userDetails));
+								new OutfitUpdateRequestDTO(1, null, null, null, null, null, Set.of(1)), userDetails))
+				.withMessage("One or more tags not found in remove list");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -670,7 +831,14 @@ public class OutfitServiceTest {
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
 								new OutfitUpdateRequestDTO(1, null, null, Set.of(1), Set.of(1), null, null),
-								userDetails));
+								userDetails))
+				.withMessage("One or more garments already in outfit");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -692,7 +860,14 @@ public class OutfitServiceTest {
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
 								new OutfitUpdateRequestDTO(1, null, null, null, null, Set.of(1), Set.of(1)),
-								userDetails));
+								userDetails))
+				.withMessage("One or more tags already in outfit");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.times(2)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -714,7 +889,14 @@ public class OutfitServiceTest {
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
 								new OutfitUpdateRequestDTO(1, null, null, Set.of(1), null, null, null),
-								userDetails));
+								userDetails))
+				.withMessage("One or more garments already in outfit");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -736,7 +918,14 @@ public class OutfitServiceTest {
 				.isThrownBy(
 						() -> outfitService.updateOutfit(
 								new OutfitUpdateRequestDTO(1, null, null, null, null, Set.of(1), null),
-								userDetails));
+								userDetails))
+				.withMessage("One or more tags already in outfit");
+
+		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -756,8 +945,8 @@ public class OutfitServiceTest {
 
 		assertThatNoException().isThrownBy(() -> outfitService.deleteOutfit(outfit1.getId(), userDetails));
 
-		Mockito.verify(outfitRepository, Mockito.times(1)).deleteOutfitFromGarments(outfit1.getId());
-		Mockito.verify(outfitRepository, Mockito.times(1)).deleteById(outfit1.getId());
+		Mockito.verify(outfitRepository, Mockito.times(1)).deleteOutfitFromGarments(any());
+		Mockito.verify(outfitRepository, Mockito.times(1)).deleteById(any());
 	}
 
 	@Test
@@ -776,18 +965,22 @@ public class OutfitServiceTest {
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 
 		assertThatExceptionOfType(AccessDeniedException.class)
-				.isThrownBy(() -> outfitService.deleteOutfit(outfit1.getId(), userDetails));
-		
-		Mockito.verify(outfitRepository, Mockito.never()).deleteOutfitFromGarments(outfit1.getId());
-		Mockito.verify(outfitRepository, Mockito.never()).deleteById(outfit1.getId());
+				.isThrownBy(() -> outfitService.deleteOutfit(outfit1.getId(), userDetails))
+				.withMessage("User does not have permission to delete this outfit");
+
+		Mockito.verify(outfitRepository, Mockito.never()).deleteOutfitFromGarments(any());
+		Mockito.verify(outfitRepository, Mockito.never()).deleteById(any());
 	}
-	
+
 	@Test
 	public void testDeleteOutfitAndExpectEntityNotFoundException() {
 		Mockito.when(outfitRepository.findById(1)).thenReturn(Optional.empty());
 
 		assertThatExceptionOfType(EntityNotFoundException.class)
-				.isThrownBy(() -> outfitService.deleteOutfit(1, null));
+				.isThrownBy(() -> outfitService.deleteOutfit(1, null))
+				.withMessage("Outfit not found with ID: 1");
+
+		Mockito.verify(outfitRepository, Mockito.never()).deleteOutfitFromGarments(any());
 	}
 
 }

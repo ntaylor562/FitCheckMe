@@ -78,7 +78,8 @@ public class OutfitService {
 		
 		//If the db result doesn't have as many records as the input, we're missing one or more records
 		if(res.size() != ids.size()) {
-			throw new EntityNotFoundException(String.format("%d/%d outfits in list not found", ids.size() - res.size(), ids.size()));
+			List<Integer> foundIds = res.stream().map(outfit -> outfit.getId()).toList();
+			throw new EntityNotFoundException(String.format("Outfits not found with IDs: %s", ids.stream().filter(id -> !foundIds.contains(id)).map(id -> String.valueOf(id)).toList()));
 		}
 
 		return res.stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
@@ -99,7 +100,7 @@ public class OutfitService {
 	public List<OutfitRequestDTO> getUserOutfits(String username) throws EntityNotFoundException {
 		// Checking the user exists
 		if(!userRepository.existsByUsernameIgnoreCase(username)) {
-			throw new EntityNotFoundException(String.format("User not found with ID: %s", username));
+			throw new EntityNotFoundException(String.format("User not found with username: %s", username));
 		}
 		return this.outfitRepository.findByUser_UsernameIgnoreCase(username).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
@@ -113,35 +114,37 @@ public class OutfitService {
 			throw new IllegalArgumentException(String.format("Outfit description must be at most %d characters", this.maxDescLength));
 		}
 
-		List<Tag> tags;
+		Set<Tag> tags;
 		if(outfit.outfitTags() != null) {
-			tags = tagRepository.findAllById(outfit.outfitTags());
+			tags = new HashSet<>(tagRepository.findAllById(outfit.outfitTags()));
 			if (tags.size() != outfit.outfitTags().size()) {
-				throw new EntityNotFoundException("One or more tags not found");
+				List<Integer> missingTags = outfit.outfitTags().stream().filter(tagId -> tags.stream().noneMatch(tag -> tag.getId().equals(tagId))).toList();
+				throw new EntityNotFoundException(String.format("Tags not found with IDs: %s", missingTags));
 			}
 			if (tags.size() > this.maxTagsPerOutfit) {
 				throw new IllegalArgumentException(String.format("Too many tags provided when creating outfit, must be at most %d tags", this.maxTagsPerOutfit));
 			}
 		}
 		else {
-			tags = List.of();
+			tags = Set.of();
 		}
 		
-		List<Garment> garments;
+		Set<Garment> garments;
 		if(outfit.garments() != null) {
-			garments = garmentRepository.findAllById(outfit.garments());
+			garments = new HashSet<>(garmentRepository.findAllById(outfit.garments()));
 			if (garments.size() != outfit.garments().size()) {
-				throw new EntityNotFoundException("One or more garments not found");
+				List<Integer> missingGarments = outfit.garments().stream().filter(garmentId -> garments.stream().noneMatch(garment -> garment.getId().equals(garmentId))).toList();
+				throw new EntityNotFoundException(String.format("Garments not found with IDs: %s", missingGarments));
 			}
 			if (garments.size() > this.maxGarmentsPerOutfit) {
 				throw new IllegalArgumentException(String.format("Too many garments provided when creating outfit, must be at most %d garments", this.maxGarmentsPerOutfit));
 			}
 		}
 		else {
-			garments = List.of();
+			garments = Set.of();
 		}
 
-		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found", userDetails.getUsername())));
+		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", userDetails.getUsername())));
 
 		Outfit newOutfit = new Outfit(user, outfit.outfitName(), outfit.outfitDesc(), LocalDateTime.now(), garments, tags);
 		return OutfitRequestDTO.toDTO(this.outfitRepository.save(newOutfit));
@@ -159,7 +162,7 @@ public class OutfitService {
 		Outfit currentOutfit = this.getOutfit(outfit.outfitId());
 
 		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {
-			throw new AccessDeniedException("User does not have permissions to edit this outfit");
+			throw new AccessDeniedException("User does not have permission to edit this outfit");
 		}
 
 		if(outfit.outfitName() != null) {
@@ -215,7 +218,7 @@ public class OutfitService {
 		}
 
 		if(currentOutfit.getGarments().size() + addGarments.size() - removeGarments.size() > this.maxGarmentsPerOutfit) {
-			throw new IllegalArgumentException(String.format("Outfit can only have up to %s garments", this.maxGarmentsPerOutfit));
+			throw new IllegalArgumentException(String.format("Too many garments provided when updating outfit, must be at most %s garments", this.maxGarmentsPerOutfit));
 		}
 
 		currentOutfit.addGarment(addGarments);
@@ -249,7 +252,7 @@ public class OutfitService {
 		}
 
 		if (currentOutfit.getTags().size() + addTags.size() - removeTags.size() > this.maxTagsPerOutfit) {
-			throw new IllegalArgumentException(String.format("Outfit can only have up to %d tags", this.maxTagsPerOutfit));
+			throw new IllegalArgumentException(String.format("Too many tags provided when updating outfit, must be at most %d tags", this.maxTagsPerOutfit));
 		}
 
 		currentOutfit.addTag(addTags);
@@ -263,7 +266,7 @@ public class OutfitService {
 		Outfit currentOutfit = this.getOutfit(id);
 
 		if(!currentOutfit.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
-			throw new AccessDeniedException("User does not have permissions to delete this outfit");
+			throw new AccessDeniedException("User does not have permission to delete this outfit");
 		}
 
 		this.outfitRepository.deleteOutfitFromGarments(id);

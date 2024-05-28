@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.verification.VerificationMode;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -59,6 +60,12 @@ public class AuthServiceTest {
 
 	}
 
+	private void verifyCommonAuthMethodCalls(VerificationMode mode) {
+		Mockito.verify(userRepository, mode).findByUsernameIgnoreCase(any());
+		Mockito.verify(jwtUtil, mode).createToken(any());
+		Mockito.verify(refreshTokenRepository, mode).save(any());
+	}
+
 	@Test
 	public void testUserLoginAndExpectTokens() {
 		ReflectionTestUtils.setField(authService, "refreshTokenValidity", this.refreshTokenValidity);
@@ -81,15 +88,19 @@ public class AuthServiceTest {
 				.isEqualTo(
 						new UserLoginReturnDTO(new UserRequestDTO(user1.getId(), user1.getUsername(), user1.getBio()),
 								"accessToken", "refreshToken"));
+		
+		verifyCommonAuthMethodCalls(Mockito.times(1));
 	}
 
 	@Test
-	public void givenBadCredentials_whenUserLogin_thenThrowBadCredentialsException() {
+	public void givenBadCredentials_whenUserLogin_thenExpectBadCredentialsException() {
 		Mockito.when(authenticationManager.authenticate(any()))
 				.thenThrow(BadCredentialsException.class);
 
 		assertThatExceptionOfType(BadCredentialsException.class)
 				.isThrownBy(() -> authService.userLogin(new UserLoginRequestDTO("user1", "password1")));
+		
+		verifyCommonAuthMethodCalls(Mockito.never());
 	}
 
 	@Test
@@ -113,15 +124,21 @@ public class AuthServiceTest {
 
 		assertThat(result).isNotNull()
 				.isEqualTo(new UserLoginReturnDTO(UserRequestDTO.toDTO(user1), "accessToken", "refreshToken"));
+		
+		Mockito.verify(refreshTokenRepository, Mockito.times(1)).save(any());
+		Mockito.verify(refreshTokenRepository, Mockito.times(1)).delete(any());
 	}
 
 	@Test
 	public void testRefreshTokenAndExpectEntityNotFoundException() {
 		Mockito.when(refreshTokenRepository.findByRefreshToken("oldRefreshToken"))
-				.thenThrow(EntityNotFoundException.class);
+				.thenReturn(Optional.empty());
 
 		assertThatExceptionOfType(EntityNotFoundException.class)
-				.isThrownBy(() -> authService.refreshToken("oldRefreshToken"));
+				.isThrownBy(() -> authService.refreshToken("oldRefreshToken"))
+				.withMessage("Refresh token not found");
+
+		verifyCommonAuthMethodCalls(Mockito.never());
 	}
 
 	@Test
@@ -130,7 +147,11 @@ public class AuthServiceTest {
 		Mockito.when(refreshTokenRepository.findByRefreshToken("refreshToken")).thenReturn(
 				Optional.of(new RefreshToken("refreshToken", user1, LocalDateTime.now().minusSeconds(100))));
 
-		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> authService.refreshToken("refreshToken"));
+		assertThatExceptionOfType(RuntimeException.class)
+				.isThrownBy(() -> authService.refreshToken("refreshToken"))
+				.withMessage("Refresh token expired");
+		
+		verifyCommonAuthMethodCalls(Mockito.never());
 	}
 
 	@Test
@@ -147,6 +168,7 @@ public class AuthServiceTest {
 				.thenReturn(Optional.of(new RefreshToken("refreshToken", user1, LocalDateTime.now())));
 
 		assertThatNoException().isThrownBy(() -> authService.deleteRefreshToken("refreshToken", userDetails));
+		Mockito.verify(refreshTokenRepository, Mockito.times(1)).delete(any());
 	}
 
 	@Test
@@ -156,8 +178,13 @@ public class AuthServiceTest {
 				.password("")
 				.build();
 
-		Mockito.when(refreshTokenRepository.findByUser_UsernameAndRefreshToken("user1", "refreshToken")).thenReturn(Optional.empty());
+		Mockito.when(refreshTokenRepository.findByUser_UsernameAndRefreshToken("user1", "refreshToken"))
+				.thenReturn(Optional.empty());
 
-		assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> authService.deleteRefreshToken("refreshToken", userDetails));
+		assertThatExceptionOfType(EntityNotFoundException.class)
+				.isThrownBy(() -> authService.deleteRefreshToken("refreshToken", userDetails))
+				.withMessage("Refresh token not found");
+
+		Mockito.verify(refreshTokenRepository, Mockito.never()).delete(any());
 	}
 }

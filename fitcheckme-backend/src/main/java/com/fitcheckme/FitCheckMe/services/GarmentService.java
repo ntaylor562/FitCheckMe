@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
@@ -74,11 +73,11 @@ public class GarmentService {
 
 		//If the db result doesn't have as many records as the input, we're missing one or more records
 		if(res.size() != ids.size()) {
-			List<Integer> missingIds = res.stream().filter(g -> !ids.contains(g.getId())).map(Garment::getId).collect(Collectors.toList());
-			throw new EntityNotFoundException(String.format("Garments with the following ids not found: %s", missingIds.toString()));
+			List<Integer> missingIds = ids.stream().filter(id -> res.stream().noneMatch(garment -> garment.getId().equals(id))).toList();
+			throw new EntityNotFoundException(String.format("Garments with the following IDs not found: %s", missingIds.toString()));
 		}
 
-		return garmentRepository.findAllById(ids).stream().map(garment -> GarmentRequestDTO.toDTO(garment)).toList();
+		return res.stream().map(garment -> GarmentRequestDTO.toDTO(garment)).toList();
 	}
 
 	public boolean exists(Integer id) {
@@ -145,8 +144,12 @@ public class GarmentService {
 				throw new IllegalArgumentException(String.format("Too many tags provided when creating a garment, must be at most %d tags", this.maxTagsPerGarment));
 			}
 
-			for(Integer id : garment.garmentTags()) {
-				tags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
+			List<Tag> foundTags = tagRepository.findAllById(garment.garmentTags());
+			if (foundTags.size() != garment.garmentTags().size()) {
+				List<Integer> missingIds = garment.garmentTags().stream()
+						.filter(id -> foundTags.stream().noneMatch(tag -> tag.getId().equals(id)))
+						.toList();
+				throw new EntityNotFoundException(String.format("Tags with the following IDs not found: %s", missingIds.toString()));
 			}
 		}
 		
@@ -157,7 +160,7 @@ public class GarmentService {
 
 	@Transactional
 	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
-		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found", userDetails.getUsername())));
+		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", userDetails.getUsername())));
 		return this.createGarment(garment, user);
 	}
 

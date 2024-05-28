@@ -40,7 +40,8 @@ public class TagService {
 		
 		//If the db result doesn't have as many records as the input, we're missing one or more records
 		if(res.size() != ids.size()) {
-			throw new EntityNotFoundException(String.format("%d/%d tags in list not found", ids.size() - res.size(), ids.size()));
+			List<Integer> missingTags = ids.stream().filter(id -> res.stream().noneMatch(tag -> tag.getId().equals(id))).toList();
+			throw new EntityNotFoundException(String.format("Tags not found with IDs: %s", missingTags));
 		}
 
 		return res.stream().map(tag -> TagRequestDTO.toDTO(tag)).toList();
@@ -53,7 +54,7 @@ public class TagService {
 	@PreAuthorize("hasRole('SUPER_ADMIN')")
 	public TagRequestDTO createTag(TagCreateRequestDTO tag) throws EntityNotFoundException, DataIntegrityViolationException {
 		if(tagRepository.existsByTagNameIgnoreCase(tag.tagName())) {
-			throw new DataIntegrityViolationException(String.format("Tagname '%s' is already used", tag.tagName()));
+			throw new DataIntegrityViolationException(String.format("Tag already exists with name: %s", tag.tagName()));
 		}
 
 		Tag newTag = new Tag(tag.tagName());

@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.verification.VerificationMode;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -89,6 +90,8 @@ public class UserServiceTest {
 
 		assertThat(result).hasSize(2)
 				.allMatch(user -> user.getClass().equals(UserRequestDTO.class));
+
+		Mockito.verify(userRepository, Mockito.times(1)).findAllByOrderByIdAsc();
 	}
 
 	@Test
@@ -96,6 +99,8 @@ public class UserServiceTest {
 		Mockito.when(userRepository.findAllByOrderByIdAsc()).thenReturn(List.of());
 		List<UserRequestDTO> result = userService.getAll();
 		assertThat(result).isEmpty();
+
+		Mockito.verify(userRepository, Mockito.times(1)).findAllByOrderByIdAsc();
 	}
 
 	@Test
@@ -107,13 +112,18 @@ public class UserServiceTest {
 		UserRequestDTO result = userService.getById(1);
 		assertThat(result).isNotNull()
 				.isEqualTo(UserRequestDTO.toDTO(user1));
+
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
 	}
 
 	@Test
 	public void testGetByIdAndExpectEntityNotFoundException() {
 		Mockito.when(userRepository.findById(2)).thenReturn(Optional.empty());
 		assertThatExceptionOfType(EntityNotFoundException.class)
-				.isThrownBy(() -> userService.getById(2));
+				.isThrownBy(() -> userService.getById(2))
+				.withMessage("User not found with ID: 2");
+
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
 	}
 
 	@Test
@@ -126,6 +136,8 @@ public class UserServiceTest {
 		UserRequestDTO result = userService.getByUsername("user1");
 		assertThat(result).isNotNull()
 				.isEqualTo(UserRequestDTO.toDTO(user1));
+
+		Mockito.verify(userRepository, Mockito.times(1)).findByUsernameIgnoreCase(any());
 	}
 
 	@Test
@@ -133,19 +145,26 @@ public class UserServiceTest {
 		ReflectionTestUtils.setField(userService, "maxUsernameLength", this.maxUsernameLength);
 		Mockito.when(userRepository.findByUsernameIgnoreCase("user2")).thenReturn(Optional.empty());
 		assertThatExceptionOfType(EntityNotFoundException.class)
-				.isThrownBy(() -> userService.getByUsername("user2"));
+				.isThrownBy(() -> userService.getByUsername("user2"))
+				.withMessage("User not found with username: user2");
+
+		Mockito.verify(userRepository, Mockito.times(1)).findByUsernameIgnoreCase(any());
 	}
 
 	@Test
 	public void testExistsAndExpectTrue() {
 		Mockito.when(userRepository.existsById(1)).thenReturn(true);
 		assertThat(userService.exists(1)).isTrue();
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsById(any());
 	}
 
 	@Test
 	public void testExistsAndExpectFalse() {
 		Mockito.when(userRepository.existsById(2)).thenReturn(false);
 		assertThat(userService.exists(2)).isFalse();
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsById(any());
 	}
 
 	@Test
@@ -160,10 +179,15 @@ public class UserServiceTest {
 		Mockito.when(userRepository.existsByEmailIgnoreCase(user1.getEmail())).thenReturn(false);
 		Mockito.when(roleRepository.findByRoleName("USER")).thenReturn(Optional.of(new Role("USER")));
 		Mockito.when(userRepository.save(any(User.class))).thenReturn(user1);
-		
+
 		UserRequestDTO result = userService.createUser(UserCreateRequestDTO.toDTO(user1));
 		assertThat(result).isNotNull()
 				.isEqualTo(UserRequestDTO.toDTO(user1));
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.times(1)).existsByEmailIgnoreCase(any());
+		Mockito.verify(roleRepository, Mockito.times(1)).findByRoleName(any());
+		Mockito.verify(userRepository, Mockito.times(1)).save(any());
 	}
 
 	@Test
@@ -174,7 +198,13 @@ public class UserServiceTest {
 		Mockito.when(userRepository.existsByUsernameIgnoreCase("user1")).thenReturn(true);
 		assertThatExceptionOfType(DataIntegrityViolationException.class)
 				.isThrownBy(
-						() -> userService.createUser(new UserCreateRequestDTO("user1", "user1@test.com", "password1")));
+						() -> userService.createUser(new UserCreateRequestDTO("user1", "user1@test.com", "password1")))
+				.withMessage("Username 'user1' is taken");
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).existsByEmailIgnoreCase(any());
+		Mockito.verify(roleRepository, Mockito.never()).findByRoleName(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -185,7 +215,13 @@ public class UserServiceTest {
 		Mockito.when(userRepository.existsByEmailIgnoreCase("user1@test.com")).thenReturn(true);
 		assertThatExceptionOfType(DataIntegrityViolationException.class)
 				.isThrownBy(
-						() -> userService.createUser(new UserCreateRequestDTO("user1", "user1@test.com", "password1")));
+						() -> userService.createUser(new UserCreateRequestDTO("user1", "user1@test.com", "password1")))
+				.withMessage("Email 'user1@test.com' is taken");
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.times(1)).existsByEmailIgnoreCase(any());
+		Mockito.verify(roleRepository, Mockito.never()).findByRoleName(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -195,7 +231,14 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.createUser(new UserCreateRequestDTO("a".repeat(this.maxUsernameLength + 1), "user1@test.com", "password1")));
+						.createUser(new UserCreateRequestDTO("a".repeat(this.maxUsernameLength + 1), "user1@test.com",
+								"password1")))
+				.withMessage(String.format("Username name must be at most %d characters", this.maxUsernameLength));
+
+		Mockito.verify(userRepository, Mockito.never()).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).existsByEmailIgnoreCase(any());
+		Mockito.verify(roleRepository, Mockito.never()).findByRoleName(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -207,7 +250,13 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.createUser(new UserCreateRequestDTO(invalidUsername, "user1@test.com", "password1")));
+						.createUser(new UserCreateRequestDTO(invalidUsername, "user1@test.com", "password1")))
+				.withMessageContaining("Username must only contain ");
+
+		Mockito.verify(userRepository, Mockito.never()).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).existsByEmailIgnoreCase(any());
+		Mockito.verify(roleRepository, Mockito.never()).findByRoleName(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -217,7 +266,14 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.createUser(new UserCreateRequestDTO("user1", "a".repeat(this.maxEmailLength + 1), "password1")));
+						.createUser(
+								new UserCreateRequestDTO("user1", "a".repeat(this.maxEmailLength + 1), "password1")))
+				.withMessage(String.format("Email must be at most %d characters", this.maxEmailLength));
+
+		Mockito.verify(userRepository, Mockito.never()).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).existsByEmailIgnoreCase(any());
+		Mockito.verify(roleRepository, Mockito.never()).findByRoleName(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -241,6 +297,10 @@ public class UserServiceTest {
 		assertThat(result).isNotNull();
 		assertThat(result.username()).isEqualTo("user2");
 		assertThat(result.bio()).isEqualTo(user1.getBio());
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(userRepository, Mockito.times(1)).save(any());
 	}
 
 	@Test
@@ -257,7 +317,12 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(DataIntegrityViolationException.class)
 				.isThrownBy(() -> userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2", null),
-						userDetails));
+						userDetails))
+				.withMessage("Username 'user2' is taken");
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).findById(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -272,7 +337,14 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "a".repeat(this.maxUsernameLength + 1), null), userDetails));
+						.updateUserDetails(
+								new UserUpdateDetailsRequestDTO(1, "a".repeat(this.maxUsernameLength + 1), null),
+								userDetails))
+				.withMessage(String.format("Username name must be at most %d characters", this.maxUsernameLength));
+
+		Mockito.verify(userRepository, Mockito.never()).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).findById(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -289,7 +361,12 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, invalidUsername, null), userDetails));
+						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, invalidUsername, null), userDetails))
+				.withMessageContaining("Username must only contain ");
+
+		Mockito.verify(userRepository, Mockito.never()).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).findById(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -312,6 +389,10 @@ public class UserServiceTest {
 		assertThat(result).isNotNull();
 		assertThat(result.username()).isEqualTo("user1");
 		assertThat(result.bio()).isEqualTo("new bio");
+
+		Mockito.verify(userRepository, Mockito.never()).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(userRepository, Mockito.times(1)).save(any());
 	}
 
 	@Test
@@ -327,7 +408,12 @@ public class UserServiceTest {
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
 						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, null, "a".repeat(this.maxBioLength + 1)),
-								userDetails));
+								userDetails))
+				.withMessage(String.format("User bio must be at most %d characters", this.maxBioLength));
+
+		Mockito.verify(userRepository, Mockito.never()).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).findById(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -351,6 +437,10 @@ public class UserServiceTest {
 		assertThat(result).isNotNull();
 		assertThat(result.username()).isEqualTo("user2");
 		assertThat(result.bio()).isEqualTo("new bio");
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(userRepository, Mockito.times(1)).save(any());
 	}
 
 	@Test
@@ -370,7 +460,12 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(AccessDeniedException.class)
 				.isThrownBy(() -> userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2", "new bio"),
-						userDetails));
+						userDetails))
+				.withMessage("User does not have permission to update details");
+
+		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -389,6 +484,11 @@ public class UserServiceTest {
 
 		assertThatNoException().isThrownBy(() -> userService
 				.updatePassword(new UserUpdatePasswordRequestDTO(1, "password1", "password2"), userDetails));
+
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(passwordEncoder, Mockito.times(1)).matches(any(), any());
+		Mockito.verify(passwordEncoder, Mockito.times(1)).encode(any());
+		Mockito.verify(userRepository, Mockito.times(1)).save(any());
 	}
 
 	@Test
@@ -403,7 +503,13 @@ public class UserServiceTest {
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 
 		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> userService
-				.updatePassword(new UserUpdatePasswordRequestDTO(1, "password1", "password2"), userDetails));
+				.updatePassword(new UserUpdatePasswordRequestDTO(1, "password1", "password2"), userDetails))
+				.withMessage("Old password is incorrect");
+
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(passwordEncoder, Mockito.times(1)).matches(any(), any());
+		Mockito.verify(passwordEncoder, Mockito.never()).encode(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -418,7 +524,13 @@ public class UserServiceTest {
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 
 		assertThatExceptionOfType(AccessDeniedException.class).isThrownBy(() -> userService
-				.updatePassword(new UserUpdatePasswordRequestDTO(1, "password1", "password2"), userDetails));
+				.updatePassword(new UserUpdatePasswordRequestDTO(1, "password1", "password2"), userDetails))
+				.withMessage("User does not have permission to update password");
+
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(passwordEncoder, Mockito.never()).matches(any(), any());
+		Mockito.verify(passwordEncoder, Mockito.never()).encode(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -432,18 +544,41 @@ public class UserServiceTest {
 		Mockito.when(userRepository.save(any(User.class))).thenReturn(user1);
 
 		assertThatNoException().isThrownBy(() -> userService.addUserRole(new UserRoleUpdateDTO(1, "USER_ADMIN")));
+
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(roleRepository, Mockito.times(1)).findByRoleNameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.times(1)).save(any());
 	}
 
 	@Test
 	@WithMockUser(roles = "SUPER_ADMIN")
-	public void testAddUserRoleAndExpectEntityNotFoundException() {
+	public void givenNonExistingUser_whenAddUserRole_thenThrowEntityNotFoundException() {
+		Mockito.when(userRepository.findById(1)).thenReturn(Optional.empty());
+
+		assertThatExceptionOfType(EntityNotFoundException.class)
+				.isThrownBy(() -> userService.addUserRole(new UserRoleUpdateDTO(1, "USER_ADMIN")))
+				.withMessage("User not found with ID: 1");
+
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(roleRepository, Mockito.never()).findByRoleNameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
+	}
+
+	@Test
+	@WithMockUser(roles = "SUPER_ADMIN")
+	public void givenNonExistingRole_whenAddUserRole_thenThrowEntityNotFoundException() {
 		User user1 = Mockito.spy(new User("user1", "user@test.com", "password1", null, Set.of()));
 
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 		Mockito.when(roleRepository.findByRoleNameIgnoreCase("USER_ADMIN")).thenReturn(Optional.empty());
 
 		assertThatExceptionOfType(EntityNotFoundException.class)
-				.isThrownBy(() -> userService.addUserRole(new UserRoleUpdateDTO(1, "USER_ADMIN")));
+				.isThrownBy(() -> userService.addUserRole(new UserRoleUpdateDTO(1, "USER_ADMIN")))
+				.withMessage("Role not found with name: USER_ADMIN");
+
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(roleRepository, Mockito.times(1)).findByRoleNameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
 	}
 
 	@Test
@@ -461,20 +596,51 @@ public class UserServiceTest {
 
 	@Test
 	@WithMockUser(roles = "SUPER_ADMIN")
-	public void testRemoveUserRoleAndExpectEntityNotFoundException() {
+	public void givenNonExistingUser_whenRemoveUserRole_thenThrowEntityNotFoundException() {
+		Mockito.when(userRepository.findById(1)).thenReturn(Optional.empty());
+
+		assertThatExceptionOfType(EntityNotFoundException.class)
+				.isThrownBy(() -> userService.removeUserRole(new UserRoleUpdateDTO(1, "USER_ADMIN")))
+				.withMessage("User not found with ID: 1");
+
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(roleRepository, Mockito.never()).findByRoleNameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
+	}
+
+	@Test
+	@WithMockUser(roles = "SUPER_ADMIN")
+	public void givenNonExistingRole_whenRemoveUserRole_thenThrowEntityNotFoundException() {
 		User user1 = Mockito.spy(new User("user1", "user@test.com", "password1", null, new HashSet<>()));
 
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 		Mockito.when(roleRepository.findByRoleNameIgnoreCase("USER_ADMIN")).thenReturn(Optional.empty());
 
 		assertThatExceptionOfType(EntityNotFoundException.class)
-				.isThrownBy(() -> userService.removeUserRole(new UserRoleUpdateDTO(1, "USER_ADMIN")));
+				.isThrownBy(() -> userService.removeUserRole(new UserRoleUpdateDTO(1, "USER_ADMIN")))
+				.withMessage("Role not found with name: USER_ADMIN");
+
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
+		Mockito.verify(roleRepository, Mockito.times(1)).findByRoleNameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).save(any());
+	}
+
+	private void verifyDeleteUserRepositoryCalls(VerificationMode mode) {
+		Mockito.verify(garmentRepository, mode).deleteAllGarmentURLsByGarmentIds(any());
+		Mockito.verify(garmentRepository, mode).deleteAllGarmentTagsByGarmentIds(any());
+		Mockito.verify(garmentRepository, mode).deleteAllGarmentsFromOutfits(any());
+		Mockito.verify(garmentRepository, mode).deleteAllByUserId(any());
+
+		Mockito.verify(outfitRepository, mode).deleteAllOutfitsFromGarments(any());
+		Mockito.verify(outfitRepository, mode).deleteAllOutfitTagsByOutfitIds(any());
+		Mockito.verify(outfitRepository, mode).deleteAllByUserId(any());
+
+		Mockito.verify(userRepository, mode).deleteById(any());
 	}
 
 	@Test
 	public void testDeleteUser() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
-		Mockito.when(user1.getId()).thenReturn(1);
 		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of(), List.of()));
 		Mockito.when(garment1.getId()).thenReturn(1);
 		Outfit outfit1 = Mockito
@@ -492,16 +658,7 @@ public class UserServiceTest {
 
 		assertThatNoException().isThrownBy(() -> userService.deleteUser(1, userDetails));
 
-		Mockito.verify(garmentRepository, Mockito.times(1)).deleteAllGarmentURLsByGarmentIds(List.of(garment1.getId()));
-		Mockito.verify(garmentRepository, Mockito.times(1)).deleteAllGarmentTagsByGarmentIds(List.of(garment1.getId()));
-		Mockito.verify(garmentRepository, Mockito.times(1)).deleteAllGarmentsFromOutfits(List.of(garment1.getId()));
-		Mockito.verify(garmentRepository, Mockito.times(1)).deleteAllByUserId(user1.getId());
-
-		Mockito.verify(outfitRepository, Mockito.times(1)).deleteAllOutfitsFromGarments(List.of(outfit1.getId()));
-		Mockito.verify(outfitRepository, Mockito.times(1)).deleteAllOutfitTagsByOutfitIds(List.of(outfit1.getId()));
-		Mockito.verify(outfitRepository, Mockito.times(1)).deleteAllByUserId(user1.getId());
-
-		Mockito.verify(userRepository, Mockito.times(1)).deleteById(user1.getId());
+		verifyDeleteUserRepositoryCalls(Mockito.times(1));
 	}
 
 	@Test
@@ -514,7 +671,10 @@ public class UserServiceTest {
 		Mockito.when(userRepository.findById(2)).thenReturn(Optional.empty());
 
 		assertThatExceptionOfType(EntityNotFoundException.class)
-				.isThrownBy(() -> userService.deleteUser(2, userDetails));
+				.isThrownBy(() -> userService.deleteUser(2, userDetails))
+				.withMessage("User not found with ID: 2");
+
+		verifyDeleteUserRepositoryCalls(Mockito.never());
 	}
 
 	@Test
@@ -529,9 +689,10 @@ public class UserServiceTest {
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 
 		assertThatExceptionOfType(AccessDeniedException.class)
-				.isThrownBy(() -> userService.deleteUser(1, userDetails));
+				.isThrownBy(() -> userService.deleteUser(1, userDetails))
+				.withMessage("User does not have permission to delete user");
 
-		Mockito.verify(userRepository, Mockito.never()).deleteById(1);
+		verifyDeleteUserRepositoryCalls(Mockito.never());
 	}
 
 	// TODO test follow user and delete user

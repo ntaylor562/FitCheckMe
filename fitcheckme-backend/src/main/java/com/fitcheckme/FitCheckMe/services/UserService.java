@@ -72,9 +72,6 @@ public class UserService {
 	}
 
 	public UserRequestDTO getByUsername(String username) throws EntityNotFoundException {
-		if(!isValidUsername(username)) {
-			throw new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username)));
-		}
 		User res = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", String.valueOf(username))));
 		return UserRequestDTO.toDTO(res);
 	}

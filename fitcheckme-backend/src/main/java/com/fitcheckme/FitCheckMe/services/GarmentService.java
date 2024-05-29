@@ -8,7 +8,6 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
@@ -16,6 +15,7 @@ import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentTagUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentURLUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.models.User;
@@ -159,14 +159,14 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
-		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", userDetails.getUsername())));
+	public GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %d", userDetails.getUserId())));
 		return this.createGarment(garment, user);
 	}
 
 	@Transactional
-	public List<GarmentRequestDTO> createGarment(List<GarmentCreateRequestDTO> garments, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException{
-		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User '%s' not found", userDetails.getUsername())));
+	public List<GarmentRequestDTO> createGarment(List<GarmentCreateRequestDTO> garments, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException{
+		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %d", userDetails.getUserId())));
 		List<GarmentRequestDTO> res = new ArrayList<GarmentRequestDTO>();
 		for(int i = 0; i < garments.size(); ++i) {
 			res.add(this.createGarment(garments.get(i), user));
@@ -175,14 +175,14 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public GarmentRequestDTO updateGarment(GarmentUpdateRequestDTO garment, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException{
+	public GarmentRequestDTO updateGarment(GarmentUpdateRequestDTO garment, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException{
 		if(garment.garmentName().length() > this.maxGarmentNameLength) {
 			throw new IllegalArgumentException(String.format("Garment name too long, must be at most %d characters", this.maxGarmentNameLength));
 		}
 
 		Garment currentGarment = this.getGarment(garment.garmentId());
 
-		if(!currentGarment.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+		if(currentGarment.getUser().getId() != userDetails.getUserId()) {
 			throw new IllegalArgumentException("User does not have permission to edit this garment");
 		}
 
@@ -193,10 +193,10 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		Garment garment = this.getGarment(garmentUpdate.garmentId());
 
-		if(!garment.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+		if(garment.getUser().getId() != userDetails.getUserId()) {
 			throw new IllegalArgumentException("User does not have permission to edit this garment");
 		}
 
@@ -221,10 +221,10 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public void editURLs(GarmentURLUpdateRequestDTO garmentUpdate, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+	public void editURLs(GarmentURLUpdateRequestDTO garmentUpdate, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		Garment garment = this.getGarment(garmentUpdate.garmentId());
 
-		if(!garment.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+		if(garment.getUser().getId() != userDetails.getUserId()) {
 			throw new IllegalArgumentException("User does not have permission to edit this garment");
 		}
 
@@ -237,11 +237,11 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public void deleteGarment(Integer garmentId, UserDetails userDetails) throws EntityNotFoundException, AccessDeniedException {
+	public void deleteGarment(Integer garmentId, CustomUserDetails userDetails) throws EntityNotFoundException, AccessDeniedException {
 		Garment currentGarment = this.getGarment(garmentId);
 
 		//Checking user is the owner of this garment
-		if(!userDetails.getUsername().toLowerCase().equals(currentGarment.getUser().getUsername())) {
+		if(currentGarment.getUser().getId() != userDetails.getUserId()) {
 			throw new AccessDeniedException("User does not have permission to delete this garment");
 		}
 

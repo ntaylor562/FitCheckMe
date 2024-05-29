@@ -9,7 +9,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -63,7 +62,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter{
 			}
 
 			if(claims != null && jwtUtil.validateClaims(claims)) {
-				UserDetails user = userDetailsService.loadUserByUsername(claims.getSubject());
+				CustomUserDetails user = userDetailsService.loadByUserId(Integer.parseInt(claims.getId()));
 
 				//Empty credentials because authentication was successful
 				Authentication authentication = new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());

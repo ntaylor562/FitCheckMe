@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -27,6 +28,19 @@ public class CustomUserDetailsService implements UserDetailsService {
 		User user = username.contains("@")
 				? userRepository.findByEmailIgnoreCase(username).orElseThrow(() -> notFoundException)
 				: userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> notFoundException);
+
+		CustomUserDetails userDetails = new CustomUserDetails(
+				user.getId(),
+				user.getUsername(),
+				user.getPassword(),
+				user.getRoles());
+		return userDetails;
+	}
+
+	@Transactional
+	public CustomUserDetails loadByUserId(Integer userId) throws EntityNotFoundException {
+		User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(
+				String.format("User not found with ID: %d", userId)));
 
 		CustomUserDetails userDetails = new CustomUserDetails(
 				user.getId(),

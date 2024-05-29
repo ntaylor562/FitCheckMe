@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,15 +20,16 @@ import org.mockito.verification.VerificationMode;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.JwtUserDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginReturnDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.models.RefreshToken;
+import com.fitcheckme.FitCheckMe.models.Role;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.RefreshTokenRepository;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
@@ -58,6 +60,10 @@ public class AuthServiceTest {
 	@BeforeEach
 	public void setup() {
 
+	}
+
+	private CustomUserDetails getUserDetails(Integer userId, String username, String password, Set<Role> authorities) {
+		return new CustomUserDetails(userId, username, password, authorities);
 	}
 
 	private void verifyCommonAuthMethodCalls(VerificationMode mode) {
@@ -158,13 +164,10 @@ public class AuthServiceTest {
 	public void testDeleteRefreshToken() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(
-				refreshTokenRepository.findByUser_UsernameAndRefreshToken(userDetails.getUsername(), "refreshToken"))
+				refreshTokenRepository.findByUserIdAndRefreshToken(userDetails.getUserId(), "refreshToken"))
 				.thenReturn(Optional.of(new RefreshToken("refreshToken", user1, LocalDateTime.now())));
 
 		assertThatNoException().isThrownBy(() -> authService.deleteRefreshToken("refreshToken", userDetails));
@@ -173,12 +176,9 @@ public class AuthServiceTest {
 
 	@Test
 	public void testDeleteRefreshTokenAndExpectEntityNotFoundException() {
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
-		Mockito.when(refreshTokenRepository.findByUser_UsernameAndRefreshToken("user1", "refreshToken"))
+		Mockito.when(refreshTokenRepository.findByUserIdAndRefreshToken(1, "refreshToken"))
 				.thenReturn(Optional.empty());
 
 		assertThatExceptionOfType(EntityNotFoundException.class)

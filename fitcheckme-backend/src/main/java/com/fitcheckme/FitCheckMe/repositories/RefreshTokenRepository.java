@@ -10,7 +10,7 @@ import com.fitcheckme.FitCheckMe.models.RefreshToken;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Integer>{
 	Optional<RefreshToken> findByRefreshToken(String refreshToken);
-	Optional<RefreshToken> findByUser_UsernameAndRefreshToken(String username, String refreshToken);
+	Optional<RefreshToken> findByUserIdAndRefreshToken(Integer userId, String refreshToken);
 
 	@Modifying
 	@Query(value = "DELETE FROM app.refresh_token WHERE user_id = ?1", nativeQuery = true)

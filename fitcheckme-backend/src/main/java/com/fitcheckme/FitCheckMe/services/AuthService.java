@@ -8,13 +8,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.User.JwtUserDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginReturnDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.models.RefreshToken;
 import com.fitcheckme.FitCheckMe.models.User;
@@ -75,8 +75,8 @@ public class AuthService {
 	}
 
 	@Transactional
-	public void deleteRefreshToken(String refreshToken, UserDetails userDetails) throws EntityNotFoundException {
-		refreshTokenRepository.delete(refreshTokenRepository.findByUser_UsernameAndRefreshToken(userDetails.getUsername(), refreshToken).orElseThrow(() -> new EntityNotFoundException("Refresh token not found")));
+	public void deleteRefreshToken(String refreshToken, CustomUserDetails userDetails) throws EntityNotFoundException {
+		refreshTokenRepository.delete(refreshTokenRepository.findByUserIdAndRefreshToken(userDetails.getUserId(), refreshToken).orElseThrow(() -> new EntityNotFoundException("Refresh token not found")));
 	}
 
 }

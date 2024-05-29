@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fitcheckme.FitCheckMe.DTOs.ExceptionResponseDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginReturnDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.services.AuthService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -21,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -85,7 +85,7 @@ public class AuthController {
 	}
 
 	@PostMapping("logout")
-	public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response, @AuthenticationPrincipal UserDetails userDetails) {
+	public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		//Deleting refresh token and refresh token cookie
 		Cookie refreshTokenCookie = this.getCookie(request, "jwt-refresh-token").orElse(null);
 		if(refreshTokenCookie != null) {

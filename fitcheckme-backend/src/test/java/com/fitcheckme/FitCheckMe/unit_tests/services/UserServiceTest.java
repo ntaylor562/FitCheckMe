@@ -22,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.verification.VerificationMode;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -32,6 +31,7 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRoleUpdateDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.models.Role;
@@ -76,6 +76,10 @@ public class UserServiceTest {
 	@BeforeEach
 	public void setup() {
 
+	}
+
+	private CustomUserDetails getUserDetails(Integer userId, String username, String password, Set<Role> authorities) {
+		return new CustomUserDetails(userId, username, password, authorities);
 	}
 
 	@Test
@@ -282,11 +286,9 @@ public class UserServiceTest {
 		ReflectionTestUtils.setField(userService, "maxBioLength", this.maxBioLength);
 
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
+		Mockito.when(user1.getId()).thenReturn(1);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.existsByUsernameIgnoreCase("user2")).thenReturn(false);
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
@@ -308,10 +310,7 @@ public class UserServiceTest {
 		ReflectionTestUtils.setField(userService, "maxUsernameLength", this.maxUsernameLength);
 		ReflectionTestUtils.setField(userService, "maxBioLength", this.maxBioLength);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.existsByUsernameIgnoreCase("user2")).thenReturn(true);
 
@@ -330,10 +329,7 @@ public class UserServiceTest {
 		ReflectionTestUtils.setField(userService, "maxUsernameLength", this.maxUsernameLength);
 		ReflectionTestUtils.setField(userService, "maxBioLength", this.maxBioLength);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
@@ -352,10 +348,7 @@ public class UserServiceTest {
 		ReflectionTestUtils.setField(userService, "maxUsernameLength", this.maxUsernameLength);
 		ReflectionTestUtils.setField(userService, "maxBioLength", this.maxBioLength);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		String invalidUsername = "#";
 
@@ -375,11 +368,9 @@ public class UserServiceTest {
 		ReflectionTestUtils.setField(userService, "maxBioLength", this.maxBioLength);
 
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
+		Mockito.when(user1.getId()).thenReturn(1);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 		Mockito.when(userRepository.save(any(User.class))).thenReturn(user1);
@@ -400,10 +391,7 @@ public class UserServiceTest {
 		ReflectionTestUtils.setField(userService, "maxUsernameLength", this.maxUsernameLength);
 		ReflectionTestUtils.setField(userService, "maxBioLength", this.maxBioLength);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
@@ -422,11 +410,9 @@ public class UserServiceTest {
 		ReflectionTestUtils.setField(userService, "maxBioLength", this.maxBioLength);
 
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
+		Mockito.when(user1.getId()).thenReturn(1);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 		Mockito.when(userRepository.existsByUsernameIgnoreCase("user2")).thenReturn(false);
@@ -450,10 +436,7 @@ public class UserServiceTest {
 
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user3")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 		Mockito.when(userRepository.existsByUsernameIgnoreCase("user2")).thenReturn(false);
@@ -471,11 +454,9 @@ public class UserServiceTest {
 	@Test
 	public void testUpdatePassword() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
+		Mockito.when(user1.getId()).thenReturn(1);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 		Mockito.when(passwordEncoder.encode("password2")).thenReturn("password2Encoded");
@@ -494,11 +475,9 @@ public class UserServiceTest {
 	@Test
 	public void testUpdatePasswordAndExpectIllegalArgumentException() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
+		Mockito.when(user1.getId()).thenReturn(1);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 
@@ -516,10 +495,7 @@ public class UserServiceTest {
 	public void testUpdatePasswordAndExpectAccessDeniedException() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user2")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 
@@ -646,11 +622,9 @@ public class UserServiceTest {
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), List.of(), List.of()));
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 		Mockito.when(garmentRepository.findByUserId(1)).thenReturn(List.of(garment1));
@@ -663,10 +637,7 @@ public class UserServiceTest {
 
 	@Test
 	public void testDeleteUserAndExpectEntityNotFoundException() {
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.findById(2)).thenReturn(Optional.empty());
 
@@ -681,10 +652,7 @@ public class UserServiceTest {
 	public void testDeleteUserAndExpectAccessDeniedException() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user2")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 

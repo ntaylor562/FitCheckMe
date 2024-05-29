@@ -18,7 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +26,7 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRoleUpdateDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.controllers.UserController;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.services.UserService;
@@ -60,10 +60,7 @@ public class UserControllerTest {
 		UserRequestDTO userDTO2 = UserRequestDTO.toDTO(this.user2);
 		Mockito.when(userService.getById(2)).thenReturn(userDTO2);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-			.username(user1.getUsername())
-			.password("")
-			.build();
+		CustomUserDetails userDetails = new CustomUserDetails(user1.getId(), user1.getUsername(), "", user1.getRoles());
 		Authentication authentication = Mockito.mock(Authentication.class);
         Mockito.when(authentication.getPrincipal()).thenReturn(userDetails);
 
@@ -123,7 +120,7 @@ public class UserControllerTest {
 
 	@Test
 	public void testGetCurrentUserAndExpectEntityNotFoundException() throws Exception {
-		Mockito.when(userService.getByUsername(user1.getUsername())).thenThrow(EntityNotFoundException.class);
+		Mockito.when(userService.getById(user1.getId())).thenThrow(EntityNotFoundException.class);
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/user/currentuser"))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}
@@ -203,7 +200,7 @@ public class UserControllerTest {
 	public void testUpdateUserDetailsAndExpectEntityNotFoundException() throws Exception {
 		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-		Mockito.doThrow(EntityNotFoundException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
+		Mockito.doThrow(EntityNotFoundException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
@@ -214,7 +211,7 @@ public class UserControllerTest {
 	public void testUpdateUserDetailsAndExpectIllegalArgumentsException() throws Exception {
 		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-		Mockito.doThrow(IllegalArgumentException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
+		Mockito.doThrow(IllegalArgumentException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
@@ -225,7 +222,7 @@ public class UserControllerTest {
 	public void testUpdateUserDetailsWithConflictingUsername() throws Exception {
 		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-		Mockito.doThrow(DataIntegrityViolationException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
+		Mockito.doThrow(DataIntegrityViolationException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
@@ -236,7 +233,7 @@ public class UserControllerTest {
 	public void testUpdateUserDetailsAndExpectAccessDeniedException() throws Exception {
 		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-		Mockito.doThrow(AccessDeniedException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(UserDetails.class));
+		Mockito.doThrow(AccessDeniedException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
@@ -317,7 +314,7 @@ public class UserControllerTest {
 	public void testUpdateUserPasswordAndExpectEntityNotFoundException() throws Exception {
 		UserUpdatePasswordRequestDTO requestDTO = new UserUpdatePasswordRequestDTO(1, "passw", "pass3");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-		Mockito.doThrow(EntityNotFoundException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(UserDetails.class));
+		Mockito.doThrow(EntityNotFoundException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
@@ -328,7 +325,7 @@ public class UserControllerTest {
 	public void testUpdateUserPasswordAndExpectIllegalArgumentsException() throws Exception {
 		UserUpdatePasswordRequestDTO requestDTO = new UserUpdatePasswordRequestDTO(1, "passw", "pass3");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-		Mockito.doThrow(IllegalArgumentException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(UserDetails.class));
+		Mockito.doThrow(IllegalArgumentException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
@@ -339,7 +336,7 @@ public class UserControllerTest {
 	public void testUpdateUserPasswordAndExpectAccessDeniedException() throws Exception {
 		UserUpdatePasswordRequestDTO requestDTO = new UserUpdatePasswordRequestDTO(1, "passw", "pass3");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-		Mockito.doThrow(AccessDeniedException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(UserDetails.class));
+		Mockito.doThrow(AccessDeniedException.class).when(userService).updatePassword(any(UserUpdatePasswordRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
@@ -354,14 +351,14 @@ public class UserControllerTest {
 
 	@Test
 	public void testDeleteUserAndExpectEntityNotFoundException() throws Exception {
-		Mockito.doThrow(EntityNotFoundException.class).when(userService).deleteUser(anyInt(), any(UserDetails.class));
+		Mockito.doThrow(EntityNotFoundException.class).when(userService).deleteUser(anyInt(), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user?id={id}", 3))
 			.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}
 
 	@Test
 	public void testDeleteUserAndExpectAccessDeniedException() throws Exception {
-		Mockito.doThrow(AccessDeniedException.class).when(userService).deleteUser(anyInt(), any(UserDetails.class));
+		Mockito.doThrow(AccessDeniedException.class).when(userService).deleteUser(anyInt(), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/user?id={id}", user1.getId()))
 			.andExpect(MockMvcResultMatchers.status().isForbidden());
 	}

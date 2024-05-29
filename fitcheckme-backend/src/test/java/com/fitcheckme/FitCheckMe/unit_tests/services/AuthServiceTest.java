@@ -144,20 +144,23 @@ public class AuthServiceTest {
 				.isThrownBy(() -> authService.refreshToken("oldRefreshToken"))
 				.withMessage("Refresh token not found");
 
-		verifyCommonAuthMethodCalls(Mockito.never());
+		Mockito.verify(refreshTokenRepository, Mockito.never()).delete(any());
+		Mockito.verify(refreshTokenRepository, Mockito.never()).save(any());
 	}
 
 	@Test
 	public void testRefreshTokenAndExpectExpiredToken() {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
+		RefreshToken oldRefreshToken = new RefreshToken("refreshToken", user1, LocalDateTime.now().minusSeconds(100));
 		Mockito.when(refreshTokenRepository.findByRefreshToken("refreshToken")).thenReturn(
-				Optional.of(new RefreshToken("refreshToken", user1, LocalDateTime.now().minusSeconds(100))));
+				Optional.of(oldRefreshToken));
 
 		assertThatExceptionOfType(RuntimeException.class)
 				.isThrownBy(() -> authService.refreshToken("refreshToken"))
 				.withMessage("Refresh token expired");
-		
-		verifyCommonAuthMethodCalls(Mockito.never());
+
+		Mockito.verify(refreshTokenRepository, Mockito.times(1)).delete(oldRefreshToken);
+		Mockito.verify(refreshTokenRepository, Mockito.never()).save(any());
 	}
 
 	@Test

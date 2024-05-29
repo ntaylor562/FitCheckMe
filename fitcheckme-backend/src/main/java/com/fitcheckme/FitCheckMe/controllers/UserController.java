@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +23,7 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRoleUpdateDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.services.UserService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -62,9 +62,9 @@ public class UserController {
 	}
 
 	@GetMapping("currentuser")
-	public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+	public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
 		try {
-			return new ResponseEntity<UserRequestDTO>(this.userService.getByUsername(userDetails.getUsername()), HttpStatus.OK);
+			return new ResponseEntity<UserRequestDTO>(this.userService.getById(userDetails.getUserId()), HttpStatus.OK);
 		}
 		catch(EntityNotFoundException e) {
 			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("User not found", "User was not found"), HttpStatus.NOT_FOUND);
@@ -104,7 +104,7 @@ public class UserController {
 
 	//TODO add auth
 	@PutMapping("details")
-	public ResponseEntity<?> updateUserDetails(@Valid @RequestBody UserUpdateDetailsRequestDTO user, @AuthenticationPrincipal UserDetails userDetails) {
+	public ResponseEntity<?> updateUserDetails(@Valid @RequestBody UserUpdateDetailsRequestDTO user, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		try {
 			userService.updateUserDetails(user, userDetails);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -130,14 +130,14 @@ public class UserController {
 
 	@PutMapping("password")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void updateUserPassword(@Valid @RequestBody UserUpdatePasswordRequestDTO user, @AuthenticationPrincipal UserDetails userDetails) {
+	public void updateUserPassword(@Valid @RequestBody UserUpdatePasswordRequestDTO user, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		userService.updatePassword(user, userDetails);
 	}
 
 	//TODO add auth
 	@DeleteMapping("")
 	@ResponseStatus(HttpStatus.OK)
-	public void deleteUser(@RequestParam Integer id, @AuthenticationPrincipal UserDetails userDetails) {
+	public void deleteUser(@RequestParam Integer id, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		userService.deleteUser(id, userDetails);
 	}
 }

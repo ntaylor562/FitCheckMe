@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +15,7 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserRoleUpdateDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.models.Following;
 import com.fitcheckme.FitCheckMe.models.Role;
 import com.fitcheckme.FitCheckMe.models.User;
@@ -104,7 +104,7 @@ public class UserService {
 		return UserRequestDTO.toDTO(this.userRepository.save(newUser));
 	}
 
-	public UserRequestDTO updateUserDetails(UserUpdateDetailsRequestDTO user, UserDetails userDetails) throws DataIntegrityViolationException, IllegalArgumentException, AccessDeniedException {
+	public UserRequestDTO updateUserDetails(UserUpdateDetailsRequestDTO user, CustomUserDetails userDetails) throws DataIntegrityViolationException, IllegalArgumentException, AccessDeniedException {
 		if(user.username() != null) {
 			if(user.username().length() > this.maxUsernameLength) {
 				throw new IllegalArgumentException(String.format("Username name must be at most %d characters", this.maxUsernameLength));
@@ -121,7 +121,7 @@ public class UserService {
 		}
 
 		User currentUser = this.getUserById(user.userId());
-		if(!currentUser.getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+		if(currentUser.getId() != userDetails.getUserId()) {
 			throw new AccessDeniedException("User does not have permission to update details");
 		}
 
@@ -135,9 +135,9 @@ public class UserService {
 		return UserRequestDTO.toDTO(this.userRepository.save(currentUser));
 	}
 
-	public void updatePassword(UserUpdatePasswordRequestDTO user, UserDetails userDetails) throws IllegalArgumentException {
+	public void updatePassword(UserUpdatePasswordRequestDTO user, CustomUserDetails userDetails) throws IllegalArgumentException {
 		User currentUser = this.getUserById(user.userId());
-		if(!currentUser.getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+		if(currentUser.getId() != userDetails.getUserId()) {
 			throw new AccessDeniedException("User does not have permission to update password");
 		}
 		if(!passwordEncoder.matches(user.oldPassword(), currentUser.getPassword())) {
@@ -183,10 +183,10 @@ public class UserService {
 	}
 
 	@Transactional
-	public void deleteUser(Integer id, UserDetails userDetails) throws AccessDeniedException, EntityNotFoundException {
+	public void deleteUser(Integer id, CustomUserDetails userDetails) throws AccessDeniedException, EntityNotFoundException {
 		User currentUser = this.getUserById(id);
 
-		if(!currentUser.getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+		if(currentUser.getId() != userDetails.getUserId()) {
 			throw new AccessDeniedException("User does not have permission to delete user");
 		}
 

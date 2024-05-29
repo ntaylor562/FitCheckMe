@@ -1,6 +1,7 @@
 package com.fitcheckme.FitCheckMe.auth;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ public class CustomUserDetails implements UserDetails, CredentialsContainer {
 		this.userId = userId;
 		this.username = username;
 		this.password = password;
-		this.authorities = authorities;
+		this.authorities = new HashSet<>(authorities);
 		this.accountNonExpired = accountNonExpired;
 		this.accountNonLocked = accountNonLocked;
 		this.credentialsNonExpired = credentialsNonExpired;
@@ -44,9 +45,9 @@ public class CustomUserDetails implements UserDetails, CredentialsContainer {
 
 	public CustomUserDetails(Integer userId, String username, String password, Set<Role> authorities) {
 		if(authorities == null) {
-			this.authorities = null;
+			this.authorities = new HashSet<>();
 		} else {
-			this.authorities = authorities.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName())).collect(Collectors.toSet());
+			this.authorities = new HashSet<>(authorities.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName())).collect(Collectors.toSet()));
 		}
 		this.userId = userId;
 		this.username = username;

@@ -387,7 +387,7 @@ public class OutfitServiceTest {
 
 		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(userRepository, Mockito.never()).findByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).findById(any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -418,7 +418,7 @@ public class OutfitServiceTest {
 
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
-		Mockito.verify(userRepository, Mockito.never()).findByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).findById(any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -437,7 +437,7 @@ public class OutfitServiceTest {
 
 		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(userRepository, Mockito.never()).findByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).findById(any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -456,7 +456,7 @@ public class OutfitServiceTest {
 
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
-		Mockito.verify(userRepository, Mockito.never()).findByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.never()).findById(any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 

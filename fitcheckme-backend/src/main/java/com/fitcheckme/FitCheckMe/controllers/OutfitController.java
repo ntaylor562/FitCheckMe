@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.services.OutfitService;
 
 import jakarta.validation.Valid;
@@ -45,27 +45,27 @@ public class OutfitController {
 	}
 
 	@GetMapping("useroutfits")
-	public ResponseEntity<List<OutfitRequestDTO>> getUserOutfits(@RequestParam(required = false) Integer userId, @AuthenticationPrincipal UserDetails userDetails) {
+	public ResponseEntity<List<OutfitRequestDTO>> getUserOutfits(@RequestParam(required = false) Integer userId, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		if(userId == null) {
-			return new ResponseEntity<List<OutfitRequestDTO>>(this.outfitService.getUserOutfits(userDetails.getUsername()), HttpStatus.OK);
+			return new ResponseEntity<List<OutfitRequestDTO>>(this.outfitService.getUserOutfits(userDetails.getUserId()), HttpStatus.OK);
 		}
 		return new ResponseEntity<List<OutfitRequestDTO>>(this.outfitService.getUserOutfits(userId), HttpStatus.OK);
 	}
 	
 
 	@PostMapping("create")
-	public ResponseEntity<OutfitRequestDTO> createOutfit(@Valid @RequestBody OutfitCreateRequestDTO outfit, @AuthenticationPrincipal UserDetails userDetails) {
+	public ResponseEntity<OutfitRequestDTO> createOutfit(@Valid @RequestBody OutfitCreateRequestDTO outfit, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.createOutfit(outfit, userDetails), HttpStatus.CREATED);
 	}
 
 	@PutMapping("edit")
-	public ResponseEntity<OutfitRequestDTO> updateOutfit(@Valid @RequestBody OutfitUpdateRequestDTO outfit, @AuthenticationPrincipal UserDetails userDetails) {
+	public ResponseEntity<OutfitRequestDTO> updateOutfit(@Valid @RequestBody OutfitUpdateRequestDTO outfit, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.updateOutfit(outfit, userDetails), HttpStatus.ACCEPTED);
 	}
 
 	@DeleteMapping("")
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void removeOutfit(@RequestParam Integer id, @AuthenticationPrincipal UserDetails userDetails) {
+	public void removeOutfit(@RequestParam Integer id, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.outfitService.deleteOutfit(id, userDetails);
 	}
 }

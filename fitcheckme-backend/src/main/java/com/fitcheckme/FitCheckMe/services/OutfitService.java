@@ -9,12 +9,12 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Outfit;
 import com.fitcheckme.FitCheckMe.models.Tag;
@@ -106,7 +106,7 @@ public class OutfitService {
 	}
 
 	@Transactional
-	public OutfitRequestDTO createOutfit(OutfitCreateRequestDTO outfit, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+	public OutfitRequestDTO createOutfit(OutfitCreateRequestDTO outfit, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		if(outfit.outfitName().length() > this.maxNameLength) {
 			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", this.maxNameLength));
 		}
@@ -144,14 +144,14 @@ public class OutfitService {
 			garments = Set.of();
 		}
 
-		User user = userRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username: %s", userDetails.getUsername())));
+		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %d", userDetails.getUserId())));
 
 		Outfit newOutfit = new Outfit(user, outfit.outfitName(), outfit.outfitDesc(), LocalDateTime.now(), garments, tags);
 		return OutfitRequestDTO.toDTO(this.outfitRepository.save(newOutfit));
 	}
 
 	@Transactional
-	public OutfitRequestDTO updateOutfit(OutfitUpdateRequestDTO outfit, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException, AccessDeniedException {
+	public OutfitRequestDTO updateOutfit(OutfitUpdateRequestDTO outfit, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException, AccessDeniedException {
 		if(outfit.outfitName() != null && outfit.outfitName().length() > this.maxNameLength) {
 			throw new IllegalArgumentException(String.format("Outfit name must be at most %d characters", this.maxNameLength));
 		}
@@ -161,7 +161,7 @@ public class OutfitService {
 
 		Outfit currentOutfit = this.getOutfit(outfit.outfitId());
 
-		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {
+		if(currentOutfit.getUser().getId() != userDetails.getUserId()) {
 			throw new AccessDeniedException("User does not have permission to edit this outfit");
 		}
 
@@ -193,8 +193,8 @@ public class OutfitService {
 	}
 
 	@Transactional
-	private void editGarments(Outfit currentOutfit, Set<Integer> addGarmentIds, Set<Integer> removeGarmentIds, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
-		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {
+	private void editGarments(Outfit currentOutfit, Set<Integer> addGarmentIds, Set<Integer> removeGarmentIds, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+		if(currentOutfit.getUser().getId() != userDetails.getUserId()) {
 			throw new IllegalArgumentException("User does not have permissions to edit this outfit");
 		}
 
@@ -227,8 +227,8 @@ public class OutfitService {
 	}
 
 	@Transactional
-	private void editTags(Outfit currentOutfit, Set<Integer> addTagIds, Set<Integer> removeTagIds, UserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
-		if(!currentOutfit.getUser().getUsername().equals(userDetails.getUsername())) {
+	private void editTags(Outfit currentOutfit, Set<Integer> addTagIds, Set<Integer> removeTagIds, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+		if(currentOutfit.getUser().getId() != userDetails.getUserId()) {
 			throw new IllegalArgumentException("User does not have permissions to edit this outfit");
 		}
 
@@ -262,10 +262,10 @@ public class OutfitService {
 	}
 
 	@Transactional
-	public void deleteOutfit(Integer id, UserDetails userDetails) throws AccessDeniedException, EntityNotFoundException {
+	public void deleteOutfit(Integer id, CustomUserDetails userDetails) throws AccessDeniedException, EntityNotFoundException {
 		Outfit currentOutfit = this.getOutfit(id);
 
-		if(!currentOutfit.getUser().getUsername().toLowerCase().equals(userDetails.getUsername().toLowerCase())) {
+		if(currentOutfit.getUser().getId() != userDetails.getUserId()) {
 			throw new AccessDeniedException("User does not have permission to delete this outfit");
 		}
 

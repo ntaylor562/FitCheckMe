@@ -22,14 +22,15 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.verification.VerificationMode;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.models.Garment;
 import com.fitcheckme.FitCheckMe.models.Outfit;
+import com.fitcheckme.FitCheckMe.models.Role;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
@@ -68,10 +69,14 @@ public class OutfitServiceTest {
 
 	}
 
+	private CustomUserDetails getUserDetails(Integer userId, String username, String password, Set<Role> authorities) {
+		return new CustomUserDetails(userId, username, password, authorities);
+	}
+
 	private void verifyRepositoryCallsOnCreateOutfit(VerificationMode mode) {
 		Mockito.verify(tagRepository, mode).findAllById(any());
 		Mockito.verify(garmentRepository, mode).findAllById(any());
-		Mockito.verify(userRepository, mode).findByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, mode).findById(any());
 		Mockito.verify(outfitRepository, mode).save(any());
 	}
 
@@ -313,10 +318,7 @@ public class OutfitServiceTest {
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), List.of(garment1, garment2),
 						List.of(tag1)));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(user1.getId()).thenReturn(1);
 		Mockito.when(tag1.getId()).thenReturn(1);
 		Mockito.when(garment1.getId()).thenReturn(1);
@@ -325,7 +327,7 @@ public class OutfitServiceTest {
 
 		Mockito.when(garmentRepository.findAllById(Set.of(1, 2))).thenReturn(List.of(garment1, garment2));
 		Mockito.when(tagRepository.findAllById(Set.of(1))).thenReturn(List.of(tag1));
-		Mockito.when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(Optional.of(user1));
+		Mockito.when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
 		Mockito.when(outfitRepository.save(any(Outfit.class))).thenReturn(outfit1);
 
 		OutfitRequestDTO result = outfitService.createOutfit(OutfitCreateRequestDTO.toDTO(outfit1), userDetails);
@@ -463,21 +465,18 @@ public class OutfitServiceTest {
 		ReflectionTestUtils.setField(outfitService, "maxNameLength", this.maxNameLength);
 		ReflectionTestUtils.setField(outfitService, "maxDescLength", this.maxDescLength);
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 
-		Mockito.when(userRepository.findByUsernameIgnoreCase("user1")).thenReturn(Optional.empty());
+		Mockito.when(userRepository.findById(1)).thenReturn(Optional.empty());
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(
 						() -> outfitService.createOutfit(new OutfitCreateRequestDTO("outfit 1",
 								"a".repeat(this.maxNameLength + 1), null, null), userDetails))
-				.withMessage("User not found with username: user1");
+				.withMessage("User not found with ID: 1");
 
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(userRepository, Mockito.times(1)).findByUsernameIgnoreCase(any());
+		Mockito.verify(userRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -501,10 +500,7 @@ public class OutfitServiceTest {
 						List.of(garment2),
 						List.of(tag2)));
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(user1.getId()).thenReturn(1);
 		Mockito.when(tag1.getId()).thenReturn(1);
 		Mockito.when(tag2.getId()).thenReturn(2);
@@ -542,11 +538,9 @@ public class OutfitServiceTest {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, Set.of()));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(), Set.of()));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 
@@ -567,10 +561,7 @@ public class OutfitServiceTest {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(), Set.of()));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user2")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
@@ -635,11 +626,9 @@ public class OutfitServiceTest {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, Set.of()));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(), Set.of()));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		List<Garment> garments = IntStream.range(0, this.maxGarmentsPerOutfit + 1).mapToObj(n -> {
 			Garment garment = Mockito.spy(new Garment(user1, "garment " + n, List.of(), List.of()));
@@ -672,11 +661,9 @@ public class OutfitServiceTest {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, Set.of()));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(), Set.of()));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		List<Tag> tags = IntStream.range(0, this.maxTagsPerOutfit + 1).mapToObj(n -> {
 			Tag tag = Mockito.spy(new Tag("tag" + n));
@@ -707,11 +694,9 @@ public class OutfitServiceTest {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, Set.of()));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(), Set.of()));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 		Mockito.when(garmentRepository.findAllById(Set.of(1))).thenReturn(List.of());
@@ -734,11 +719,9 @@ public class OutfitServiceTest {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, Set.of()));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(), Set.of()));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 		Mockito.when(garmentRepository.findAllByOutfitIdAndId(Set.of(1), outfit1.getId())).thenReturn(List.of());
@@ -761,11 +744,9 @@ public class OutfitServiceTest {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, Set.of()));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(), Set.of()));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 		Mockito.when(tagRepository.findAllById(Set.of(1))).thenReturn(List.of());
@@ -788,11 +769,9 @@ public class OutfitServiceTest {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, Set.of()));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(), Set.of()));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 		Mockito.when(tagRepository.findAllById(Set.of(1))).thenReturn(List.of());
@@ -816,11 +795,9 @@ public class OutfitServiceTest {
 		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of("url1", "url2"), List.of()));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(garment1), Set.of()));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 		Mockito.when(garmentRepository.findAllById(Set.of(1))).thenReturn(List.of(garment1));
@@ -847,11 +824,9 @@ public class OutfitServiceTest {
 		Tag tag1 = Mockito.spy(new Tag("tag1"));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(), Set.of(tag1)));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 		Mockito.when(tagRepository.findAllById(Set.of(1))).thenReturn(List.of(tag1));
@@ -876,11 +851,9 @@ public class OutfitServiceTest {
 		Garment garment1 = Mockito.spy(new Garment(user1, "garment 1", List.of("url1", "url2"), List.of()));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(garment1), Set.of()));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 		Mockito.when(garmentRepository.findAllById(Set.of(1))).thenReturn(List.of(garment1));
@@ -905,11 +878,9 @@ public class OutfitServiceTest {
 		Tag tag1 = Mockito.spy(new Tag("tag1"));
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(), Set.of(tag1)));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 		Mockito.when(tagRepository.findAllById(Set.of(1))).thenReturn(List.of(tag1));
@@ -935,11 +906,9 @@ public class OutfitServiceTest {
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(),
 						Set.of(tag1)));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user1")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(1, "user1", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
+		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 
@@ -956,10 +925,7 @@ public class OutfitServiceTest {
 		Outfit outfit1 = Mockito
 				.spy(new Outfit(user1, "outfit 1", "outfit 1 desc", LocalDateTime.now(), Set.of(),
 						Set.of(tag1)));
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username("user2")
-				.password("")
-				.build();
+		CustomUserDetails userDetails = getUserDetails(2, "user2", "", null);
 		Mockito.when(outfit1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));

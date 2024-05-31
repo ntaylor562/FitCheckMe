@@ -5,9 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -65,7 +63,7 @@ public abstract class AbstractIntegrationTest {
 	}
 
 	@BeforeAll
-	protected void setup() {
+	protected void setupAll() {
 		Resource resource = new ClassPathResource("data-test.sql");
 		if (userRepository.count() == 0) {
 			try {
@@ -76,25 +74,23 @@ public abstract class AbstractIntegrationTest {
 				throw new RuntimeException(String.format("ERROR reading file for inital test data: %s", e.toString()));
 			}
 		}
-
-		login(AbstractIntegrationTest.defaultUsername);
 	}
 
-	@BeforeEach
+	protected void resetAuth() {
+		addAuthTokensToRestTemplate(); //For some reason, tokens are removed after each test so we add them back here
+
+		if(!AbstractIntegrationTest.defaultUsername.equals(this.currentUsername)) {
+			logout();
+			login(AbstractIntegrationTest.defaultUsername);
+		}
+	}
+
 	protected void addAuthTokensToRestTemplate() {
 		restTemplate.getRestTemplate().getInterceptors().add((request, body, execution) -> {
 			request.getHeaders().add("Cookie", this.accessTokenCookie);
 			request.getHeaders().add("Cookie", this.refreshTokenCookie);
 			return execution.execute(request, body);
 		});
-	}
-
-	@AfterEach
-	protected void resetAuth() {
-		if(!AbstractIntegrationTest.defaultUsername.equals(currentUsername)) {
-			logout();
-			login(AbstractIntegrationTest.defaultUsername);
-		}
 	}
 
 	protected void removeAuthTokensFromRestTemplate() {
@@ -161,10 +157,6 @@ public abstract class AbstractIntegrationTest {
 
 	protected ResponseEntity<Object> getCall(String url, boolean expectError) {
 		return restCall(url, HttpMethod.GET, null, expectError);
-	}
-
-	protected <T> ResponseEntity<T> postCall(String url) {
-		return restCall(url, HttpMethod.POST, null, false);
 	}
 
 	protected <T> ResponseEntity<T> postCall(String url, T body) {

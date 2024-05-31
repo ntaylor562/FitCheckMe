@@ -36,8 +36,10 @@ public class TagControllerIntegrationTest extends AbstractIntegrationTest {
 	private OutfitRepository outfitRepository;
 
 	@BeforeEach
-	public void wipeDatabase() {
+	public void setup() {
 		tagRepository.deleteAll();
+
+		resetAuth();
 	}
 
 	@Test
@@ -103,7 +105,7 @@ public class TagControllerIntegrationTest extends AbstractIntegrationTest {
 	public void testGetTagByNameAndExpectNotFound() {
 		ResponseEntity<Object> response = getCall("/api/tag?name=tag", true);
 
-		assertThat(response.getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)).isTrue();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 		assertThat(getExceptionResponseFromResponse(response).message()).isEqualTo("Tag not found with name: tag");
 	}
 

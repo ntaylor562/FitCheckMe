@@ -15,16 +15,12 @@ import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.auth.UserLoginReturnDTO;
 import com.fitcheckme.FitCheckMe.auth.JwtUtil;
 import com.fitcheckme.FitCheckMe.repositories.RefreshTokenRepository;
-import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 
 import io.jsonwebtoken.Claims;
 
 public class AuthControllerIntegrationTest extends AbstractIntegrationTest {
 	@Autowired
 	private JwtUtil jwtUtil;
-
-	@Autowired
-	private UserRepository userRepository;
 
 	@Autowired
 	private RefreshTokenRepository refreshTokenRepository;
@@ -89,5 +85,67 @@ public class AuthControllerIntegrationTest extends AbstractIntegrationTest {
 		assertThat(logoutResponse.getStatusCode().isError()).isFalse();
 		assertThat(deletedRefreshToken).isEqualTo("");
 		assertThat(refreshTokenRepository.existsByRefreshToken(refreshToken)).isFalse();
+	}
+
+	@Test
+	public void testLogoutWithNoCookiesAndExpectOK() {
+		removeAuthTokensFromRestTemplate();
+
+		ResponseEntity<Object> response = postCall("/api/auth/logout", null);
+
+		assertThat(response.getStatusCode().isError()).isFalse();
+	}
+	
+	@Test
+	public void testRefreshToken() {
+		UserLoginRequestDTO requestDTO = new UserLoginRequestDTO("test_user", "test");
+
+		ResponseEntity<Object> loginResponse = postCall("/api/auth/login", requestDTO);
+		String accessToken = this.getCookieFromResponse(loginResponse, "jwt-access-token");
+		String refreshToken = this.getCookieFromResponse(loginResponse, "jwt-refresh-token");
+
+		addAuthTokensToRestTemplate(accessToken, refreshToken);
+
+		ResponseEntity<Object> response = postCall("/api/auth/refresh", null);
+		String newAccessToken = this.getCookieFromResponse(response, "jwt-access-token");
+		String newRefreshToken = this.getCookieFromResponse(response, "jwt-refresh-token");
+
+		assertThat(response.getStatusCode().isError()).isFalse();
+		assertThat(newAccessToken).isNotNull();
+		assertThat(refreshTokenRepository.existsByRefreshToken(refreshToken)).isFalse();
+		assertThat(refreshTokenRepository.existsByRefreshToken(newRefreshToken)).isTrue();
+		assertThat(refreshToken).isNotEqualTo(newRefreshToken);
+
+		Claims claims = jwtUtil.parseJwtClaims(newAccessToken);
+		assertThatNoException().isThrownBy(() -> jwtUtil.validateClaims(claims));
+		assertThat(jwtUtil.getUsername(claims)).isEqualTo("test_user");
+	}
+
+	@Test
+	public void testRefreshTokenWithNoCookiesAndExpectUnauthorized() {
+		removeAuthTokensFromRestTemplate();
+
+		ResponseEntity<Object> response = postCall("/api/auth/refresh", null, true);
+
+		assertThat(response.getStatusCode().isError()).isTrue();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+
+	@Test
+	public void testIsAuthenticatedAndExpectTrue() {
+		login("test_user");
+
+		ResponseEntity<Object> response = getCall("/api/auth/isAuthenticated");
+
+		assertThat(response.getStatusCode().isError()).isFalse();
+		assertThat(response.getBody()).isEqualTo(true);
+	}
+
+	@Test
+	public void testIsAuthenticatedAndExpectUnauthorized() {
+		ResponseEntity<Object> response = getCall("/api/auth/isAuthenticated", true);
+
+		assertThat(response.getStatusCode().isError()).isTrue();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 	}
 }

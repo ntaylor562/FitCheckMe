@@ -49,8 +49,7 @@ public class TagController {
 	@PostMapping("create")
 	public ResponseEntity<?> createTag(@Valid @RequestBody TagCreateRequestDTO tag) {
 		try {
-			tagService.createTag(tag);
-			return new ResponseEntity<>(HttpStatus.CREATED);
+			return new ResponseEntity<TagRequestDTO>(tagService.createTag(tag), HttpStatus.CREATED);
 		}
 		catch(DataIntegrityViolationException e) {
 			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Tagname already exists", String.format("Tag with name %s already exists", tag.tagName())), HttpStatus.CONFLICT);
@@ -64,7 +63,7 @@ public class TagController {
 			return new ResponseEntity<>(HttpStatus.OK);
 		}
 		catch(EntityNotFoundException e) {
-			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Tag not found", String.format("Tag with ID %d not found", id)), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Tag not found", String.format("Tag not found with ID: %d", id)), HttpStatus.NOT_FOUND);
 		}
 	}
 }

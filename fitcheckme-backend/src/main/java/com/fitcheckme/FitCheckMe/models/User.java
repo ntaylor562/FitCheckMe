@@ -1,6 +1,7 @@
 package com.fitcheckme.FitCheckMe.models;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -15,7 +16,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
-//TODO implement checks for max length stuff (do this for all TEXT columns)
 @Entity
 @Table(name = "user", schema = "community")
 public class User {
@@ -58,12 +58,12 @@ public class User {
 
 	}
 
-	public User(String username, String email, String password, String bio, Set<Role> roles) {
+	public User(String username, String email, String password, String bio, Collection<Role> roles) {
 		this.username = username;
 		this.email = email;
 		this.password = password;
 		this.bio = bio;
-		this.roles = roles;
+		this.roles = roles != null ? new HashSet<>(roles) : new HashSet<>();
 	}
 
 	public Integer getId() {
@@ -112,6 +112,10 @@ public class User {
 
 	public void setBio(String bio) {
 		this.bio = bio;
+	}
+
+	public void setRoles(Collection<Role> roles) {
+		this.roles = new HashSet<>(roles);
 	}
 
 	public void addRole(Role role) {

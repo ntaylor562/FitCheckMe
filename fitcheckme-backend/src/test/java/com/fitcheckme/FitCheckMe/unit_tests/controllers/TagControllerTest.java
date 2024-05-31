@@ -104,12 +104,16 @@ public class TagControllerTest {
 
 	@Test
 	public void testCreateTag() throws Exception {
-		TagCreateRequestDTO requestDTO = TagCreateRequestDTO.toDTO(this.tag1);
-		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
+		TagCreateRequestDTO createRequestDTO = TagCreateRequestDTO.toDTO(this.tag1);
+		TagRequestDTO requestDTO = TagRequestDTO.toDTO(this.tag1);
+		String requestBody = new ObjectMapper().writeValueAsString(createRequestDTO);
+		Mockito.when(tagService.createTag(any(TagCreateRequestDTO.class))).thenReturn(requestDTO);
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/tag/create")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
-			.andExpect(MockMvcResultMatchers.status().isCreated());
+			.andExpect(MockMvcResultMatchers.status().isCreated())
+			.andExpect(MockMvcResultMatchers.jsonPath("$.tagId").value(tag1.getId()))
+			.andExpect(MockMvcResultMatchers.jsonPath("$.tagName").value(tag1.getName()));
 	}
 
 	@Test

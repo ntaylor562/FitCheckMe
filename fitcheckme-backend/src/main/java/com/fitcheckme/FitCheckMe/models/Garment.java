@@ -60,8 +60,8 @@ public class Garment {
 	public Garment(User user, String garmentName, Collection<String> urls, Collection<Tag> tags) {
 		this.garmentName = garmentName;
 		this.user = user;
-		this.urls = new HashSet<>(urls);
-		this.garmentTags = new HashSet<>(tags);
+		this.urls = urls != null ? new HashSet<>(urls) : new HashSet<>();
+		this.garmentTags = tags != null ? new HashSet<>(tags) : new HashSet<>();
 	}
 
 	public Integer getId() {

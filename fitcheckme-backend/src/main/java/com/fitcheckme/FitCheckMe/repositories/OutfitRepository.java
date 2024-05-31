@@ -15,6 +15,8 @@ public interface OutfitRepository extends JpaRepository<Outfit, Integer> {
 
 	public List<Outfit> findAllByGarments_GarmentId(Integer garmentId);
 
+	public List<Outfit> findByOutfitTags_TagId(Integer tagId);
+
 	@Modifying
 	@Query(value = "DELETE FROM app.outfit WHERE user_id = ?1", nativeQuery = true)
 	public void deleteAllByUserId(Integer userId);

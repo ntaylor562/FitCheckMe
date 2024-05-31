@@ -66,8 +66,8 @@ public class Outfit {
 		this.outfitName = outfitName;
 		this.outfitDesc = outfitDesc;
 		this.creationDate = creationDate;
-		this.garments = new HashSet<>(garments);
-		this.outfitTags = new HashSet<>(tags);
+		this.garments = garments != null ? new HashSet<>(garments) : new HashSet<>();
+		this.outfitTags = tags != null ? new HashSet<>(tags) : new HashSet<>();
 	}
 
 	public Integer getId() {

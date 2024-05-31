@@ -2,6 +2,7 @@ package com.fitcheckme.FitCheckMe.integration_tests;
 
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
@@ -55,8 +57,8 @@ public abstract class AbstractIntegrationTest {
 
 	private static final String defaultUsername = "test_user";
 	private String currentUsername;
-	private String accessTokenCookie;
-	private String refreshTokenCookie;
+	private String accessToken;
+	private String refreshToken;
 
 	static {
 		postgres.start();
@@ -77,27 +79,33 @@ public abstract class AbstractIntegrationTest {
 	}
 
 	protected void resetAuth() {
-		addAuthTokensToRestTemplate(); //For some reason, tokens are removed after each test so we add them back here
+		if(this.accessToken != null && this.refreshToken != null) {
+			// For some reason, tokens are removed after each test so we add them back here
+			addAuthTokensToRestTemplate(this.accessToken, this.refreshToken);
+		}
 
-		if(!AbstractIntegrationTest.defaultUsername.equals(this.currentUsername)) {
+		if (!AbstractIntegrationTest.defaultUsername.equals(this.currentUsername)) {
 			logout();
 			login(AbstractIntegrationTest.defaultUsername);
 		}
 	}
 
-	protected void addAuthTokensToRestTemplate() {
+	protected void addAuthTokensToRestTemplate(String accessToken, String refreshToken) {
+		String accessTokenCookie = "jwt-access-token=" + accessToken + "; Path=/; Secure; HttpOnly;";
+		String refreshTokenCookie = "jwt-refresh-token=" + refreshToken + "; Path=/api/auth; Secure; HttpOnly;";
 		restTemplate.getRestTemplate().getInterceptors().add((request, body, execution) -> {
-			request.getHeaders().add("Cookie", this.accessTokenCookie);
-			request.getHeaders().add("Cookie", this.refreshTokenCookie);
+			request.getHeaders().add("Cookie", accessTokenCookie);
+			request.getHeaders().add("Cookie", refreshTokenCookie);
 			return execution.execute(request, body);
 		});
 	}
 
 	protected void removeAuthTokensFromRestTemplate() {
-		restTemplate.getRestTemplate().getInterceptors().removeIf(interceptor -> {
-			return interceptor.toString().contains("jwt-access-token")
-					|| interceptor.toString().contains("jwt-refresh-token");
-		});
+		List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>(
+				restTemplate.getRestTemplate().getInterceptors());
+		interceptors.add(new RemoveCookieInterceptor("jwt-access-token"));
+		interceptors.add(new RemoveCookieInterceptor("jwt-refresh-token"));
+		restTemplate.getRestTemplate().setInterceptors(interceptors);
 	}
 
 	protected void login(String username) {
@@ -109,22 +117,20 @@ public abstract class AbstractIntegrationTest {
 				UserLoginReturnDTO.class);
 
 		this.currentUsername = username;
-		this.accessTokenCookie = "jwt-access-token=" + result.accessToken()
-				+ "; Path=/; Secure; HttpOnly;";
-		this.refreshTokenCookie = "jwt-refresh-token=" + result.refreshToken()
-				+ "; Path=/api/auth; Secure; HttpOnly;";
-		addAuthTokensToRestTemplate();
+		this.accessToken = result.accessToken();
+		this.refreshToken = result.refreshToken();
+		addAuthTokensToRestTemplate(this.accessToken, this.refreshToken);
 	}
 
 	protected void logout() {
-		if(this.currentUsername == null) {
+		if (this.currentUsername == null) {
 			return;
 		}
 		restTemplate.postForEntity("/api/auth/logout", null, Object.class);
 		removeAuthTokensFromRestTemplate();
 		this.currentUsername = null;
-		this.accessTokenCookie = null;
-		this.refreshTokenCookie = null;
+		this.accessToken = null;
+		this.refreshToken = null;
 	}
 
 	protected static <T> ParameterizedTypeReference<List<T>> getTypeOfListOfType(Class<T> classType) {
@@ -139,9 +145,9 @@ public abstract class AbstractIntegrationTest {
 				});
 		if (!expectError && response.getStatusCode().isError()) {
 			throw new RuntimeException(String.format("ERROR in response: %s", response.toString()));
-		}
-		else if(expectError && !response.getStatusCode().isError()) {
-			throw new RuntimeException(String.format("Expected error but found none in response: %s", response.toString()));
+		} else if (expectError && !response.getStatusCode().isError()) {
+			throw new RuntimeException(
+					String.format("Expected error but found none in response: %s", response.toString()));
 		}
 
 		return response;

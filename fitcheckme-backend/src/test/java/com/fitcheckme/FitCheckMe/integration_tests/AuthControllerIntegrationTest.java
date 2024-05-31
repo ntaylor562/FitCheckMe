@@ -72,4 +72,22 @@ public class AuthControllerIntegrationTest extends AbstractIntegrationTest {
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 		assertThat(responseBody.message()).isEqualTo("Bad credentials");
 	}
+
+	@Test
+	public void testLogout() {
+		UserLoginRequestDTO requestDTO = new UserLoginRequestDTO("test_user", "test");
+
+		ResponseEntity<Object> loginResponse = postCall("/api/auth/login", requestDTO);
+		String accessToken = this.getCookieFromResponse(loginResponse, "jwt-access-token");
+		String refreshToken = this.getCookieFromResponse(loginResponse, "jwt-refresh-token");
+
+		addAuthTokensToRestTemplate(accessToken, refreshToken);
+
+		ResponseEntity<Object> logoutResponse = postCall("/api/auth/logout", null);
+		String deletedRefreshToken = this.getCookieFromResponse(logoutResponse, "jwt-refresh-token");
+
+		assertThat(logoutResponse.getStatusCode().isError()).isFalse();
+		assertThat(deletedRefreshToken).isEqualTo("");
+		assertThat(refreshTokenRepository.existsByRefreshToken(refreshToken)).isFalse();
+	}
 }

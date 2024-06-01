@@ -71,12 +71,10 @@ public class UserController {
 		}
 	}
 
-	//TODO add auth
 	@PostMapping("create")
 	public ResponseEntity<?> createUser(@Valid @RequestBody UserCreateRequestDTO user) {
 		try {
-			this.userService.createUser(user);
-			return new ResponseEntity<>(HttpStatus.CREATED);
+			return new ResponseEntity<UserRequestDTO>(this.userService.createUser(user), HttpStatus.CREATED);
 		}
 		catch(DataIntegrityViolationException e) {
 			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error creating user", e.getMessage()), HttpStatus.CONFLICT);
@@ -102,12 +100,10 @@ public class UserController {
 	}
 	*/
 
-	//TODO add auth
 	@PutMapping("details")
 	public ResponseEntity<?> updateUserDetails(@Valid @RequestBody UserUpdateDetailsRequestDTO user, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		try {
-			userService.updateUserDetails(user, userDetails);
-			return new ResponseEntity<>(HttpStatus.ACCEPTED);
+			return new ResponseEntity<UserRequestDTO>(userService.updateUserDetails(user, userDetails), HttpStatus.ACCEPTED);
 		}
 		catch(DataIntegrityViolationException e) {
 			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error updating user details", e.getMessage()), HttpStatus.CONFLICT);
@@ -134,7 +130,6 @@ public class UserController {
 		userService.updatePassword(user, userDetails);
 	}
 
-	//TODO add auth
 	@DeleteMapping("")
 	@ResponseStatus(HttpStatus.OK)
 	public void deleteUser(@RequestParam Integer id, @AuthenticationPrincipal CustomUserDetails userDetails) {

@@ -64,6 +64,14 @@ public abstract class AbstractIntegrationTest {
 		postgres.start();
 	}
 
+	protected String getAccessToken() {
+		return this.accessToken;
+	}
+
+	protected String getRefreshToken() {
+		return this.refreshToken;
+	}
+
 	@BeforeAll
 	protected void setupAll() {
 		Resource resource = new ClassPathResource("data-test.sql");
@@ -108,18 +116,22 @@ public abstract class AbstractIntegrationTest {
 		restTemplate.getRestTemplate().setInterceptors(interceptors);
 	}
 
-	protected void login(String username) {
+	protected void login(String username, String password) {
 		// TODO get the tokens from the cookies instead of the response body in case
 		// they're removed from response body
 		UserLoginReturnDTO result = getObjectFromResponse(
 				postCall("/api/auth/login",
-						new UserLoginRequestDTO(username, "test")),
+						new UserLoginRequestDTO(username, password)),
 				UserLoginReturnDTO.class);
 
 		this.currentUsername = username;
 		this.accessToken = result.accessToken();
 		this.refreshToken = result.refreshToken();
 		addAuthTokensToRestTemplate(this.accessToken, this.refreshToken);
+	}
+
+	protected void login(String username) {
+		login(username, "test");
 	}
 
 	protected void logout() {

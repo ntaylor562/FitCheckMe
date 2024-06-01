@@ -138,7 +138,8 @@ public class UserControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/user/create")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
-				.andExpect(MockMvcResultMatchers.status().isCreated());
+				.andExpect(MockMvcResultMatchers.status().isCreated())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.username").value(newUser.getUsername()));
 	}
 
 	@Test
@@ -184,10 +185,14 @@ public class UserControllerTest {
 	public void testUpdateUserDetails() throws Exception {
 		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
+		UserRequestDTO updatedUser = new UserRequestDTO(1, "test_username2", "test bio 2");
+		Mockito.when(userService.updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(CustomUserDetails.class))).thenReturn(updatedUser);
+
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
-				.andExpect(MockMvcResultMatchers.status().isAccepted());
+				.andExpect(MockMvcResultMatchers.status().isAccepted())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.username").value("test_username2"));
 	}
 
 	@Test

@@ -23,6 +23,7 @@ public class GlobalControllerExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ExceptionResponseDTO> handleException(Exception e) {
 		System.out.println(e.getMessage() + e.getClass());
+		e.printStackTrace();
 		return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Unexpected error", "An unexpected error has occurred"), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 

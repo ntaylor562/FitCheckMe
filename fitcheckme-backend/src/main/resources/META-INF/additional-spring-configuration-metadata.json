@@ -73,5 +73,25 @@
     "name": "fitcheckme.max-garments-per-outfit",
     "type": "java.lang.Integer",
     "description": "How many garments outfits are allowed"
+  },
+  {
+    "name": "fitcheckme.aws-access-key-id",
+    "type": "java.lang.String",
+    "description": "Access key ID for AWS S3"
+  },
+  {
+    "name": "fitcheckme.aws-access-key-secret",
+    "type": "java.lang.String",
+    "description": "Access key secret for AWS S3"
+  },
+  {
+    "name": "fitcheckme.aws-region-name",
+    "type": "java.lang.String",
+    "description": "Region name for AWS S3"
+  },
+  {
+    "name": "fitcheckme.aws-s3-bucket-name",
+    "type": "java.lang.String",
+    "description": "Bucket name for AWS S3"
   }
 ]}

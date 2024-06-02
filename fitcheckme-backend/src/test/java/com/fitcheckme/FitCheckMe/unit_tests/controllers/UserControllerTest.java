@@ -191,7 +191,7 @@ public class UserControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
-				.andExpect(MockMvcResultMatchers.status().isAccepted())
+				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.username").value("test_username2"));
 	}
 
@@ -252,7 +252,7 @@ public class UserControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/addrole")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
-				.andExpect(MockMvcResultMatchers.status().isAccepted());
+				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test
@@ -279,7 +279,7 @@ public class UserControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/removerole")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
-				.andExpect(MockMvcResultMatchers.status().isAccepted());
+				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test
@@ -306,7 +306,7 @@ public class UserControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
-				.andExpect(MockMvcResultMatchers.status().isAccepted());
+				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test

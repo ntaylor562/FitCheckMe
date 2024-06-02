@@ -59,11 +59,11 @@ public class GarmentController {
 
 	@PutMapping("")
 	public ResponseEntity<GarmentRequestDTO> updateOutfit(@Valid @RequestBody GarmentUpdateRequestDTO garment, @AuthenticationPrincipal CustomUserDetails userDetails) {
-		return new ResponseEntity<GarmentRequestDTO>(this.garmentService.updateGarment(garment, userDetails), HttpStatus.ACCEPTED);
+		return new ResponseEntity<GarmentRequestDTO>(this.garmentService.updateGarment(garment, userDetails), HttpStatus.OK);
 	}
 	
 	@DeleteMapping("")
-	@ResponseStatus(HttpStatus.ACCEPTED)
+	@ResponseStatus(HttpStatus.OK)
 	public void deleteGarment(@RequestParam(required = true) Integer id, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.garmentService.deleteGarment(id, userDetails);
 	}

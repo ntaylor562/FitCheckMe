@@ -103,7 +103,7 @@ public class UserController {
 	@PutMapping("details")
 	public ResponseEntity<?> updateUserDetails(@Valid @RequestBody UserUpdateDetailsRequestDTO user, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		try {
-			return new ResponseEntity<UserRequestDTO>(userService.updateUserDetails(user, userDetails), HttpStatus.ACCEPTED);
+			return new ResponseEntity<UserRequestDTO>(userService.updateUserDetails(user, userDetails), HttpStatus.OK);
 		}
 		catch(DataIntegrityViolationException e) {
 			return new ResponseEntity<ExceptionResponseDTO>(new ExceptionResponseDTO("Error updating user details", e.getMessage()), HttpStatus.CONFLICT);
@@ -112,20 +112,20 @@ public class UserController {
 
 	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'USER_ADMIN')")
 	@PutMapping("addrole")
-	@ResponseStatus(HttpStatus.ACCEPTED)
+	@ResponseStatus(HttpStatus.OK)
 	public void addRole(@Valid @RequestBody UserRoleUpdateDTO userRole) {
 		userService.addUserRole(userRole);
 	}
 
 	@PreAuthorize("hasAnyRole('SUPER_ADMIN')")
 	@PutMapping("removerole")
-	@ResponseStatus(HttpStatus.ACCEPTED)
+	@ResponseStatus(HttpStatus.OK)
 	public void removeRole(@Valid @RequestBody UserRoleUpdateDTO userRole) {
 		userService.removeUserRole(userRole);
 	}
 
 	@PutMapping("password")
-	@ResponseStatus(HttpStatus.ACCEPTED)
+	@ResponseStatus(HttpStatus.OK)
 	public void updateUserPassword(@Valid @RequestBody UserUpdatePasswordRequestDTO user, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		userService.updatePassword(user, userDetails);
 	}

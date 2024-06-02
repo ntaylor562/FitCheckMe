@@ -186,7 +186,7 @@ public class OutfitControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/outfit/edit")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody))
-			.andExpect(MockMvcResultMatchers.status().isAccepted());
+			.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test
@@ -221,7 +221,7 @@ public class OutfitControllerTest {
 	@Test
 	public void testDeleteOutfit() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/outfit?id={id}", this.outfit1.getId()))
-			.andExpect(MockMvcResultMatchers.status().isAccepted());
+			.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test

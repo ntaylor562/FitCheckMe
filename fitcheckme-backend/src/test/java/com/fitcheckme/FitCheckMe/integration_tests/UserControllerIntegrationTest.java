@@ -264,7 +264,7 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
 		List<Role> roles = userRepository.findRolesByUserId(createdUser.getId());
 
-		assertThat(addRoleResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+		assertThat(addRoleResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(roles.stream().anyMatch(r -> r.getName().equals("SUPER_ADMIN"))).isTrue();
 
 		ResponseEntity<Object> removeRoleResponse = putCall("/api/user/removerole",
@@ -272,7 +272,7 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
 		roles = userRepository.findRolesByUserId(createdUser.getId());
 
-		assertThat(removeRoleResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+		assertThat(removeRoleResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(roles.stream().anyMatch(r -> r.getName().equals("SUPER_ADMIN"))).isFalse();
 
 		logout();
@@ -312,7 +312,7 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
 		logout();
 		login("new_test_user", "password2");
 
-		assertThat(updatePasswordResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+		assertThat(updatePasswordResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(newPassHash).isNotEqualTo(oldPassHash);
 
 		logout();

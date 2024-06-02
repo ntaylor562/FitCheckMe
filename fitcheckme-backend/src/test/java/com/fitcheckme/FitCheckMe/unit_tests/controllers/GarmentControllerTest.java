@@ -199,7 +199,7 @@ public class GarmentControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/garment")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
-				.andExpect(MockMvcResultMatchers.status().isAccepted());
+				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test
@@ -237,7 +237,7 @@ public class GarmentControllerTest {
 	@Test
 	public void testDeleteGarment() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.delete("/api/garment?id={id}", this.garment1.getId()))
-				.andExpect(MockMvcResultMatchers.status().isAccepted());
+				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test

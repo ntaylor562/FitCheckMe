@@ -60,12 +60,12 @@ public class OutfitController {
 
 	@PutMapping("edit")
 	public ResponseEntity<OutfitRequestDTO> updateOutfit(@Valid @RequestBody OutfitUpdateRequestDTO outfit, @AuthenticationPrincipal CustomUserDetails userDetails) {
-		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.updateOutfit(outfit, userDetails), HttpStatus.ACCEPTED);
+		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.updateOutfit(outfit, userDetails), HttpStatus.OK);
 	}
 
 	@DeleteMapping("")
-	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void removeOutfit(@RequestParam Integer id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+	@ResponseStatus(HttpStatus.OK)
+	public void deleteOutfit(@RequestParam Integer id, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		this.outfitService.deleteOutfit(id, userDetails);
 	}
 }

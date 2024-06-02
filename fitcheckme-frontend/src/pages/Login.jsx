@@ -71,7 +71,7 @@ export default function Login() {
 							<Stack spacing={4}>
 								<FormControl>
 									<FormLabel>Username/Email Address</FormLabel>
-									<Input name="username" />
+									<Input autoFocus name="username" />
 								</FormControl>
 								<FormControl>
 									<FormLabel>Password</FormLabel>

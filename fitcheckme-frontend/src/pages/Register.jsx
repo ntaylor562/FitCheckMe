@@ -87,7 +87,7 @@ export default function Register() {
 							<Stack spacing={4}>
 								<FormControl isRequired>
 									<FormLabel>Username</FormLabel>
-									<Input name="username" type="username" />
+									<Input autoFocus name="username" type="username" />
 								</FormControl>
 								<FormControl isRequired>
 									<FormLabel>Email address</FormLabel>

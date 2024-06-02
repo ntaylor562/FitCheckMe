@@ -1,10 +1,9 @@
 import { auth_refresh } from "./Auth";
 
 export default async function FetchWithRefreshRetry(url, options) {
-	let response = await fetch(url, options);
-	if (response.ok) return response;
+	const response = await fetch(url, options);
 
-	if (response.status === 401) {
+	if (response.status === 401 && (await response.clone().json()).message.includes("Token Expired")) {
 		const originalResponse = response.clone();
 		return await auth_refresh()
 			.then((response) => {

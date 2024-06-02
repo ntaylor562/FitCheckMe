@@ -17,6 +17,7 @@ import com.fitcheckme.FitCheckMe.DTOs.ExceptionResponseDTO;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -62,7 +63,19 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter{
 			}
 
 			if(claims != null && jwtUtil.validateClaims(claims)) {
-				CustomUserDetails user = userDetailsService.loadByUserId(Integer.parseInt(claims.getId()));
+				CustomUserDetails user;
+				try {
+					user = userDetailsService.loadByUserId(Integer.parseInt(claims.getId()));
+				}
+				catch(EntityNotFoundException e) {
+					if(e.getMessage().startsWith("User not found with ID: ") && req.getServletPath().equals("/api/auth/logout")) {
+						filterChain.doFilter(req, res);
+						return;
+					}
+					else {
+						throw e;
+					}
+				}
 
 				//Empty credentials because authentication was successful
 				Authentication authentication = new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());

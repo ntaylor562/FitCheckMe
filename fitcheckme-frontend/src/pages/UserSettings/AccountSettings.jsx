@@ -1,6 +1,7 @@
 import { Box, Divider, Heading, StackDivider, VStack } from "@chakra-ui/react"
 import UpdateUsernameForm from "./UpdateUsernameForm";
 import UpdatePasswordForm from "./UpdatePasswordForm";
+import DeleteAccountModal from "./DeleteAccountModal";
 
 
 export default function AccountSettings() {
@@ -14,6 +15,7 @@ export default function AccountSettings() {
 			<VStack divider={<StackDivider />} alignItems="baseline" spacing={10}>
 				<UpdateUsernameForm />
 				<UpdatePasswordForm />
+				<DeleteAccountModal />
 			</VStack>
 		</Box>
 	)

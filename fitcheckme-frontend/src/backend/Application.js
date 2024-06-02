@@ -8,8 +8,8 @@ export async function getUserOutfits() {
 		method: 'GET',
 		credentials: 'include'
 	})
-	.then((response) => handleFetchException(response))
-	.then((response) => response.json())
+		.then((response) => handleFetchException(response))
+		.then((response) => response.json())
 }
 
 export async function getUserGarments() {
@@ -18,8 +18,8 @@ export async function getUserGarments() {
 		method: 'GET',
 		credentials: 'include'
 	})
-	.then((response) => handleFetchException(response))
-	.then((response) => response.json())
+		.then((response) => handleFetchException(response))
+		.then((response) => response.json())
 }
 
 export async function getTags() {
@@ -28,11 +28,11 @@ export async function getTags() {
 		method: 'GET',
 		credentials: 'include'
 	})
-	.then((response) => handleFetchException(response))
-	.then((response) => response.json())
+		.then((response) => handleFetchException(response))
+		.then((response) => response.json())
 }
 
-export async function createGarment(garmentName, urls=[], tags=[]) {
+export async function createGarment(garmentName, urls = [], tags = []) {
 	console.log({
 		garmentName: garmentName,
 		garmentURLs: urls,
@@ -51,10 +51,10 @@ export async function createGarment(garmentName, urls=[], tags=[]) {
 			garmentTags: tags
 		})
 	})
-	.then((response) => handleFetchException(response))
+		.then((response) => handleFetchException(response))
 }
 
-export async function createOutfit(outfitName, outfitDesc="", tags=[], garments=[]) {
+export async function createOutfit(outfitName, outfitDesc = "", tags = [], garments = []) {
 	// @ts-ignore
 	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/outfit/create`, {
 		method: 'POST',
@@ -69,7 +69,7 @@ export async function createOutfit(outfitName, outfitDesc="", tags=[], garments=
 			garments: garments
 		})
 	})
-	.then((response) => handleFetchException(response))
+		.then((response) => handleFetchException(response))
 }
 
 export async function editOutfit(outfitId, outfitName, outfitDesc, addGarmentIds, removeGarmentIds, addTagIds, removeTagIds) {
@@ -90,7 +90,7 @@ export async function editOutfit(outfitId, outfitName, outfitDesc, addGarmentIds
 			removeTagIds: removeTagIds
 		})
 	})
-	.then((response) => handleFetchException(response))
+		.then((response) => handleFetchException(response))
 }
 
 export async function editUser(userId, username, userBio) {
@@ -107,7 +107,7 @@ export async function editUser(userId, username, userBio) {
 			bio: userBio
 		})
 	})
-	.then((response) => handleFetchException(response))
+		.then((response) => handleFetchException(response))
 }
 
 export async function updatePassword(userId, oldPassword, newPassword) {
@@ -124,5 +124,14 @@ export async function updatePassword(userId, oldPassword, newPassword) {
 			newPassword: newPassword
 		})
 	})
-	.then((response) => handleFetchException(response))
+		.then((response) => handleFetchException(response))
+}
+
+export async function deleteAccount(userId) {
+	// @ts-ignore
+	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/user?id=${userId}`, {
+		method: 'DELETE',
+		credentials: 'include'
+	})
+		.then((response) => handleFetchException(response))
 }

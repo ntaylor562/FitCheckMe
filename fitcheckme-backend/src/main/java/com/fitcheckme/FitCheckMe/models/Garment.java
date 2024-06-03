@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -41,9 +42,6 @@ public class Garment {
 	@Column(name = "garment_url")
 	private Set<String> urls;
 
-	@ManyToMany(mappedBy="garments")
-	private Set<Outfit> outfits;
-
 	@ManyToMany
 	@JoinTable(
 		name = "garment_tag",
@@ -52,6 +50,9 @@ public class Garment {
 		inverseJoinColumns = @JoinColumn(name = "tag_id", nullable = false)
 	)
 	private Set<Tag> garmentTags;
+
+	@OneToMany(mappedBy="garment")
+	private Set<GarmentImage> images;
 
 	public Garment() {
 
@@ -62,6 +63,7 @@ public class Garment {
 		this.user = user;
 		this.urls = urls != null ? new HashSet<>(urls) : new HashSet<>();
 		this.garmentTags = tags != null ? new HashSet<>(tags) : new HashSet<>();
+		this.images = new HashSet<>();
 	}
 
 	public Integer getId() {
@@ -84,28 +86,12 @@ public class Garment {
 		return this.garmentTags;
 	}
 
+	public Set<GarmentImage> getImages() {
+		return this.images;
+	}
+
 	public void setName(String name) {
 		this.garmentName = name;
-	}
-
-	public void addOutfit(Outfit outfit) {
-		this.outfits.add(outfit);
-	}
-
-	public void addOutfit(Collection<Outfit> outfit) {
-		this.outfits.addAll(outfit);
-	}
-
-	public void removeOutfit(Integer outfitId) {
-		this.outfits.removeIf(outfit -> outfit.getId() == outfitId);
-	}
-
-	public void removeOutfit(Collection<Outfit> outfit) {
-		this.outfits.removeAll(outfit);
-	}
-
-	public void removeOutfit(Outfit outfit) {
-		this.outfits.remove(outfit);
 	}
 
 	public void addTag(Tag tag) {
@@ -142,5 +128,21 @@ public class Garment {
 
 	public void removeURL(Collection<String> urls) {
 		this.urls.removeAll(urls);
+	}
+
+	public void addImage(GarmentImage image) {
+		this.images.add(image);
+	}
+
+	public void addImage(Collection<GarmentImage> images) {
+		this.images.addAll(images);
+	}
+
+	public void removeImage(Integer imageId) {
+		this.images.removeIf(image -> image.getId() == imageId);
+	}
+
+	public void removeImage(GarmentImage image) {
+		this.images.remove(image);
 	}
 }

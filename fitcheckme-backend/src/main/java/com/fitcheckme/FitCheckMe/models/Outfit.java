@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
@@ -57,6 +58,9 @@ public class Outfit {
 	)
 	private Set<Tag> outfitTags;
 
+	@OneToMany(mappedBy = "outfit")
+	private Set<OutfitImage> images;
+
 	public Outfit() {
 
 	}
@@ -68,6 +72,7 @@ public class Outfit {
 		this.creationDate = creationDate;
 		this.garments = garments != null ? new HashSet<>(garments) : new HashSet<>();
 		this.outfitTags = tags != null ? new HashSet<>(tags) : new HashSet<>();
+		this.images = new HashSet<>();
 	}
 
 	public Integer getId() {
@@ -96,6 +101,10 @@ public class Outfit {
 
 	public Set<Tag> getTags() {
 		return this.outfitTags;
+	}
+
+	public Set<OutfitImage> getImages() {
+		return this.images;
 	}
 
 	public void setName(String name) {
@@ -140,5 +149,21 @@ public class Outfit {
 
 	public void removeTag(Collection<Tag> tagsToBeRemoved) {
 		this.outfitTags.removeAll(tagsToBeRemoved);
+	}
+
+	public void addImage(OutfitImage image) {
+		this.images.add(image);
+	}
+
+	public void addImage(Collection<OutfitImage> images) {
+		this.images.addAll(images);
+	}
+
+	public void removeImage(Integer imageId) {
+		this.images.removeIf(image -> image.getId() == imageId);
+	}
+
+	public void removeImage(OutfitImage image) {
+		this.images.remove(image);
 	}
 }

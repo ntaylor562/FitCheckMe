@@ -86,7 +86,7 @@ public class Garment {
 		return this.garmentTags;
 	}
 
-	public Set<GarmentImage> getImages() {
+	public Set<GarmentImage> getGarmentImages() {
 		return this.images;
 	}
 
@@ -139,7 +139,7 @@ public class Garment {
 	}
 
 	public void removeImage(Integer imageId) {
-		this.images.removeIf(image -> image.getId() == imageId);
+		this.images.removeIf(image -> image.getImage().getId() == imageId);
 	}
 
 	public void removeImage(GarmentImage image) {

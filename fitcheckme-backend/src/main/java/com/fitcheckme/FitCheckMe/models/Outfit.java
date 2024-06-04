@@ -160,7 +160,7 @@ public class Outfit {
 	}
 
 	public void removeImage(Integer imageId) {
-		this.images.removeIf(image -> image.getId() == imageId);
+		this.images.removeIf(image -> image.getImage().getId() == imageId);
 	}
 
 	public void removeImage(OutfitImage image) {

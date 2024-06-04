@@ -46,6 +46,13 @@ CREATE TABLE IF NOT EXISTS app.tag(
 
 CREATE INDEX IF NOT EXISTS tag_name ON app.tag(tag_name);
 
+CREATE TABLE IF NOT EXISTS app.image_file(
+	image_file_id SERIAL PRIMARY KEY,
+	user_id INTEGER REFERENCES community.user(user_id),
+	image_path TEXT NOT NULL,
+	image_creation_date TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS app.outfit(
 	outfit_id SERIAL PRIMARY KEY,
 	user_id INTEGER REFERENCES community.user(user_id),
@@ -67,10 +74,9 @@ CREATE TABLE IF NOT EXISTS app.outfit_tag(
 );
 
 CREATE TABLE IF NOT EXISTS app.outfit_image(
-	outfit_image_id SERIAL PRIMARY KEY,
+	image_id INTEGER REFERENCES app.image_file(image_file_id),
 	outfit_id INTEGER REFERENCES app.outfit(outfit_id),
-	image_path TEXT NOT NULL,
-	image_creation_date TIMESTAMP WITH TIME ZONE NOT NULL
+	PRIMARY KEY(image_id, outfit_id)
 );
 
 CREATE TABLE IF NOT EXISTS app.garment(
@@ -91,8 +97,7 @@ CREATE TABLE IF NOT EXISTS app.garment_tag(
 );
 
 CREATE TABLE IF NOT EXISTS app.garment_image(
-	garment_image_id SERIAL PRIMARY KEY,
+	image_id INTEGER REFERENCES app.image_file(image_file_id),
 	garment_id INTEGER REFERENCES app.garment(garment_id),
-	image_path TEXT NOT NULL,
-	image_creation_date TIMESTAMP WITH TIME ZONE NOT NULL
+	PRIMARY KEY(image_id, garment_id)
 );

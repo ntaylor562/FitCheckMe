@@ -15,7 +15,8 @@ public record OutfitRequestDTO (
 	String outfitDesc,
 	LocalDateTime creationDate,
 	Set<TagRequestDTO> outfitTags,
-	Set<GarmentRequestDTO>garments
+	Set<GarmentRequestDTO>garments,
+	Set<String> imagePaths
 ) {
 	public static OutfitRequestDTO toDTO(Outfit outfit) {
 		return new OutfitRequestDTO(
@@ -30,7 +31,8 @@ public record OutfitRequestDTO (
 				garment.getUser().getId(),
 				garment.getURLs().stream().collect(Collectors.toSet()),
 				garment.getTags().stream().map(t -> new TagRequestDTO(t.getId(), t.getName())).collect(Collectors.toSet()))
-			).collect(Collectors.toSet())
+			).collect(Collectors.toSet()),
+			outfit.getImages().stream().map(i -> i.getImage().getImagePath()).collect(Collectors.toSet())
 		);
 	}
 }

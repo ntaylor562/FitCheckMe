@@ -2,24 +2,33 @@ package com.fitcheckme.FitCheckMe.services;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import com.fitcheckme.FitCheckMe.DTOs.FileUploadDTO;
+import com.fitcheckme.FitCheckMe.DTOs.AWS.AWSPresignedURLDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateImagesRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.models.Garment;
+import com.fitcheckme.FitCheckMe.models.ImageFile;
 import com.fitcheckme.FitCheckMe.models.Outfit;
+import com.fitcheckme.FitCheckMe.models.OutfitImage;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
+import com.fitcheckme.FitCheckMe.repositories.ImageFileRepository;
+import com.fitcheckme.FitCheckMe.repositories.OutfitImageRepository;
 import com.fitcheckme.FitCheckMe.repositories.OutfitRepository;
 import com.fitcheckme.FitCheckMe.repositories.TagRepository;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
@@ -47,12 +56,20 @@ public class OutfitService {
 	private final GarmentRepository garmentRepository;
 	private final TagRepository tagRepository;
 	private final UserRepository userRepository;
+	private final OutfitImageRepository outfitImageRepository;
+	private final ImageFileRepository imageFileRepository;
+	private final FileService fileService;
 
-	public OutfitService(OutfitRepository outfitRepository, GarmentRepository garmentRepository, TagRepository tagRepository, UserRepository userRepository) {
+	public OutfitService(OutfitRepository outfitRepository, GarmentRepository garmentRepository,
+			TagRepository tagRepository, UserRepository userRepository, OutfitImageRepository outfitImageRepository,
+			ImageFileRepository imageFileRepository, FileService fileService) {
 		this.outfitRepository = outfitRepository;
 		this.garmentRepository = garmentRepository;
 		this.tagRepository = tagRepository;
 		this.userRepository = userRepository;
+		this.outfitImageRepository = outfitImageRepository;
+		this.imageFileRepository = imageFileRepository;
+		this.fileService = fileService;
 	}
 
 	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OUTFIT_ADMIN')")
@@ -259,6 +276,49 @@ public class OutfitService {
 		currentOutfit.removeTag(removeTags);
 
 		this.outfitRepository.save(currentOutfit);
+	}
+
+	@Transactional
+	public Set<AWSPresignedURLDTO> uploadImages(Collection<FileUploadDTO> files, CustomUserDetails userDetails) throws IllegalArgumentException {
+		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %d", userDetails.getUserId())));
+		Set<AWSPresignedURLDTO> presignedURLs = new HashSet<>();
+		presignedURLs.addAll(fileService.getUploadURLs(files.stream().map(file -> file.fileName()).toList()));
+		for(AWSPresignedURLDTO presignedURLDTO : presignedURLs) {
+			imageFileRepository.save(new ImageFile(user, presignedURLDTO.fileName(), LocalDateTime.now()));
+		}
+
+		return presignedURLs;
+	}
+
+	@Transactional
+	public OutfitRequestDTO updateOutfitImages(OutfitUpdateImagesRequestDTO updateDTO, CustomUserDetails userDetails) {
+		Outfit currentOutfit = this.outfitRepository.findById(updateDTO.outfitId()).orElseThrow(() -> new EntityNotFoundException(String.format("Outfit not found with ID: %s", String.valueOf(updateDTO.outfitId()))));
+
+		if(currentOutfit.getUser().getId() != userDetails.getUserId()) {
+			throw new AccessDeniedException("User does not have permission to edit this outfit");
+		}
+
+		if(updateDTO.addImageIds() != null && !updateDTO.addImageIds().isEmpty()) {
+			Set<Integer> existingImageIds = currentOutfit.getImages().stream().map(image -> image.getImage().getId()).collect(Collectors.toSet());
+			for(Integer imageId : updateDTO.addImageIds()) {
+				ImageFile image = imageFileRepository.findById(imageId).orElseThrow(() -> new EntityNotFoundException(String.format("Image not found with ID: %s", String.valueOf(imageId))));
+				if(image.getUser().getId() != userDetails.getUserId()) {
+					throw new AccessDeniedException("User does not have permission to add this image to the outfit");
+				}
+				if(existingImageIds.contains(imageId)) {
+					throw new IllegalArgumentException(String.format("Image already in outfit with path: %s", image.getImagePath()));
+				}
+				OutfitImage newImage = outfitImageRepository.save(new OutfitImage(image, currentOutfit));
+				currentOutfit.addImage(newImage);
+			}
+		}
+		if(updateDTO.removeImageIds() != null && !updateDTO.removeImageIds().isEmpty()) {
+			for(Integer imageId : updateDTO.removeImageIds()) {
+				outfitImageRepository.deleteByOutfit_OutfitIdAndImage_ImageFileId(currentOutfit.getId(), imageId);
+			}
+		}
+
+		return OutfitRequestDTO.toDTO(outfitRepository.save(currentOutfit));
 	}
 
 	@Transactional

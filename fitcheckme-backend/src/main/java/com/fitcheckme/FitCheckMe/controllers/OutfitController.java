@@ -1,6 +1,7 @@
 package com.fitcheckme.FitCheckMe.controllers;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fitcheckme.FitCheckMe.DTOs.FileUploadDTO;
+import com.fitcheckme.FitCheckMe.DTOs.AWS.AWSPresignedURLDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateImagesRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.services.OutfitService;
@@ -61,6 +65,16 @@ public class OutfitController {
 	@PutMapping("edit")
 	public ResponseEntity<OutfitRequestDTO> updateOutfit(@Valid @RequestBody OutfitUpdateRequestDTO outfit, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.updateOutfit(outfit, userDetails), HttpStatus.OK);
+	}
+
+	@PostMapping("image")
+	public ResponseEntity<Set<AWSPresignedURLDTO>> uploadImage(@RequestBody Set<FileUploadDTO> fileNames, @AuthenticationPrincipal CustomUserDetails userDetails) {
+		return new ResponseEntity<Set<AWSPresignedURLDTO>>(this.outfitService.uploadImages(fileNames, userDetails), HttpStatus.OK);
+	}
+
+	@PostMapping("editimages")
+	public ResponseEntity<OutfitRequestDTO> updateImages(@Valid @RequestBody OutfitUpdateImagesRequestDTO outfitImages, @AuthenticationPrincipal CustomUserDetails userDetails) {
+		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.updateOutfitImages(outfitImages, userDetails), HttpStatus.OK);
 	}
 
 	@DeleteMapping("")

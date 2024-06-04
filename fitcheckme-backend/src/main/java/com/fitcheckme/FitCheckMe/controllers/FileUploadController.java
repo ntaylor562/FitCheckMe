@@ -22,7 +22,7 @@ public class FileUploadController {
 
 	@PostMapping("")
 	public String uploadFile(@RequestBody String fileName) {
-		return fileService.createPresignedPutURL(fileName).presignedURL();
+		return fileService.getUploadURL(fileName).presignedURL();
 	}
 	
 }

@@ -1,7 +1,9 @@
 package com.fitcheckme.FitCheckMe.services;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -72,15 +74,35 @@ public class FileService {
 		return formattedFileName;
 	}
 
-	public AWSPresignedURLDTO createPresignedPutURL(String fileName) throws IllegalArgumentException {
+	private AWSPresignedURLDTO createPresignedPutURL(String fileName) throws IllegalArgumentException {
+		String presignedURL = awsUtil.createPresignedPutUrl(bucketName, fileName, null);
+
+		return new AWSPresignedURLDTO(fileName, presignedURL);
+	}
+
+	public AWSPresignedURLDTO getUploadURL(String fileName) {
 		if(!validateFileName(fileName)) {
 			throw new IllegalArgumentException("Invalid file name");
 		}
-
 		String generatedFileName = generateFileName(fileName);
 
-		String presignedURL = awsUtil.createPresignedPutUrl(bucketName, generatedFileName, null);
+		return this.createPresignedPutURL(generatedFileName);
+	}
 
-		return new AWSPresignedURLDTO(generatedFileName, presignedURL);
+	public Set<AWSPresignedURLDTO> getUploadURLs(Iterable<String> fileNames) {
+		for(String fileName : fileNames) {
+			if(!validateFileName(fileName)) {
+				throw new IllegalArgumentException(String.format("Invalid file name: %s", fileName));
+			}
+		}
+
+		Set<AWSPresignedURLDTO> presignedURLs = new HashSet<>();
+		for(String fileName : fileNames) {
+			String generatedFileName = generateFileName(fileName);
+			AWSPresignedURLDTO presignedURL = this.createPresignedPutURL(generatedFileName);
+			presignedURLs.add(presignedURL);
+		}
+
+		return presignedURLs;
 	}
 }

@@ -1,16 +1,24 @@
 package com.fitcheckme.FitCheckMe.models;
 
-import java.time.LocalDateTime;
+import com.fitcheckme.FitCheckMe.models.composite_keys.OutfitImageId;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "outfit_image", schema = "app")
-public class OutfitImage extends ImageFile {
+@IdClass(OutfitImageId.class)
+public class OutfitImage {
+	@Id
+	@ManyToOne
+	@JoinColumn(name = "image_id", nullable = false)
+	private ImageFile image;
 
+	@Id
 	@ManyToOne
 	@JoinColumn(name = "outfit_id", nullable = false)
 	private Outfit outfit;
@@ -19,9 +27,13 @@ public class OutfitImage extends ImageFile {
 
 	}
 
-	public OutfitImage(String imagePath, LocalDateTime creationDate, Outfit outfit) {
-		super(imagePath, creationDate);
+	public OutfitImage(ImageFile image, Outfit outfit) {
+		this.image = image;
 		this.outfit = outfit;
+	}
+
+	public ImageFile getImage() {
+		return image;
 	}
 
 	public Outfit getOutfit() {

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Tag.TagRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.files.ImageRequestDTO;
 import com.fitcheckme.FitCheckMe.models.Outfit;
 
 public record OutfitRequestDTO (
@@ -16,7 +17,7 @@ public record OutfitRequestDTO (
 	LocalDateTime creationDate,
 	Set<TagRequestDTO> outfitTags,
 	Set<GarmentRequestDTO>garments,
-	Set<String> imagePaths
+	Set<ImageRequestDTO> imagePaths
 ) {
 	public static OutfitRequestDTO toDTO(Outfit outfit) {
 		return new OutfitRequestDTO(
@@ -32,7 +33,7 @@ public record OutfitRequestDTO (
 				garment.getURLs().stream().collect(Collectors.toSet()),
 				garment.getTags().stream().map(t -> new TagRequestDTO(t.getId(), t.getName())).collect(Collectors.toSet()))
 			).collect(Collectors.toSet()),
-			outfit.getImages().stream().map(i -> i.getImage().getImagePath()).collect(Collectors.toSet())
+			outfit.getImages().stream().map(i -> new ImageRequestDTO(i.getImage().getUser().getId(), i.getImage().getId(), i.getImage().getImagePath())).collect(Collectors.toSet())
 		);
 	}
 }

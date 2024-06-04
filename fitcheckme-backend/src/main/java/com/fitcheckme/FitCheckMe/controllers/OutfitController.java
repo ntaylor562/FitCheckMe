@@ -63,7 +63,7 @@ public class OutfitController {
 		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.updateOutfit(outfit, userDetails), HttpStatus.OK);
 	}
 
-	@PostMapping("editimages")
+	@PutMapping("editimages")
 	public ResponseEntity<OutfitRequestDTO> updateImages(@Valid @RequestBody OutfitUpdateImagesRequestDTO outfitImages, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		return new ResponseEntity<OutfitRequestDTO>(this.outfitService.updateOutfitImages(outfitImages, userDetails), HttpStatus.OK);
 	}

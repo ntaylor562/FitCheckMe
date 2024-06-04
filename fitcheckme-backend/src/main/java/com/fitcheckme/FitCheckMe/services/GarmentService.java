@@ -161,6 +161,7 @@ public class GarmentService {
 						.toList();
 				throw new EntityNotFoundException(String.format("Tags with the following IDs not found: %s", missingIds.toString()));
 			}
+			tags.addAll(foundTags);
 		}
 		
 		//TODO think about performing security checks on URLs

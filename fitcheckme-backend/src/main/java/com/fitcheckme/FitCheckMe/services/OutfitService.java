@@ -2,7 +2,6 @@ package com.fitcheckme.FitCheckMe.services;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,8 +12,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import com.fitcheckme.FitCheckMe.DTOs.FileUploadDTO;
-import com.fitcheckme.FitCheckMe.DTOs.AWS.AWSPresignedURLDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Outfit.OutfitUpdateImagesRequestDTO;
@@ -58,18 +55,16 @@ public class OutfitService {
 	private final UserRepository userRepository;
 	private final OutfitImageRepository outfitImageRepository;
 	private final ImageFileRepository imageFileRepository;
-	private final FileService fileService;
 
 	public OutfitService(OutfitRepository outfitRepository, GarmentRepository garmentRepository,
 			TagRepository tagRepository, UserRepository userRepository, OutfitImageRepository outfitImageRepository,
-			ImageFileRepository imageFileRepository, FileService fileService) {
+			ImageFileRepository imageFileRepository) {
 		this.outfitRepository = outfitRepository;
 		this.garmentRepository = garmentRepository;
 		this.tagRepository = tagRepository;
 		this.userRepository = userRepository;
 		this.outfitImageRepository = outfitImageRepository;
 		this.imageFileRepository = imageFileRepository;
-		this.fileService = fileService;
 	}
 
 	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OUTFIT_ADMIN')")
@@ -276,18 +271,6 @@ public class OutfitService {
 		currentOutfit.removeTag(removeTags);
 
 		this.outfitRepository.save(currentOutfit);
-	}
-
-	@Transactional
-	public Set<AWSPresignedURLDTO> uploadImages(Collection<FileUploadDTO> files, CustomUserDetails userDetails) throws IllegalArgumentException {
-		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %d", userDetails.getUserId())));
-		Set<AWSPresignedURLDTO> presignedURLs = new HashSet<>();
-		presignedURLs.addAll(fileService.getUploadURLs(files.stream().map(file -> file.fileName()).toList()));
-		for(AWSPresignedURLDTO presignedURLDTO : presignedURLs) {
-			imageFileRepository.save(new ImageFile(user, presignedURLDTO.fileName(), LocalDateTime.now()));
-		}
-
-		return presignedURLs;
 	}
 
 	@Transactional

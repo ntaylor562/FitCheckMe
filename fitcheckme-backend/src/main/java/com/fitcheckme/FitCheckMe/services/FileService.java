@@ -1,6 +1,7 @@
 package com.fitcheckme.FitCheckMe.services;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,8 +10,17 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.fitcheckme.FitCheckMe.DTOs.FileUploadDTO;
 import com.fitcheckme.FitCheckMe.DTOs.AWS.AWSPresignedURLDTO;
+import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
+import com.fitcheckme.FitCheckMe.models.ImageFile;
+import com.fitcheckme.FitCheckMe.models.User;
+import com.fitcheckme.FitCheckMe.repositories.ImageFileRepository;
+import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 import com.fitcheckme.FitCheckMe.utils.AWSUtil;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 @Service
 public class FileService {
@@ -21,8 +31,15 @@ public class FileService {
 
 	private final AWSUtil awsUtil;
 
-	public FileService(AWSUtil awsUtil) {
+	private final UserRepository userRepository;
+
+	private final ImageFileRepository imageFileRepository;
+
+
+	public FileService(AWSUtil awsUtil, UserRepository userRepository, ImageFileRepository imageFileRepository) {
 		this.awsUtil = awsUtil;
+		this.userRepository = userRepository;
+		this.imageFileRepository = imageFileRepository;
 	}
 	
 	private boolean validateFileName(String fileName) {
@@ -101,6 +118,18 @@ public class FileService {
 			String generatedFileName = generateFileName(fileName);
 			AWSPresignedURLDTO presignedURL = this.createPresignedPutURL(generatedFileName);
 			presignedURLs.add(presignedURL);
+		}
+
+		return presignedURLs;
+	}
+
+	@Transactional
+	public Set<AWSPresignedURLDTO> uploadImages(Collection<FileUploadDTO> files, CustomUserDetails userDetails) throws IllegalArgumentException {
+		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %d", userDetails.getUserId())));
+		Set<AWSPresignedURLDTO> presignedURLs = new HashSet<>();
+		presignedURLs.addAll(this.getUploadURLs(files.stream().map(file -> file.fileName()).toList()));
+		for(AWSPresignedURLDTO presignedURLDTO : presignedURLs) {
+			imageFileRepository.save(new ImageFile(user, presignedURLDTO.fileName(), LocalDateTime.now()));
 		}
 
 		return presignedURLs;

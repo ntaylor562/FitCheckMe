@@ -97,7 +97,7 @@ public class FileService {
 		return new AWSPresignedURLDTO(fileName, presignedURL);
 	}
 
-	public AWSPresignedURLDTO getUploadURL(String fileName) {
+	private AWSPresignedURLDTO getUploadURL(String fileName) {
 		if(!validateFileName(fileName)) {
 			throw new IllegalArgumentException("Invalid file name");
 		}
@@ -106,7 +106,7 @@ public class FileService {
 		return this.createPresignedPutURL(generatedFileName);
 	}
 
-	public Set<AWSPresignedURLDTO> getUploadURLs(Iterable<String> fileNames) {
+	private Set<AWSPresignedURLDTO> getUploadURLs(Iterable<String> fileNames) {
 		for(String fileName : fileNames) {
 			if(!validateFileName(fileName)) {
 				throw new IllegalArgumentException(String.format("Invalid file name: %s", fileName));
@@ -133,5 +133,14 @@ public class FileService {
 		}
 
 		return presignedURLs;
+	}
+
+	@Transactional
+	public AWSPresignedURLDTO uploadImage(FileUploadDTO file, CustomUserDetails userDetails) throws IllegalArgumentException {
+		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %d", userDetails.getUserId())));
+		AWSPresignedURLDTO res = this.getUploadURL(file.fileName());
+		imageFileRepository.save(new ImageFile(user, res.fileName(), LocalDateTime.now()));
+		
+		return res;
 	}
 }

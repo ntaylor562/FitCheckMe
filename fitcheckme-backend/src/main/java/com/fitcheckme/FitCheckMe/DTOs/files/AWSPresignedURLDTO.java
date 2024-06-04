@@ -1,4 +1,4 @@
-package com.fitcheckme.FitCheckMe.DTOs.AWS;
+package com.fitcheckme.FitCheckMe.DTOs.files;
 
 public record AWSPresignedURLDTO(
 	String fileName,

@@ -11,7 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.FileUploadDTO;
-import com.fitcheckme.FitCheckMe.DTOs.AWS.AWSPresignedURLDTO;
+import com.fitcheckme.FitCheckMe.DTOs.files.AWSPresignedURLDTO;
+import com.fitcheckme.FitCheckMe.DTOs.files.FileUploadResponseDTO;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.models.ImageFile;
 import com.fitcheckme.FitCheckMe.models.User;
@@ -35,32 +36,31 @@ public class FileService {
 
 	private final ImageFileRepository imageFileRepository;
 
-
 	public FileService(AWSUtil awsUtil, UserRepository userRepository, ImageFileRepository imageFileRepository) {
 		this.awsUtil = awsUtil;
 		this.userRepository = userRepository;
 		this.imageFileRepository = imageFileRepository;
 	}
-	
+
 	private boolean validateFileName(String fileName) {
 		// Check if the file name is null or empty
-		if(fileName == null || fileName.isEmpty()) {
+		if (fileName == null || fileName.isEmpty()) {
 			return false;
 		}
 
 		// Check if the file name has an extension
 		String[] parts = fileName.split("\\.");
-		if(parts.length != 2) {
+		if (parts.length != 2) {
 			return false;
 		}
 
 		// Check if the file name has a name and an extension
-		if(parts[0].isEmpty() || parts[1].isEmpty()) {
+		if (parts[0].isEmpty() || parts[1].isEmpty()) {
 			return false;
 		}
 
 		// Check if the file extension is allowed
-		if(allowedExtensions.stream().noneMatch(parts[1]::equalsIgnoreCase)) {
+		if (allowedExtensions.stream().noneMatch(parts[1]::equalsIgnoreCase)) {
 			return false;
 		}
 
@@ -98,7 +98,7 @@ public class FileService {
 	}
 
 	private AWSPresignedURLDTO getUploadURL(String fileName) {
-		if(!validateFileName(fileName)) {
+		if (!validateFileName(fileName)) {
 			throw new IllegalArgumentException("Invalid file name");
 		}
 		String generatedFileName = generateFileName(fileName);
@@ -107,14 +107,14 @@ public class FileService {
 	}
 
 	private Set<AWSPresignedURLDTO> getUploadURLs(Iterable<String> fileNames) {
-		for(String fileName : fileNames) {
-			if(!validateFileName(fileName)) {
+		for (String fileName : fileNames) {
+			if (!validateFileName(fileName)) {
 				throw new IllegalArgumentException(String.format("Invalid file name: %s", fileName));
 			}
 		}
 
 		Set<AWSPresignedURLDTO> presignedURLs = new HashSet<>();
-		for(String fileName : fileNames) {
+		for (String fileName : fileNames) {
 			String generatedFileName = generateFileName(fileName);
 			AWSPresignedURLDTO presignedURL = this.createPresignedPutURL(generatedFileName);
 			presignedURLs.add(presignedURL);
@@ -124,23 +124,43 @@ public class FileService {
 	}
 
 	@Transactional
-	public Set<AWSPresignedURLDTO> uploadImages(Collection<FileUploadDTO> files, CustomUserDetails userDetails) throws IllegalArgumentException {
-		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %d", userDetails.getUserId())));
-		Set<AWSPresignedURLDTO> presignedURLs = new HashSet<>();
-		presignedURLs.addAll(this.getUploadURLs(files.stream().map(file -> file.fileName()).toList()));
-		for(AWSPresignedURLDTO presignedURLDTO : presignedURLs) {
-			imageFileRepository.save(new ImageFile(user, presignedURLDTO.fileName(), LocalDateTime.now()));
-		}
+	public Set<FileUploadResponseDTO> uploadImages(Collection<FileUploadDTO> files, CustomUserDetails userDetails)
+			throws IllegalArgumentException {
+		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(
+				String.format("User not found with ID: %d", userDetails.getUserId())));
+		Set<FileUploadResponseDTO> res = new HashSet<>();
+		res.addAll(this.getUploadURLs(files.stream().map(FileUploadDTO::fileName).toList()).stream()
+				.map(presignedURLDTO -> {
+					ImageFile f = imageFileRepository.save(new ImageFile(user, presignedURLDTO.fileName(), LocalDateTime.now()));
+					return new FileUploadResponseDTO(user.getId(), f.getId(), presignedURLDTO.fileName(),
+						presignedURLDTO.presignedURL());
+					})
+				.toList());
 
-		return presignedURLs;
+		return res;
 	}
 
 	@Transactional
-	public AWSPresignedURLDTO uploadImage(FileUploadDTO file, CustomUserDetails userDetails) throws IllegalArgumentException {
-		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with ID: %d", userDetails.getUserId())));
-		AWSPresignedURLDTO res = this.getUploadURL(file.fileName());
-		imageFileRepository.save(new ImageFile(user, res.fileName(), LocalDateTime.now()));
-		
-		return res;
+	public FileUploadResponseDTO uploadImage(FileUploadDTO file, CustomUserDetails userDetails)
+			throws IllegalArgumentException {
+		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(
+				String.format("User not found with ID: %d", userDetails.getUserId())));
+		AWSPresignedURLDTO presignedURLDTO = this.getUploadURL(file.fileName());
+		ImageFile f = imageFileRepository.save(new ImageFile(user, presignedURLDTO.fileName(), LocalDateTime.now()));
+		return new FileUploadResponseDTO(user.getId(), f.getId(), presignedURLDTO.fileName(), presignedURLDTO.presignedURL());
+	}
+
+	@Transactional
+	public void deleteFile(Integer fileId, CustomUserDetails userDetails) {
+		User user = userRepository.findById(userDetails.getUserId()).orElseThrow(() -> new EntityNotFoundException(
+				String.format("User not found with ID: %d", userDetails.getUserId())));
+
+		if (user.getId() != userDetails.getUserId()) {
+			throw new IllegalArgumentException("User does not have permission to delete this file");
+		}
+
+		ImageFile imageFile = imageFileRepository.findById(fileId)
+				.orElseThrow(() -> new EntityNotFoundException(String.format("File not found with ID: %d", fileId)));
+		imageFileRepository.delete(imageFile);
 	}
 }

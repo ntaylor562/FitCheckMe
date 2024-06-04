@@ -33,11 +33,6 @@ export async function getTags() {
 }
 
 export async function createGarment(garmentName, urls = [], tags = []) {
-	console.log({
-		garmentName: garmentName,
-		garmentURLs: urls,
-		garmentTags: tags
-	})
 	// @ts-ignore
 	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/garment/create`, {
 		method: 'POST',

@@ -281,23 +281,41 @@ public class OutfitService {
 			throw new AccessDeniedException("User does not have permission to edit this outfit");
 		}
 
-		if(updateDTO.addImageIds() != null && !updateDTO.addImageIds().isEmpty()) {
-			Set<Integer> existingImageIds = currentOutfit.getImages().stream().map(image -> image.getImage().getId()).collect(Collectors.toSet());
-			for(Integer imageId : updateDTO.addImageIds()) {
-				ImageFile image = imageFileRepository.findById(imageId).orElseThrow(() -> new EntityNotFoundException(String.format("Image not found with ID: %s", String.valueOf(imageId))));
-				if(image.getUser().getId() != userDetails.getUserId()) {
-					throw new AccessDeniedException("User does not have permission to add this image to the outfit");
+		if (updateDTO.addImageIds() != null || updateDTO.removeImageIds() != null) {
+			Set<Integer> existingImageIds = currentOutfit.getImages().stream().map(image -> image.getImage().getId())
+					.collect(Collectors.toSet());
+			if (updateDTO.addImageIds() != null && !updateDTO.addImageIds().isEmpty()) {
+				for (Integer imageId : updateDTO.addImageIds()) {
+					ImageFile image = imageFileRepository.findById(imageId)
+							.orElseThrow(() -> new EntityNotFoundException(
+									String.format("Image not found with ID: %s", String.valueOf(imageId))));
+					if (image.getUser().getId() != userDetails.getUserId()) {
+						throw new AccessDeniedException(
+								"User does not have permission to add this image to the outfit");
+					}
+					if (existingImageIds.contains(imageId)) {
+						throw new IllegalArgumentException(
+								String.format("Image already in outfit with path: %s", image.getImagePath()));
+					}
+					OutfitImage newImage = outfitImageRepository.save(new OutfitImage(image, currentOutfit));
+					currentOutfit.addImage(newImage);
 				}
-				if(existingImageIds.contains(imageId)) {
-					throw new IllegalArgumentException(String.format("Image already in outfit with path: %s", image.getImagePath()));
+			}
+			if (updateDTO.removeImageIds() != null && !updateDTO.removeImageIds().isEmpty()) {
+				for (Integer imageId : updateDTO.removeImageIds()) {
+					outfitImageRepository.deleteByOutfit_OutfitIdAndImage_ImageFileId(currentOutfit.getId(), imageId);
+					if(!currentOutfit.removeImage(imageId)) {
+						throw new EntityNotFoundException(String.format("Image not found in outfit with ID: %s", String.valueOf(imageId)));
+					}
 				}
-				OutfitImage newImage = outfitImageRepository.save(new OutfitImage(image, currentOutfit));
-				currentOutfit.addImage(newImage);
 			}
 		}
-		if(updateDTO.removeImageIds() != null && !updateDTO.removeImageIds().isEmpty()) {
-			for(Integer imageId : updateDTO.removeImageIds()) {
-				outfitImageRepository.deleteByOutfit_OutfitIdAndImage_ImageFileId(currentOutfit.getId(), imageId);
+		
+		if(updateDTO.addImageIds() != null && updateDTO.removeImageIds() != null) {
+			Set<Integer> intersection = new HashSet<>(updateDTO.addImageIds());
+			intersection.retainAll(updateDTO.removeImageIds());
+			if(!intersection.isEmpty()) {
+				throw new IllegalArgumentException("Image IDs cannot be in both add and remove lists");
 			}
 		}
 

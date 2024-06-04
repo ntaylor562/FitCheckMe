@@ -86,7 +86,7 @@ public class Garment {
 		return this.garmentTags;
 	}
 
-	public Set<GarmentImage> getGarmentImages() {
+	public Set<GarmentImage> getImages() {
 		return this.images;
 	}
 
@@ -94,55 +94,55 @@ public class Garment {
 		this.garmentName = name;
 	}
 
-	public void addTag(Tag tag) {
-		this.garmentTags.add(tag);
+	public boolean addTag(Tag tag) {
+		return this.garmentTags.add(tag);
 	}
 
-	public void addTag(Collection<Tag> tags) {
-		this.garmentTags.addAll(tags);
+	public boolean addTag(Collection<Tag> tags) {
+		return this.garmentTags.addAll(tags);
 	}
 
-	public void removeTag(Integer tagId) {
-		this.garmentTags.removeIf(tag -> tag.getId() == tagId);
+	public boolean removeTag(Integer tagId) {
+		return this.garmentTags.removeIf(tag -> tag.getId() == tagId);
 	}
 
-	public void removeTag(Tag tag) {
-		this.garmentTags.remove(tag);
+	public boolean removeTag(Tag tag) {
+		return this.garmentTags.remove(tag);
 	}
 
-	public void removeTag(Collection<Tag> tagsToBeRemoved) {
-		this.garmentTags.removeAll(tagsToBeRemoved);
+	public boolean removeTag(Collection<Tag> tagsToBeRemoved) {
+		return this.garmentTags.removeAll(tagsToBeRemoved);
 	}
 
-	public void addURL(String url) {
-		this.urls.add(url);
+	public boolean addURL(String url) {
+		return this.urls.add(url);
 	}
 
-	public void addURL(Collection<String> urls) {
-		this.urls.addAll(urls);
+	public boolean addURL(Collection<String> urls) {
+		return this.urls.addAll(urls);
 	}
 
-	public void removeURL(String url) {
-		this.urls.remove(url);
+	public boolean removeURL(String url) {
+		return this.urls.remove(url);
 	}
 
-	public void removeURL(Collection<String> urls) {
-		this.urls.removeAll(urls);
+	public boolean removeURL(Collection<String> urls) {
+		return this.urls.removeAll(urls);
 	}
 
-	public void addImage(GarmentImage image) {
-		this.images.add(image);
+	public boolean addImage(GarmentImage image) {
+		return this.images.add(image);
 	}
 
-	public void addImage(Collection<GarmentImage> images) {
-		this.images.addAll(images);
+	public boolean addImage(Collection<GarmentImage> images) {
+		return this.images.addAll(images);
 	}
 
-	public void removeImage(Integer imageId) {
-		this.images.removeIf(image -> image.getImage().getId() == imageId);
+	public boolean removeImage(Integer imageId) {
+		return this.images.removeIf(image -> image.getImage().getId() == imageId);
 	}
 
-	public void removeImage(GarmentImage image) {
-		this.images.remove(image);
+	public boolean removeImage(GarmentImage image) {
+		return this.images.remove(image);
 	}
 }

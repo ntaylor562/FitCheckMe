@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateImagesRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.services.GarmentService;
@@ -57,9 +58,14 @@ public class GarmentController {
 		return new ResponseEntity<GarmentRequestDTO>(garmentService.createGarment(garment, userDetails), HttpStatus.CREATED);
 	}
 
-	@PutMapping("")
-	public ResponseEntity<GarmentRequestDTO> updateOutfit(@Valid @RequestBody GarmentUpdateRequestDTO garment, @AuthenticationPrincipal CustomUserDetails userDetails) {
+	@PutMapping("edit")
+	public ResponseEntity<GarmentRequestDTO> updateGarment(@Valid @RequestBody GarmentUpdateRequestDTO garment, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		return new ResponseEntity<GarmentRequestDTO>(this.garmentService.updateGarment(garment, userDetails), HttpStatus.OK);
+	}
+
+	@PutMapping("editimages")
+	public ResponseEntity<GarmentRequestDTO> updateImages(@Valid @RequestBody GarmentUpdateImagesRequestDTO garmentImages, @AuthenticationPrincipal CustomUserDetails userDetails) {
+		return new ResponseEntity<GarmentRequestDTO>(this.garmentService.updateGarmentImages(garmentImages, userDetails), HttpStatus.OK);
 	}
 	
 	@DeleteMapping("")

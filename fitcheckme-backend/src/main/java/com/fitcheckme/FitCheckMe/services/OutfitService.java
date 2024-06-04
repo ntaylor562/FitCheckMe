@@ -295,7 +295,7 @@ public class OutfitService {
 					}
 					if (existingImageIds.contains(imageId)) {
 						throw new IllegalArgumentException(
-								String.format("Image already in outfit with path: %s", image.getImagePath()));
+								String.format("Image already in outfit with ID: %d", image.getId()));
 					}
 					OutfitImage newImage = outfitImageRepository.save(new OutfitImage(image, currentOutfit));
 					currentOutfit.addImage(newImage);

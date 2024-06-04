@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,12 +15,17 @@ import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentTagUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentURLUpdateRequestDTO;
+import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateImagesRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.models.Garment;
+import com.fitcheckme.FitCheckMe.models.GarmentImage;
+import com.fitcheckme.FitCheckMe.models.ImageFile;
 import com.fitcheckme.FitCheckMe.models.Tag;
 import com.fitcheckme.FitCheckMe.models.User;
+import com.fitcheckme.FitCheckMe.repositories.GarmentImageRepository;
 import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
+import com.fitcheckme.FitCheckMe.repositories.ImageFileRepository;
 import com.fitcheckme.FitCheckMe.repositories.TagRepository;
 import com.fitcheckme.FitCheckMe.repositories.UserRepository;
 
@@ -43,11 +49,15 @@ public class GarmentService {
 	private final GarmentRepository garmentRepository;
 	private final TagRepository tagRepository;
 	private final UserRepository userRepository;
+	private final GarmentImageRepository garmentImageRepository;
+	private final ImageFileRepository imageFileRepository;
 
-	public GarmentService(GarmentRepository garmentRepository, TagRepository tagRepository, UserRepository userRepository) {
+	public GarmentService(GarmentRepository garmentRepository, TagRepository tagRepository, UserRepository userRepository, GarmentImageRepository garmentImageRepository, ImageFileRepository imageFileRepository) {
 		this.garmentRepository = garmentRepository;
 		this.tagRepository = tagRepository;
 		this.userRepository = userRepository;
+		this.garmentImageRepository = garmentImageRepository;
+		this.imageFileRepository = imageFileRepository;
 	}
 
 	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'GARMENT_ADMIN')")
@@ -190,6 +200,55 @@ public class GarmentService {
 
 		garmentRepository.save(currentGarment);
 		return GarmentRequestDTO.toDTO(currentGarment);
+	}
+
+	@Transactional
+	public GarmentRequestDTO updateGarmentImages(GarmentUpdateImagesRequestDTO updateDTO, CustomUserDetails userDetails) {
+		Garment currentGarment = this.garmentRepository.findById(updateDTO.garmentId()).orElseThrow(() -> new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(updateDTO.garmentId()))));
+
+		if(currentGarment.getUser().getId() != userDetails.getUserId()) {
+			throw new AccessDeniedException("User does not have permission to edit this garment");
+		}
+
+		if (updateDTO.addImageIds() != null || updateDTO.removeImageIds() != null) {
+			Set<Integer> existingImageIds = currentGarment.getImages().stream().map(image -> image.getImage().getId())
+					.collect(Collectors.toSet());
+			if (updateDTO.addImageIds() != null && !updateDTO.addImageIds().isEmpty()) {
+				for (Integer imageId : updateDTO.addImageIds()) {
+					ImageFile image = imageFileRepository.findById(imageId)
+							.orElseThrow(() -> new EntityNotFoundException(
+									String.format("Image not found with ID: %s", String.valueOf(imageId))));
+					if (image.getUser().getId() != userDetails.getUserId()) {
+						throw new AccessDeniedException(
+								"User does not have permission to add this image to the garment");
+					}
+					if (existingImageIds.contains(imageId)) {
+						throw new IllegalArgumentException(
+								String.format("Image already in garment with ID: %d", image.getId()));
+					}
+					GarmentImage newImage = garmentImageRepository.save(new GarmentImage(image, currentGarment));
+					currentGarment.addImage(newImage);
+				}
+			}
+			if (updateDTO.removeImageIds() != null && !updateDTO.removeImageIds().isEmpty()) {
+				for (Integer imageId : updateDTO.removeImageIds()) {
+					garmentImageRepository.deleteByGarment_GarmentIdAndImage_ImageFileId(currentGarment.getId(), imageId);
+					if(!currentGarment.removeImage(imageId)) {
+						throw new EntityNotFoundException(String.format("Image not found in garment with ID: %s", String.valueOf(imageId)));
+					}
+				}
+			}
+		}
+		
+		if(updateDTO.addImageIds() != null && updateDTO.removeImageIds() != null) {
+			Set<Integer> intersection = new HashSet<>(updateDTO.addImageIds());
+			intersection.retainAll(updateDTO.removeImageIds());
+			if(!intersection.isEmpty()) {
+				throw new IllegalArgumentException("Image IDs cannot be in both add and remove lists");
+			}
+		}
+
+		return GarmentRequestDTO.toDTO(garmentRepository.save(currentGarment));
 	}
 
 	@Transactional

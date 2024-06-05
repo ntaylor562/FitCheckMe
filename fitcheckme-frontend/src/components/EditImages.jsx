@@ -20,7 +20,7 @@ export default function EditImages({ images, handleUploadFileChange, handleDelet
 	return (<VStack spacing={4}>
 		<FileUploadInput name="images" multiple accept=".png, .jpg, .jpeg" handleFileChange={handleUploadFileChange} />
 		<ImageSelector images={images} selectedImages={selectedImagesToDelete} handleImageSelect={handleImageSelect} />
-		{selectedImagesToDelete.size > 0 && <Button colorScheme="red" onClick={() => handleDeleteImages(selectedImagesToDelete)}>Remove Selected Images</Button>}
+		{images.size > 0 && <Button isDisabled={selectedImagesToDelete.size === 0} colorScheme="red" onClick={() => handleDeleteImages(selectedImagesToDelete)}>Remove Selected Images</Button>}
 	</VStack>
 
 	)

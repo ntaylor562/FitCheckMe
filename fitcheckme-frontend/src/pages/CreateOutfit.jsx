@@ -2,17 +2,17 @@ import { Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHea
 import { MultiSelect } from "chakra-multiselect"
 import { useState } from "react"
 import { toTitleCase } from "../utils/StringUtil";
-import { createOutfit } from "../backend/Application";
+import { createOutfit, editOutfitImages } from "../backend/Application";
 import GarmentSelector from "../components/GarmentSelector";
 import { useTags } from "../contexts/TagsContext";
+import FileUploadInput from "../components/FileUploadInput";
+import { uploadImages } from "../backend/FileService";
 
-export default function CreateOutfit() {
-	const tempNumOutfits = 0;
-
+export default function CreateOutfit({ numExistingOutfits = 0, handleCreateOutfit }) {
 	const { tags } = useTags();
 
 	const defaultFormValues = {
-		outfitName: `Outfit ${tempNumOutfits + 1}`,
+		outfitName: `Outfit ${numExistingOutfits + 1}`,
 		outfitDesc: "",
 		tags: [],
 		garments: new Set()
@@ -20,20 +20,31 @@ export default function CreateOutfit() {
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const [formValues, setFormValues] = useState({ ...defaultFormValues })
+	const [filesToUpload, setFilesToUpload] = useState([]);
 
 	const toast = useToast();
 
-	const handleClose = () => {
+	const handleOpen = () => {
 		setFormValues({ ...defaultFormValues })
-		onClose();
+		setFilesToUpload([]);
+		onOpen();
 	}
 
 	const handleChange = (e) => {
-		setFormValues({
-			...formValues,
-			[e.target.name]: e.target.value
-		})
+		if (e.target.name === "outfitName" && e.target.value === "") {
+			setFormValues({
+				...formValues,
+				[e.target.name]: defaultFormValues.outfitName
+			})
+		}
+		else {
+			setFormValues({
+				...formValues,
+				[e.target.name]: e.target.value
+			})
+		}
 	}
+
 	const handleMultiSelectChange = (e) => {
 		setFormValues({
 			...formValues,
@@ -54,39 +65,91 @@ export default function CreateOutfit() {
 		});
 	}
 
+	const handleUploadFileChange = (e) => {
+		setFilesToUpload([...e.target.files]);
+	}
+
 	const handleSubmit = async (e) => {
 		e.preventDefault()
 
-		await createOutfit(formValues.outfitName, formValues.outfitDesc, formValues.tags.map((tag) => parseInt(tag.value)), Array.from(formValues.garments))
-			.then(async (response) => {
-				if (!response.ok) {
-					const contentType = response.headers.get("content-type");
-					const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
-					toast({
-						title: 'Error creating outfit.',
-						description: message,
-						status: 'error',
-						duration: 5000,
-						isClosable: true,
+		try {
+			const createdOutfit = await createOutfit(formValues.outfitName, formValues.outfitDesc, formValues.tags.map((tag) => parseInt(tag.value)), Array.from(formValues.garments))
+				.then(async (response) => {
+					if (!response.ok) {
+						const contentType = response.headers.get("content-type");
+						const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
+						toast({
+							title: 'Error creating outfit.',
+							description: message,
+							status: 'error',
+							duration: 5000,
+							isClosable: true,
+						})
+						throw new Error(message);
+					}
+					return await response.json();
+				});
+
+			if (filesToUpload.length > 0) {
+				await uploadImages(filesToUpload)
+					.then(async (response) => {
+						if (!response.ok) {
+							const contentType = response.headers.get("content-type");
+							const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
+							toast({
+								title: 'Successfully created outfit details but failed uploading images.',
+								description: message,
+								status: 'error',
+								duration: 5000,
+								isClosable: true,
+							})
+							throw new Error(message);
+						} else {
+							return response;
+						}
 					})
-				}
-				else {
-					handleClose()
-					toast({
-						title: 'Outfit created.',
-						description: "Your outfit has been created and can now be viewed for inspiration.",
-						status: 'success',
-						duration: 5000,
-						isClosable: true,
+					.then((res) => {
+						if (!res.ok) {
+							throw new Error("Failed to upload image");
+						}
+						return res.json();
 					})
-				}
-			});
+					.then(async (res) => {
+						await editOutfitImages(createdOutfit.outfitId, res.map((image) => image.fileId), [])
+							.then(async (response) => {
+								if (!response.ok) {
+									const contentType = response.headers.get("content-type");
+									const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
+									toast({
+										title: 'Successfully created outfit details but failed uploading images.',
+										description: message,
+										status: 'error',
+										duration: 5000,
+										isClosable: true,
+									})
+									throw new Error(message);
+								}
+							})
+					})
+			}
+
+			toast({
+				title: 'Outfit created.',
+				status: 'success',
+				duration: 5000,
+				isClosable: true,
+			})
+			handleCreateOutfit();
+			onClose();
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
 	return (
 		<>
-			<Button colorScheme="teal" onClick={onOpen}>Create outfit</Button>
-			<Drawer placement="bottom" onClose={handleClose} isOpen={isOpen} size="full">
+			<Button colorScheme="teal" onClick={handleOpen}>Create outfit</Button>
+			<Drawer placement="bottom" onClose={onClose} isOpen={isOpen} size="full">
 				<DrawerOverlay />
 				<DrawerContent>
 					<DrawerCloseButton />
@@ -97,7 +160,7 @@ export default function CreateOutfit() {
 								<Flex>
 									<FormControl onChange={handleChange}>
 										<FormLabel>Outfit name</FormLabel>
-										<Input placeholder={`Outfit ${tempNumOutfits + 1}`} name="outfitName" type="text" />
+										<Input placeholder={`Outfit ${numExistingOutfits + 1}`} name="outfitName" type="text" />
 									</FormControl>
 								</Flex>
 								<FormControl onChange={handleChange}>
@@ -115,6 +178,10 @@ export default function CreateOutfit() {
 									/>
 								</FormControl>
 								<GarmentSelector handleGarmentSelect={handleGarmentSelect} selectedGarments={formValues.garments} />
+								<FormControl>
+									<FormLabel>Images</FormLabel>
+									<FileUploadInput name="images" multiple accept=".png, .jpg, .jpeg" handleFileChange={handleUploadFileChange} />
+								</FormControl>
 								<Button w="100%" type="submit" colorScheme="green" >Create</Button>
 							</VStack>
 						</form>

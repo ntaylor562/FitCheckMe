@@ -22,6 +22,10 @@ export default function Testing() {
 		setUserOutfits(await getUserOutfits());
 	}
 
+	const handleCreateOutfit = async () => {
+		await fetchUserOutfits();
+	}
+
 	return (
 		<Box>
 			<TagsProvider>
@@ -35,9 +39,9 @@ export default function Testing() {
 								<HStack spacing={4}>
 									{!isAuthenticated && <Button colorScheme="green" onClick={async () => { login('test', 'test') }}>Login</Button>}
 									{isAuthenticated && <Button colorScheme="red" onClick={async () => { logout() }}>Logout</Button>}
-									{isAuthenticated && <CreateOutfit />}
+									{isAuthenticated && <CreateOutfit handleCreateOutfit={handleCreateOutfit} numExistingOutfits={userOutfits !== null ? userOutfits.length : 0} />}
 								</HStack>
-								{isAuthenticated && userOutfits !== null && userOutfits.length > 0 && <EditOutfit outfit={userOutfits[userOutfits.length - 1]} handleOutfitUpdate={fetchUserOutfits} />}
+								{isAuthenticated && userOutfits !== null && userOutfits.length > 0 && userOutfits.map((outfit) => <EditOutfit key={outfit.outfitId} outfit={outfit} handleOutfitUpdate={fetchUserOutfits} />)}
 							</>
 					}
 					<Button colorScheme="gray" onClick={() => auth_refresh()}>Refresh token</Button>

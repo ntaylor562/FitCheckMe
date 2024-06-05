@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth_login, auth_logout } from "../backend/Auth";
 import FetchWithRefreshRetry from "../backend/FetchWithRefreshRetry";
+import { getEnvVariable } from "../backend/Env";
 
 
 const AuthContext = createContext({
@@ -18,8 +19,7 @@ export const AuthProvider = ({ children }) => {
 	const [isLoading, setLoading] = useState(true);
 	useEffect(() => {
 		const initializeAuth = async () => {
-			// @ts-ignore
-			await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/user/currentuser`, { method: 'GET', credentials: 'include' })
+			await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/user/currentuser`, { method: 'GET', credentials: 'include' })
 				.then(async (response) => {
 					if (response.ok) {
 						setCurrentUser(await response.json());

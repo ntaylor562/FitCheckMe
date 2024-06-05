@@ -1,10 +1,10 @@
+import { getEnvVariable } from "./Env";
 import { handleFetchException } from "./ExceptionHandling"
 import FetchWithRefreshRetry from "./FetchWithRefreshRetry";
 
 
 export async function uploadImage(file) {
-	// @ts-ignore
-	const backendFilePostRes = await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/file/image`, {
+	const backendFilePostRes = await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/file/image`, {
 		method: 'POST',
 		credentials: 'include',
 		headers: {
@@ -32,8 +32,7 @@ export async function uploadImage(file) {
 }
 
 export async function uploadImages(files) {
-	// @ts-ignore
-	const backendFilePostRes = await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/file/images`, {
+	const backendFilePostRes = await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/file/images`, {
 		method: 'POST',
 		credentials: 'include',
 		headers: {

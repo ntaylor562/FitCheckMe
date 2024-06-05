@@ -1,11 +1,11 @@
 import { auth_refresh } from "./Auth";
+import { getEnvVariable } from "./Env";
 
 export async function handleFetchException(response) {
 	if (response.ok) return response;
 
 	if (response.status === 401 || response.status === 403) {
-		// @ts-ignore
-		window.location.href = `${import.meta.env.VITE_FRONTEND_URL}/login`;
+		window.location.href = `${getEnvVariable("FRONTEND_URL") }/login`;
 		return response;
 	}
 

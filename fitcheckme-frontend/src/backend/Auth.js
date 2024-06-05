@@ -1,8 +1,8 @@
+import { getEnvVariable } from "./Env";
 import FetchWithRefreshRetry from "./FetchWithRefreshRetry";
 
 export async function auth_login(username, password) {
-	// @ts-ignore
-	return await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
+	return await fetch(`${getEnvVariable("BACKEND_URL")}/api/auth/login`, {
 		method: 'POST',
 		credentials: 'include',
 		headers: {
@@ -16,24 +16,21 @@ export async function auth_login(username, password) {
 }
 
 export async function auth_logout() {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/auth/logout`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/auth/logout`, {
 		method: 'POST',
 		credentials: 'include'
 	});
 }
 
 export async function auth_refresh() {
-	// @ts-ignore
-	return await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/refresh`, {
+	return await fetch(`${getEnvVariable("BACKEND_URL")}/api/auth/refresh`, {
 		method: 'POST',
 		credentials: 'include'
 	});
 }
 
 export async function auth_register(username, email, password) {
-	// @ts-ignore
-	return await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/create`, {
+	return await fetch(`${getEnvVariable("BACKEND_URL")}/api/user/create`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'

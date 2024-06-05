@@ -1,10 +1,10 @@
+import { getEnvVariable } from "./Env";
 import { handleFetchException } from "./ExceptionHandling";
 import FetchWithRefreshRetry from "./FetchWithRefreshRetry";
 
 
 export async function getUserOutfits() {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/outfit/useroutfits`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/outfit/useroutfits`, {
 		method: 'GET',
 		credentials: 'include'
 	})
@@ -13,8 +13,7 @@ export async function getUserOutfits() {
 }
 
 export async function getUserGarments() {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/garment/usergarments`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/garment/usergarments`, {
 		method: 'GET',
 		credentials: 'include'
 	})
@@ -23,8 +22,7 @@ export async function getUserGarments() {
 }
 
 export async function getTags() {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/tag/all`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/tag/all`, {
 		method: 'GET',
 		credentials: 'include'
 	})
@@ -33,8 +31,7 @@ export async function getTags() {
 }
 
 export async function createGarment(garmentName, urls = [], tags = []) {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/garment/create`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/garment/create`, {
 		method: 'POST',
 		credentials: 'include',
 		headers: {
@@ -50,8 +47,7 @@ export async function createGarment(garmentName, urls = [], tags = []) {
 }
 
 export async function createOutfit(outfitName, outfitDesc = "", tags = [], garments = []) {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/outfit/create`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/outfit/create`, {
 		method: 'POST',
 		credentials: 'include',
 		headers: {
@@ -68,8 +64,7 @@ export async function createOutfit(outfitName, outfitDesc = "", tags = [], garme
 }
 
 export async function editOutfit(outfitId, outfitName, outfitDesc, addGarmentIds, removeGarmentIds, addTagIds, removeTagIds) {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/outfit/edit`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/outfit/edit`, {
 		method: 'PUT',
 		credentials: 'include',
 		headers: {
@@ -89,8 +84,7 @@ export async function editOutfit(outfitId, outfitName, outfitDesc, addGarmentIds
 }
 
 export async function editOutfitImages(outfitId, addImageIds, removeImageIds) {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/outfit/editimages`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/outfit/editimages`, {
 		method: 'PUT',
 		credentials: 'include',
 		headers: {
@@ -106,8 +100,7 @@ export async function editOutfitImages(outfitId, addImageIds, removeImageIds) {
 }
 
 export async function editUser(userId, username, userBio) {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/user/details`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/user/details`, {
 		method: 'PUT',
 		credentials: 'include',
 		headers: {
@@ -123,8 +116,7 @@ export async function editUser(userId, username, userBio) {
 }
 
 export async function updatePassword(userId, oldPassword, newPassword) {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/user/password`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/user/password`, {
 		method: 'PUT',
 		credentials: 'include',
 		headers: {
@@ -140,8 +132,7 @@ export async function updatePassword(userId, oldPassword, newPassword) {
 }
 
 export async function deleteAccount(userId) {
-	// @ts-ignore
-	return await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/user?id=${userId}`, {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/user?id=${userId}`, {
 		method: 'DELETE',
 		credentials: 'include'
 	})

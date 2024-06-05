@@ -8,7 +8,7 @@ import { createGarment, editOutfit, editOutfitImages } from "../backend/Applicat
 import OutfitCard from "./OutfitCard";
 import GarmentSelector from "./GarmentSelector";
 import FileUploadInput from "./FileUploadInput";
-import { uploadImages } from "../backend/FileService";
+import { uploadImage, uploadImages } from "../backend/FileService";
 
 
 export default function EditOutfit({ outfit, handleOutfitUpdate }) {
@@ -132,7 +132,12 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 							return response;
 						}
 					})
-					.then((res) => res.json())
+					.then((res) => {
+						if(!res.ok) {
+							throw new Error("Failed to upload image");
+						}
+						return res.json();
+					})
 					.then(async (res) => {
 						await editOutfitImages(outfit.outfitId, res.map((image) => image.fileId), [])
 							.then(async (response) => {
@@ -158,6 +163,7 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 				duration: 5000,
 				isClosable: true,
 			})
+			handleOutfitUpdate();
 			handleClose();
 		} catch (error) {
 			console.error(error);

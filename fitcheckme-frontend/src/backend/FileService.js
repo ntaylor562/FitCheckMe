@@ -18,22 +18,17 @@ export async function uploadImage(file) {
 		return backendFilePostRes;
 	}
 
-	const fileUploadResponseDTO = await backendFilePostRes.json();
+	const fileUploadResponseDTO = await backendFilePostRes.clone().json();
 
-	await FetchWithRefreshRetry(fileUploadResponseDTO.presignedURL, {
+	const s3UploadResponse = await FetchWithRefreshRetry(fileUploadResponseDTO.presignedURL, {
 		method: 'PUT',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({ ...file, name: fileUploadResponseDTO.fileName })
+		body: file
 	})
-		.then((response) => handleFetchException(response))
-		.then((response) => {
-			if (!response.ok) {
-				throw new Error(`Failed to upload file ${fileUploadResponseDTO.fileName}`);
-			}
-		})
-
+		.then((response) => handleFetchException(response));
+	if(!s3UploadResponse.ok) {
+		return s3UploadResponse;
+	}
+	return backendFilePostRes;
 }
 
 export async function uploadImages(files) {
@@ -56,22 +51,23 @@ export async function uploadImages(files) {
 		return backendFilePostRes;
 	}
 
-	const fileUploadResponseDTO = await backendFilePostRes.clone().json();
+	const filesToFileUploadResponseDTO = Array.from(await backendFilePostRes.clone().json()).map((fileUploadResponseDTO) => {
+		return {
+			...fileUploadResponseDTO,
+			file: files.find((file) => fileUploadResponseDTO.fileName.includes(file.name))
+		}
+	});
 
-	for (const fileUploadResponse of fileUploadResponseDTO) {
-		await FetchWithRefreshRetry(fileUploadResponse.presignedURL, {
+	for (const fileUploadResponse of filesToFileUploadResponseDTO) {
+		const currentFileUploadResponse = await FetchWithRefreshRetry(fileUploadResponse.presignedURL, {
 			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ ...fileUploadResponse, name: fileUploadResponse.fileName })
+			body: fileUploadResponse.file
 		})
-			.then((response) => handleFetchException(response))
-			.then((response) => {
-				if (!response.ok) {
-					throw new Error(`Failed to upload file ${fileUploadResponse.fileName}`);
-				}
-			})
+			.then((response) => handleFetchException(response));
+
+		if (!currentFileUploadResponse.ok) {
+			return currentFileUploadResponse;
+		}
 	}
 
 	return backendFilePostRes;

@@ -3,6 +3,38 @@ import { handleFetchException } from "./ExceptionHandling"
 import FetchWithRefreshRetry from "./FetchWithRefreshRetry";
 
 
+function resizeImage(file, width, height) {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+
+		reader.onload = (event) => {
+			const img = new Image();
+
+			img.onload = () => {
+				const canvas = document.createElement('canvas');
+				const ctx = canvas.getContext('2d');
+
+				canvas.width = width;
+				canvas.height = height;
+
+				ctx.drawImage(img, 0, 0, width, height);
+
+				canvas.toBlob((blob) => {
+					resolve(new File([blob], file.name, { type: file.type }));
+				}, file.type);
+			};
+
+			img.src = event.target.result.toString();
+		};
+
+		reader.onerror = (error) => {
+			reject(error);
+		};
+
+		reader.readAsDataURL(file);
+	});
+}
+
 export async function uploadImage(file) {
 	const backendFilePostRes = await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/file/image`, {
 		method: 'POST',
@@ -22,7 +54,7 @@ export async function uploadImage(file) {
 
 	const s3UploadResponse = await FetchWithRefreshRetry(fileUploadResponseDTO.presignedURL, {
 		method: 'PUT',
-		body: file
+		body: await resizeImage(file, 300, 300)
 	})
 		.then((response) => handleFetchException(response));
 	if(!s3UploadResponse.ok) {
@@ -60,7 +92,7 @@ export async function uploadImages(files) {
 	for (const fileUploadResponse of filesToFileUploadResponseDTO) {
 		const currentFileUploadResponse = await FetchWithRefreshRetry(fileUploadResponse.presignedURL, {
 			method: 'PUT',
-			body: fileUploadResponse.file
+			body: await resizeImage(fileUploadResponse.file, 300, 300)
 		})
 			.then((response) => handleFetchException(response));
 

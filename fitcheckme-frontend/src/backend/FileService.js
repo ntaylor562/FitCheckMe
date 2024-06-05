@@ -1,4 +1,4 @@
-import { getEnvVariable } from "./Env";
+import { getEnvVariable } from "../utils/Env";
 import { handleFetchException } from "./ExceptionHandling"
 import FetchWithRefreshRetry from "./FetchWithRefreshRetry";
 

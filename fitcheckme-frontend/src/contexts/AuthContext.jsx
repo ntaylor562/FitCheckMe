@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth_login, auth_logout } from "../backend/Auth";
 import FetchWithRefreshRetry from "../backend/FetchWithRefreshRetry";
-import { getEnvVariable } from "../backend/Env";
+import { getEnvVariable } from "../utils/Env";
 
 
 const AuthContext = createContext({

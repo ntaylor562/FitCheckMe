@@ -1,5 +1,6 @@
 import { Card, CardBody, CardFooter, CardHeader, Heading, Image, Stack, Text, VStack } from "@chakra-ui/react";
-import { getEnvVariable } from "../backend/Env";
+import { getEnvVariable } from "../utils/Env";
+import { getImageSource } from "../utils/SourceGetter";
 
 
 export default function OutfitCard({ outfit, size }) {
@@ -12,7 +13,7 @@ export default function OutfitCard({ outfit, size }) {
 			</CardHeader>
 			<CardBody>
 				<VStack spacing={4}>
-					{outfit.images.length > 0 && <Image borderRadius='lg' boxSize='300px' src={`${getEnvVariable('CLOUDFRONT_URL')}/${encodeURIComponent(outfit.images[0].fileName)}`} alt='outfit-image' />}
+					{outfit.images.length > 0 && <Image borderRadius='lg' boxSize='300px' src={getImageSource(outfit.images[0].fileName)} alt='outfit-image' />}
 					<Text>{outfit.outfitDesc}</Text>
 				</VStack>
 			</CardBody>

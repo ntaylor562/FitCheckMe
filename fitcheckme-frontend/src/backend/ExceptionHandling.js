@@ -1,5 +1,5 @@
 import { auth_refresh } from "./Auth";
-import { getEnvVariable } from "./Env";
+import { getEnvVariable } from "../utils/Env";
 
 export async function handleFetchException(response) {
 	if (response.ok) return response;

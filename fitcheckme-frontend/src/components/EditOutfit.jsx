@@ -3,12 +3,11 @@ import { useTags } from "../contexts/TagsContext"
 import { useState } from "react";
 import { MultiSelect } from "chakra-multiselect";
 import { toTitleCase } from "../utils/StringUtil";
-import { AddIcon, CloseIcon } from "@chakra-ui/icons";
-import { createGarment, editOutfit, editOutfitImages } from "../backend/Application";
+import { editOutfit, editOutfitImages } from "../backend/Application";
 import OutfitCard from "./OutfitCard";
 import GarmentSelector from "./GarmentSelector";
-import FileUploadInput from "./FileUploadInput";
-import { uploadImage, uploadImages } from "../backend/FileService";
+import { uploadImages } from "../backend/FileService";
+import EditImages from "./EditImages";
 
 
 export default function EditOutfit({ outfit, handleOutfitUpdate }) {
@@ -19,22 +18,22 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 		outfitDesc: outfit.outfitDesc,
 		tags: outfit.outfitTags.map((tag) => { return { value: `${tag.tagId}`, label: toTitleCase(tag.tagName) } }),
 		garments: new Set(outfit.garments.map((garment) => garment.garmentId)),
-		files: []
 	}
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const [formValues, setFormValues] = useState({ ...defaultFormValues })
+	const [filesToUpload, setFilesToUpload] = useState([]);
+	const [filesToDelete, setFilesToDelete] = useState([]);
+	const [shownImages, setShownImages] = useState(new Set(outfit.images));
 
 	const toast = useToast();
 
 	const handleOpen = () => {
 		setFormValues({ ...defaultFormValues });
+		setFilesToUpload([]);
+		setFilesToDelete([]);
+		setShownImages(new Set(outfit.images));
 		onOpen();
-	}
-
-	const handleClose = () => {
-		setFormValues({ ...defaultFormValues });
-		onClose();
 	}
 
 	const handleFormChange = (e) => {
@@ -64,11 +63,17 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 		});
 	}
 
-	const handleFileChange = (e) => {
-		setFormValues({
-			...formValues,
-			files: [...e.target.files]
-		})
+	const handleUploadFileChange = (e) => {
+		setFilesToUpload([...e.target.files]);
+	}
+
+	const handleDeleteImages = (imagesToDelete) => {
+		setFilesToDelete([...filesToDelete, ...imagesToDelete]);
+		const newShownImages = new Set(shownImages);
+		for(let image of imagesToDelete) {
+			newShownImages.delete(image);
+		}
+		setShownImages(newShownImages);
 	}
 
 	const handleSubmit = async (e) => {
@@ -114,8 +119,8 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 					})
 			}
 
-			if (formValues.files.length !== defaultFormValues.files.length) {
-				await uploadImages(formValues.files)
+			if (filesToUpload.length !== 0) {
+				await uploadImages(filesToUpload)
 					.then(async (response) => {
 						if (!response.ok) {
 							const contentType = response.headers.get("content-type");
@@ -133,7 +138,7 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 						}
 					})
 					.then((res) => {
-						if(!res.ok) {
+						if (!res.ok) {
 							throw new Error("Failed to upload image");
 						}
 						return res.json();
@@ -157,6 +162,24 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 					})
 			}
 
+			if (filesToDelete.length !== 0) {
+				await editOutfitImages(outfit.outfitId, [], filesToDelete.map((image) => image.fileId))
+					.then(async (response) => {
+						if (!response.ok) {
+							const contentType = response.headers.get("content-type");
+							const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
+							toast({
+								title: editedOutfit ? 'Successfully edited outfit details but failed deleting images.' : 'Error deleting images',
+								description: message,
+								status: 'error',
+								duration: 5000,
+								isClosable: true,
+							})
+							throw new Error(message);
+						}
+					})
+			}
+
 			toast({
 				title: 'Outfit updated.',
 				status: 'success',
@@ -164,7 +187,7 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 				isClosable: true,
 			})
 			handleOutfitUpdate();
-			handleClose();
+			onClose();
 		} catch (error) {
 			console.error(error);
 		}
@@ -176,7 +199,7 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 				<OutfitCard outfit={outfit} size={"lg"} />
 			</Container>
 
-			<Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside">
+			<Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
 				<ModalOverlay />
 				<ModalContent>
 					<ModalHeader>Edit Outfit</ModalHeader>
@@ -204,13 +227,13 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 							<GarmentSelector selectedGarments={formValues.garments} handleGarmentSelect={handleGarmentSelect} />
 							<FormControl>
 								<FormLabel>Images</FormLabel>
-								<FileUploadInput name="images" multiple accept=".png, .jpg, .jpeg" handleFileChange={handleFileChange} />
+								<EditImages images={shownImages} handleUploadFileChange={handleUploadFileChange} handleDeleteImages={handleDeleteImages} />
 							</FormControl>
 						</VStack>
 					</ModalBody>
 					<ModalFooter>
 						<Button onClick={handleSubmit} colorScheme='green' mr={3}>Edit</Button>
-						<Button variant='ghost' onClick={handleClose}>Cancel</Button>
+						<Button variant='ghost' onClick={onClose}>Cancel</Button>
 					</ModalFooter>
 				</ModalContent>
 			</Modal>

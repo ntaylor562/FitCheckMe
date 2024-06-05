@@ -10,8 +10,7 @@ import { getUserGarments } from "../backend/Application";
 export default function GarmentSelector({ selectedGarments, handleGarmentSelect }) {
 	const defaultFormValues = {
 		search: "",
-		tags: [],
-		garments: new Set()
+		tags: []
 	}
 
 	const [userGarments, setUserGarments] = useState(null);
@@ -43,16 +42,16 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 	//TODO improve search
 	const getSearchResults = () => {
 		const tagSet = new Set(formValues.tags.map((tag) => parseInt(tag.value)));
-		if(formValues.search === "" && tagSet.size === 0) {
+		if (formValues.search === "" && tagSet.size === 0) {
 			return userGarments;
 		}
 
 		const searchLower = formValues.search.toLowerCase();
 		return userGarments.filter((garment) => {
-			if(formValues.search !== "" && !garment.garmentName.toLowerCase().includes(searchLower)) {
+			if (formValues.search !== "" && !garment.garmentName.toLowerCase().includes(searchLower)) {
 				return false;
 			}
-			if(tagSet.size > 0 && !garment.garmentTags.some((tag) => tagSet.has(tag.tagId))) {
+			if (tagSet.size > 0 && !garment.garmentTags.some((tag) => tagSet.has(tag.tagId))) {
 				return false;
 			}
 			return true;
@@ -72,13 +71,13 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 					placeholder='Select tags'
 				/>
 			</FormControl>
-			{ userGarments !== null && userGarments.length > 0 ?
+			{userGarments !== null && userGarments.length > 0 ?
 				<HStack w="100%" wrap="wrap">
-				{getSearchResults().map((garment) => {
-					return <GarmentCard key={garment.garmentId} garment={garment} selected={selectedGarments.has(garment.garmentId)} handleGarmentSelect={handleGarmentSelect} />
-				})}
-			</HStack>
-			: <></>
+					{getSearchResults().map((garment) => {
+						return <GarmentCard key={garment.garmentId} garment={garment} selected={selectedGarments.has(garment.garmentId)} handleGarmentSelect={handleGarmentSelect} />
+					})}
+				</HStack>
+				: <></>
 			}
 			<CreateGarment addGarment={(garment) => setUserGarments([...userGarments, garment])} />
 		</VStack>

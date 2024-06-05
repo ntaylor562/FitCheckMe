@@ -1,4 +1,4 @@
-import { getEnvVariable } from "./Env";
+import { getEnvVariable } from "../utils/Env";
 import FetchWithRefreshRetry from "./FetchWithRefreshRetry";
 
 export async function auth_login(username, password) {

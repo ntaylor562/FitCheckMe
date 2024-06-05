@@ -51,7 +51,7 @@ public class FileService {
 
 		// Check if the file name has an extension
 		String[] parts = fileName.split("\\.");
-		if (parts.length != 2) {
+		if (parts.length < 2) {
 			return false;
 		}
 
@@ -61,12 +61,12 @@ public class FileService {
 		}
 
 		// Check if the file extension is allowed
-		if (allowedExtensions.stream().noneMatch(parts[1]::equalsIgnoreCase)) {
+		if (allowedExtensions.stream().noneMatch(parts[parts.length - 1]::equalsIgnoreCase)) {
 			return false;
 		}
 
 		// Check if the file name contains any invalid characters
-		if (!fileName.matches("^[a-zA-Z0-9_.-]+$")) {
+		if (!fileName.matches("^[a-zA-Z0-9_.\\- \\u00A0\\u202F]+$")) {
 			return false;
 		}
 

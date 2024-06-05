@@ -4,10 +4,11 @@ import { useState } from "react";
 import { MultiSelect } from "chakra-multiselect";
 import { toTitleCase } from "../utils/StringUtil";
 import { AddIcon, CloseIcon } from "@chakra-ui/icons";
-import { createGarment, editOutfit } from "../backend/Application";
+import { createGarment, editOutfit, editOutfitImages } from "../backend/Application";
 import OutfitCard from "./OutfitCard";
 import GarmentSelector from "./GarmentSelector";
 import FileUploadInput from "./FileUploadInput";
+import { uploadImages } from "../backend/FileService";
 
 
 export default function EditOutfit({ outfit, handleOutfitUpdate }) {
@@ -73,17 +74,7 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 
-		if(JSON.stringify(formValues) === JSON.stringify(defaultFormValues)) {
-			toast({
-				title: 'No changes made',
-				status: 'info',
-				duration: 5000,
-				isClosable: true,
-			})
-			handleClose();
-			return;
-		}
-
+		let editedOutfit = false;
 		const existingGarmentIds = new Set(outfit.garments.map((garment) => garment.garmentId));
 		const existingTagIds = new Set(outfit.outfitTags.map((tag) => tag.tagId));
 		const formTagIds = new Set(formValues.tags.map((tag) => parseInt(tag.value)));
@@ -93,44 +84,90 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 		const addTagIds = Array.from(formTagIds).filter((tagId) => !existingTagIds.has(tagId));
 		const removeTagIds = Array.from(existingTagIds).filter((tagId) => !formTagIds.has(tagId));
 
-		await editOutfit(
-			outfit.outfitId,
-			outfit.outfitName === formValues.outfitName ? null : formValues.outfitName,
-			outfit.outfitDesc === formValues.outfitDesc ? null : formValues.outfitDesc,
-			addGarmentIds.length === 0 ? null : addGarmentIds,
-			removeGarmentIds.length === 0 ? null : removeGarmentIds,
-			addTagIds.length === 0 ? null : addTagIds,
-			removeTagIds.length === 0 ? null : removeTagIds
-		)
-			.then(async (response) => {
-				if (!response.ok) {
-					const contentType = response.headers.get("content-type");
-					const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
-					toast({
-						title: 'Error editing outfit.',
-						description: message,
-						status: 'error',
-						duration: 5000,
-						isClosable: true,
+		try {
+			if (JSON.stringify({ ...formValues, files: [] }) !== JSON.stringify(defaultFormValues)) {
+				await editOutfit(
+					outfit.outfitId,
+					outfit.outfitName === formValues.outfitName ? null : formValues.outfitName,
+					outfit.outfitDesc === formValues.outfitDesc ? null : formValues.outfitDesc,
+					addGarmentIds.length === 0 ? null : addGarmentIds,
+					removeGarmentIds.length === 0 ? null : removeGarmentIds,
+					addTagIds.length === 0 ? null : addTagIds,
+					removeTagIds.length === 0 ? null : removeTagIds
+				)
+					.then(async (response) => {
+						if (!response.ok) {
+							const contentType = response.headers.get("content-type");
+							const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
+							toast({
+								title: 'Error editing outfit.',
+								description: message,
+								status: 'error',
+								duration: 5000,
+								isClosable: true,
+							})
+							throw new Error(message);
+						}
+						else {
+							editedOutfit = true;
+						}
 					})
-				}
-				else {
-					handleClose()
-					toast({
-						title: 'Outfit updated.',
-						status: 'success',
-						duration: 5000,
-						isClosable: true,
+			}
+
+			if (formValues.files.length !== defaultFormValues.files.length) {
+				await uploadImages(formValues.files)
+					.then(async (response) => {
+						if (!response.ok) {
+							const contentType = response.headers.get("content-type");
+							const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
+							toast({
+								title: editedOutfit ? 'Successfully edited outfit details but failed uploading images.' : 'Error adding images',
+								description: message,
+								status: 'error',
+								duration: 5000,
+								isClosable: true,
+							})
+							throw new Error(message);
+						} else {
+							return response;
+						}
 					})
-					handleOutfitUpdate();
-				}
-			});
+					.then((res) => res.json())
+					.then(async (res) => {
+						await editOutfitImages(outfit.outfitId, res.map((image) => image.fileId), [])
+							.then(async (response) => {
+								if (!response.ok) {
+									const contentType = response.headers.get("content-type");
+									const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
+									toast({
+										title: editedOutfit ? 'Successfully edited outfit details but failed uploading images.' : 'Error adding images',
+										description: message,
+										status: 'error',
+										duration: 5000,
+										isClosable: true,
+									})
+									throw new Error(message);
+								}
+							})
+					})
+			}
+
+			toast({
+				title: 'Outfit updated.',
+				status: 'success',
+				duration: 5000,
+				isClosable: true,
+			})
+			handleClose();
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
 	return (
 		<>
-			<Container _hover={{cursor: "pointer"}} onClick={handleOpen} >
-				<OutfitCard outfit={outfit} size={"lg"}/>
+			<Container _hover={{ cursor: "pointer" }} onClick={handleOpen} >
+				<OutfitCard outfit={outfit} size={"lg"} />
 			</Container>
 
 			<Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside">
@@ -160,7 +197,8 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 							</FormControl>
 							<GarmentSelector selectedGarments={formValues.garments} handleGarmentSelect={handleGarmentSelect} />
 							<FormControl>
-							<FileUploadInput name="images" multiple accept=".png, .jpg, .jpeg" handleFileChange={handleFileChange} />
+								<FormLabel>Images</FormLabel>
+								<FileUploadInput name="images" multiple accept=".png, .jpg, .jpeg" handleFileChange={handleFileChange} />
 							</FormControl>
 						</VStack>
 					</ModalBody>

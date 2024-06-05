@@ -7,7 +7,10 @@ export async function uploadImage(file) {
 	const backendFilePostRes = await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/file/image`, {
 		method: 'POST',
 		credentials: 'include',
-		body: file.name
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({fileName: file.name})
 	})
 		.then((response) => handleFetchException(response))
 
@@ -19,7 +22,10 @@ export async function uploadImage(file) {
 
 	await FetchWithRefreshRetry(fileUploadResponseDTO.presignedURL, {
 		method: 'PUT',
-		body: {...file, name: fileUploadResponseDTO.fileName}
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ ...file, name: fileUploadResponseDTO.fileName })
 	})
 		.then((response) => handleFetchException(response))
 		.then((response) => {
@@ -35,11 +41,14 @@ export async function uploadImages(files) {
 	const backendFilePostRes = await FetchWithRefreshRetry(`${import.meta.env.VITE_BACKEND_URL}/api/file/images`, {
 		method: 'POST',
 		credentials: 'include',
-		body: files.map((file) => {
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(files.map((file) => {
 			return {
 				fileName: file.name
 			}
-		})
+		}))
 	})
 		.then((response) => handleFetchException(response))
 
@@ -47,12 +56,15 @@ export async function uploadImages(files) {
 		return backendFilePostRes;
 	}
 
-	const fileUploadResponseDTO = await backendFilePostRes.json();
+	const fileUploadResponseDTO = await backendFilePostRes.clone().json();
 
 	for (const fileUploadResponse of fileUploadResponseDTO) {
 		await FetchWithRefreshRetry(fileUploadResponse.presignedURL, {
 			method: 'PUT',
-			body: {...fileUploadResponse, name: fileUploadResponse.fileName}
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ ...fileUploadResponse, name: fileUploadResponse.fileName })
 		})
 			.then((response) => handleFetchException(response))
 			.then((response) => {

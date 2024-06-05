@@ -28,6 +28,9 @@ public class AWSUtil {
 	@Value("${fitcheckme.aws-region-name}")
 	private String s3RegionName;
 
+	@Value("${fitcheckme.aws-presigned-url-expiration-in-seconds}")
+	private Integer presignedUrlExpirationInSeconds;
+
 	public String createPresignedPutUrl(String bucketName, String keyName, Map<String, String> metadata) {
 		try (S3Presigner presigner = S3Presigner.builder()
 		.region(Region.of(regionName))
@@ -42,7 +45,7 @@ public class AWSUtil {
 					.build();
 
 			PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-					.signatureDuration(Duration.ofMinutes(1)) // The URL expires in 10 minutes.
+					.signatureDuration(Duration.ofSeconds(presignedUrlExpirationInSeconds))
 					.putObjectRequest(objectRequest)
 					.build();
 

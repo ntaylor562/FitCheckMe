@@ -1,6 +1,7 @@
 package com.fitcheckme.FitCheckMe.services;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -79,16 +80,20 @@ public class FileService {
 			return false;
 		}
 
+		// Check if the file has a slash in the name
+		if (fileName.contains("/") || fileName.contains("\\")) {
+			return false;
+		}
+
 		return true;
 	}
 
 	private String generateFileName(String filename) {
 		String[] parts = filename.split("\\.");
-		String extension = parts[1];
-		String uuid = UUID.randomUUID().toString();
-		String formattedDateTime = LocalDateTime.now().toString().replace(":", "-");
-		String formattedFileName = String.format("%s_%s_%s.%s", parts[0], uuid, formattedDateTime, extension);
-		return formattedFileName;
+		String preExtension = String.join(".", Arrays.copyOfRange(parts, 0, parts.length - 1));
+		String extension = parts[parts.length - 1];
+		String formattedDateTime = LocalDateTime.now().toString().replace(":", "-").replace(".", "-");
+		return String.format("%s_%s_%s.%s", UUID.randomUUID().toString(), formattedDateTime, preExtension, extension);
 	}
 
 	private AWSPresignedURLDTO createPresignedPutURL(String fileName) throws IllegalArgumentException {

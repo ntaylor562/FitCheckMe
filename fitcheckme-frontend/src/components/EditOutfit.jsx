@@ -7,6 +7,7 @@ import { AddIcon, CloseIcon } from "@chakra-ui/icons";
 import { createGarment, editOutfit } from "../backend/Application";
 import OutfitCard from "./OutfitCard";
 import GarmentSelector from "./GarmentSelector";
+import FileUploadInput from "./FileUploadInput";
 
 
 export default function EditOutfit({ outfit, handleOutfitUpdate }) {
@@ -16,7 +17,8 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 		outfitName: outfit.outfitName,
 		outfitDesc: outfit.outfitDesc,
 		tags: outfit.outfitTags.map((tag) => { return { value: `${tag.tagId}`, label: toTitleCase(tag.tagName) } }),
-		garments: new Set(outfit.garments.map((garment) => garment.garmentId))
+		garments: new Set(outfit.garments.map((garment) => garment.garmentId)),
+		files: []
 	}
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
@@ -61,8 +63,26 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 		});
 	}
 
+	const handleFileChange = (e) => {
+		setFormValues({
+			...formValues,
+			files: [...e.target.files]
+		})
+	}
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+
+		if(JSON.stringify(formValues) === JSON.stringify(defaultFormValues)) {
+			toast({
+				title: 'No changes made',
+				status: 'info',
+				duration: 5000,
+				isClosable: true,
+			})
+			handleClose();
+			return;
+		}
 
 		const existingGarmentIds = new Set(outfit.garments.map((garment) => garment.garmentId));
 		const existingTagIds = new Set(outfit.outfitTags.map((tag) => tag.tagId));
@@ -139,6 +159,9 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 								/>
 							</FormControl>
 							<GarmentSelector selectedGarments={formValues.garments} handleGarmentSelect={handleGarmentSelect} />
+							<FormControl>
+							<FileUploadInput name="images" multiple accept=".png, .jpg, .jpeg" handleFileChange={handleFileChange} />
+							</FormControl>
 						</VStack>
 					</ModalBody>
 					<ModalFooter>

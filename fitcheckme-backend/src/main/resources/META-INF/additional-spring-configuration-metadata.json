@@ -93,5 +93,10 @@
     "name": "fitcheckme.aws-s3-bucket-name",
     "type": "java.lang.String",
     "description": "Bucket name for AWS S3"
+  },
+  {
+    "name": "fitcheckme.aws-presigned-url-expiration-in-seconds",
+    "type": "java.lang.Integer",
+    "description": "How many seconds presigned URLs will remain valid for"
   }
 ]}

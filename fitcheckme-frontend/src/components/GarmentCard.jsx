@@ -4,13 +4,13 @@ import { getImageSource } from "../utils/SourceGetter";
 import EditGarment from "./EditGarment";
 
 
-export default function GarmentCard({ isOwner = false, garment, size = "sm", handleGarmentUpdate = () => { } }) {
+export default function GarmentCard({ isOwner = false, garment, handleGarmentUpdate = () => { } }) {
 	if (!garment) return null;
 
 	const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
 
 	return (
-		<Card size={size} variant='outline' borderRadius='3xl'>
+		<Card variant='outline' borderRadius='3xl'>
 			<EditGarment garment={garment} handleGarmentUpdate={handleGarmentUpdate} isOpen={isEditOpen} handleClose={onEditClose} />
 			<Menu isLazy>
 				<MenuButton

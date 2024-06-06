@@ -8,9 +8,12 @@ import OutfitCard from "./OutfitCard";
 import GarmentSelector from "./GarmentSelector";
 import { uploadImages } from "../backend/FileService";
 import EditImages from "./EditImages";
+import { areSetsEqual } from "../utils/SetUtil";
 
 
-export default function EditOutfit({ outfit, handleOutfitUpdate }) {
+export default function EditOutfit({ outfit, handleOutfitUpdate, isOpen, handleClose }) {
+	if (!outfit || !isOpen) return null;
+
 	const { tags } = useTags();
 
 	const defaultFormValues = {
@@ -19,22 +22,12 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 		tags: outfit.outfitTags.map((tag) => { return { value: `${tag.tagId}`, label: toTitleCase(tag.tagName) } }),
 		garments: new Set(outfit.garments.map((garment) => garment.garmentId)),
 	}
-
-	const { isOpen, onOpen, onClose } = useDisclosure()
 	const [formValues, setFormValues] = useState({ ...defaultFormValues })
 	const [filesToUpload, setFilesToUpload] = useState([]);
 	const [filesToDelete, setFilesToDelete] = useState([]);
 	const [shownImages, setShownImages] = useState(new Set(outfit.images));
 
 	const toast = useToast();
-
-	const handleOpen = () => {
-		setFormValues({ ...defaultFormValues });
-		setFilesToUpload([]);
-		setFilesToDelete([]);
-		setShownImages(new Set(outfit.images));
-		onOpen();
-	}
 
 	const handleFormChange = (e) => {
 		setFormValues({
@@ -90,7 +83,7 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 		const removeTagIds = Array.from(existingTagIds).filter((tagId) => !formTagIds.has(tagId));
 
 		try {
-			if (JSON.stringify(formValues) !== JSON.stringify(defaultFormValues)) {
+			if (JSON.stringify(formValues) !== JSON.stringify(defaultFormValues) || !areSetsEqual(formValues.garments, defaultFormValues.garments)){
 				await editOutfit(
 					outfit.outfitId,
 					outfit.outfitName === formValues.outfitName ? null : formValues.outfitName,
@@ -165,31 +158,26 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 			}
 
 			toast({
-			title: 'Outfit updated.',
-			status: 'success',
-			duration: 5000,
-			isClosable: true,
-		})
-		handleOutfitUpdate();
-		onClose();
-	} catch (error) {
-		console.error(error);
+				title: 'Outfit updated.',
+				status: 'success',
+				duration: 5000,
+				isClosable: true,
+			})
+			handleOutfitUpdate();
+			handleClose();
+		} catch (error) {
+			console.error(error);
+		}
 	}
-}
 
-return (
-	<>
-		<Box _hover={{ cursor: "pointer" }} onClick={handleOpen}>
-			<OutfitCard outfit={outfit} size={"lg"} />
-		</Box>
-
-		<Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+	return (
+		<Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside">
 			<ModalOverlay />
 			<ModalContent>
 				<ModalHeader>Edit Outfit</ModalHeader>
 				<ModalCloseButton />
 				<ModalBody>
-					<VStack>
+					<VStack spacing={4}>
 						<FormControl>
 							<FormLabel>Outfit Name</FormLabel>
 							<Input required type='text' name='outfitName' value={formValues.outfitName} onChange={handleFormChange} />
@@ -217,11 +205,10 @@ return (
 				</ModalBody>
 				<ModalFooter>
 					<Button onClick={handleSubmit} colorScheme='green' mr={3}>Edit</Button>
-					<Button variant='ghost' onClick={onClose}>Cancel</Button>
+					<Button variant='ghost' onClick={handleClose}>Cancel</Button>
 				</ModalFooter>
 			</ModalContent>
 		</Modal>
-	</>
-)
+	)
 }
 

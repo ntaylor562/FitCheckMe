@@ -7,6 +7,7 @@ import EditOutfit from "../components/EditOutfit";
 import { useEffect, useState } from "react";
 import { getUserGarments, getUserOutfits } from "../backend/Application";
 import GarmentCard from "../components/GarmentCard";
+import OutfitCard from "../components/OutfitCard";
 
 
 export default function Testing() {
@@ -34,10 +35,6 @@ export default function Testing() {
 		setUserGarments(await getUserGarments());
 	}
 
-	const handleCreateOutfit = async () => {
-		await fetchUserOutfits();
-	}
-
 	return (
 		<Box className="subpage">
 			<TagsProvider>
@@ -51,17 +48,17 @@ export default function Testing() {
 								<HStack spacing={4}>
 									{!isAuthenticated && <Button colorScheme="green" onClick={async () => { login('test', 'test') }}>Login</Button>}
 									{isAuthenticated && <Button colorScheme="red" onClick={async () => { logout() }}>Logout</Button>}
-									{isAuthenticated && <CreateOutfit handleCreateOutfit={handleCreateOutfit} numExistingOutfits={userOutfits !== null ? userOutfits.length : 0} />}
+									{isAuthenticated && <CreateOutfit handleCreateOutfit={fetchUserOutfits} numExistingOutfits={userOutfits !== null ? userOutfits.length : 0} />}
 								</HStack>
 								{isAuthenticated && userOutfits !== null && userOutfits.length > 0 && <>
 									<Heading size="lg">Garments:</Heading>
 									<Flex flexWrap="wrap">
-										{userGarments.map((garment) => <Box key={garment.garmentId} m="10px"><GarmentCard garment={garment} handleGarmentUpdate={fetchUserGarments} size="sm" isOwner/></Box>)}
+										{userGarments.map((garment) => <Box key={garment.garmentId} m="10px"><GarmentCard garment={garment} handleGarmentUpdate={fetchUserGarments} isOwner/></Box>)}
 									</Flex>
 
 									<Heading size="lg">Outfits:</Heading>
 									<Flex flexWrap="wrap">
-										{userOutfits.map((outfit) => <Box key={outfit.outfitId} m="10px"><EditOutfit outfit={outfit} handleOutfitUpdate={fetchUserOutfits} /></Box>)}
+										{userOutfits.map((outfit) => <Box key={outfit.outfitId} m="10px"><OutfitCard outfit={outfit} handleOutfitUpdate={fetchUserOutfits} isOwner /></Box>)}
 									</Flex>
 								</>}
 							</>

@@ -6,6 +6,7 @@ import { useTags } from "../contexts/TagsContext";
 import EditImages from "./EditImages";
 import { editGarment, editGarmentImages } from "../backend/Application";
 import { uploadImages } from "../backend/FileService";
+import { areSetsEqual } from "../utils/SetUtil";
 
 
 export default function EditGarment({ garment, handleGarmentUpdate, isOpen, handleClose }) {
@@ -67,7 +68,7 @@ export default function EditGarment({ garment, handleGarmentUpdate, isOpen, hand
 		const removeTagIds = Array.from(existingTagIds).filter((tagId) => !formTagIds.has(tagId));
 
 		try {
-			if (JSON.stringify(formValues) !== JSON.stringify(defaultFormValues)) {
+			if (JSON.stringify(formValues) !== JSON.stringify(defaultFormValues) || !areSetsEqual(formValues.urls, defaultFormValues.urls)) {
 				await editGarment(
 					garment.garmentId,
 					garment.garmentName === formValues.garmentName ? null : formValues.garmentName,
@@ -154,7 +155,7 @@ export default function EditGarment({ garment, handleGarmentUpdate, isOpen, hand
 	}
 
 	return (
-		<Modal isOpen={isOpen} onClose={handleClose} size="xl">
+		<Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside">
 			<ModalOverlay />
 			<ModalContent>
 				<ModalHeader>Edit Garment</ModalHeader>

@@ -509,7 +509,7 @@ public class OutfitServiceTest {
 		Mockito.when(outfit1.getId()).thenReturn(1);
 
 		Mockito.when(garmentRepository.findAllById(Set.of(2))).thenReturn(List.of(garment2));
-		Mockito.when(garmentRepository.findAllByOutfitIdAndId(Set.of(1), outfit1.getId()))
+		Mockito.when(garmentRepository.findAllByOutfitIdAndIdsIn(outfit1.getId(), Set.of(1)))
 				.thenReturn(List.of(garment1));
 		Mockito.when(tagRepository.findAllById(Set.of(1))).thenReturn(List.of(tag1));
 		Mockito.when(tagRepository.findAllById(Set.of(2))).thenReturn(List.of(tag2));
@@ -529,7 +529,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.times(2)).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.times(1)).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.times(3)).save(any());
 	}
 
@@ -550,7 +550,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -576,7 +576,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -596,7 +596,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.never()).findById(any());
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -615,7 +615,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.never()).findById(any());
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -650,7 +650,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -685,7 +685,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -710,7 +710,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -724,7 +724,7 @@ public class OutfitServiceTest {
 		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
-		Mockito.when(garmentRepository.findAllByOutfitIdAndId(Set.of(1), outfit1.getId())).thenReturn(List.of());
+		Mockito.when(garmentRepository.findAllByOutfitIdAndIdsIn(outfit1.getId(), Set.of(1))).thenReturn(List.of());
 
 		assertThatExceptionOfType(EntityNotFoundException.class)
 				.isThrownBy(
@@ -735,7 +735,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.times(1)).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -760,7 +760,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -785,7 +785,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -801,8 +801,7 @@ public class OutfitServiceTest {
 
 		Mockito.when(outfitRepository.findById(outfit1.getId())).thenReturn(Optional.of(outfit1));
 		Mockito.when(garmentRepository.findAllById(Set.of(1))).thenReturn(List.of(garment1));
-		Mockito.when(garmentRepository.findAllByOutfitIdAndId(Set.of(1), outfit1.getId()))
-				.thenReturn(List.of(garment1));
+		Mockito.when(garmentRepository.findAllByOutfitIdAndIdsIn(outfit1.getId(), Set.of(1))).thenReturn(List.of(garment1));
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(
@@ -814,7 +813,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.times(1)).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -841,7 +840,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.times(2)).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -868,7 +867,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.never()).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.times(1)).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 
@@ -895,7 +894,7 @@ public class OutfitServiceTest {
 		Mockito.verify(outfitRepository, Mockito.times(1)).findById(any());
 		Mockito.verify(tagRepository, Mockito.times(1)).findAllById(any());
 		Mockito.verify(garmentRepository, Mockito.never()).findAllById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndId(any(), any());
+		Mockito.verify(garmentRepository, Mockito.never()).findAllByOutfitIdAndIdsIn(any(), any());
 		Mockito.verify(outfitRepository, Mockito.never()).save(any());
 	}
 

@@ -177,31 +177,29 @@ public class OutfitService {
 			throw new AccessDeniedException("User does not have permission to edit this outfit");
 		}
 
-		if(outfit.outfitName() != null) {
+		if(outfit.outfitName() != null && !currentOutfit.getName().equals(outfit.outfitName())) {
 			currentOutfit.setName(outfit.outfitName());
 		}
-		if(outfit.outfitDesc() != null) {
+		if(outfit.outfitDesc() != null && !currentOutfit.getDesc().equals(outfit.outfitDesc())) {
 			currentOutfit.setDesc(outfit.outfitDesc());
 		}
-		if(outfit.addGarmentIds() != null || outfit.removeGarmentIds() != null) {
+		if((outfit.addGarmentIds() != null && !outfit.addGarmentIds().isEmpty()) || (outfit.removeGarmentIds() != null && !outfit.removeGarmentIds().isEmpty())) {
 			this.editGarments(currentOutfit, outfit.addGarmentIds(), outfit.removeGarmentIds(), userDetails);
 		}
-		if(outfit.addTagIds() != null || outfit.removeTagIds() != null) {
+		if((outfit.addTagIds() != null && !outfit.addTagIds().isEmpty()) || (outfit.removeTagIds() != null && !outfit.removeTagIds().isEmpty())) {
 			this.editTags(currentOutfit, outfit.addTagIds(), outfit.removeTagIds(), userDetails);
 		}
 		
-		if (outfit.outfitName() != null ||
-			outfit.outfitDesc() != null ||
-			outfit.addGarmentIds() != null ||
-			outfit.removeGarmentIds() != null ||
-			outfit.addTagIds() != null ||
-			outfit.removeTagIds() != null) {
+		if ((outfit.outfitName() != null && !currentOutfit.getName().equals(outfit.outfitName()))
+				|| (outfit.outfitDesc() != null && !currentOutfit.getDesc().equals(outfit.outfitDesc()))
+				|| (outfit.addGarmentIds() != null && !outfit.addGarmentIds().isEmpty())
+				|| (outfit.removeGarmentIds() != null && !outfit.removeGarmentIds().isEmpty())
+				|| (outfit.addTagIds() != null && !outfit.addTagIds().isEmpty())
+				|| (outfit.removeTagIds() != null && !outfit.removeTagIds().isEmpty())) {
 			return OutfitRequestDTO.toDTO(this.outfitRepository.save(currentOutfit));
-		}
-		else {
+		} else {
 			return OutfitRequestDTO.toDTO(currentOutfit);
 		}
-		
 	}
 
 	@Transactional
@@ -211,7 +209,7 @@ public class OutfitService {
 		}
 
 		Set<Garment> addGarments = addGarmentIds != null && !addGarmentIds.isEmpty() ? new HashSet<>(garmentRepository.findAllById(addGarmentIds)) : new HashSet<Garment>();
-		Set<Garment> removeGarments = removeGarmentIds != null && !removeGarmentIds.isEmpty() ? new HashSet<>(garmentRepository.findAllByOutfitIdAndId(removeGarmentIds, currentOutfit.getId())) : new HashSet<Garment>();
+		Set<Garment> removeGarments = removeGarmentIds != null && !removeGarmentIds.isEmpty() ? new HashSet<>(garmentRepository.findAllByOutfitIdAndIdsIn(currentOutfit.getId(), removeGarmentIds)) : new HashSet<Garment>();
 
 		if(addGarmentIds != null && addGarments.size() != addGarmentIds.size()) {
 			throw new EntityNotFoundException("One or more garments not found in add list");
@@ -223,9 +221,6 @@ public class OutfitService {
 		for(Garment garment : addGarments) {
 			if(currentOutfit.getGarments().contains(garment)) {
 				throw new IllegalArgumentException("One or more garments already in outfit");
-			}
-			if(removeGarments.contains(garment)) {
-				throw new IllegalArgumentException("One or more garments in both add and remove lists");
 			}
 		}
 
@@ -244,8 +239,12 @@ public class OutfitService {
 			throw new IllegalArgumentException("User does not have permissions to edit this outfit");
 		}
 
-		List<Tag> addTags = addTagIds != null && !addTagIds.isEmpty() ? tagRepository.findAllById(addTagIds) : new ArrayList<Tag>();
-		List<Tag> removeTags = removeTagIds != null && !removeTagIds.isEmpty() ? tagRepository.findAllById(removeTagIds) : new ArrayList<Tag>();
+		List<Tag> addTags = addTagIds != null && !addTagIds.isEmpty()
+				? tagRepository.findAllById(addTagIds)
+				: new ArrayList<Tag>();
+		List<Tag> removeTags = removeTagIds != null && !removeTagIds.isEmpty()
+				? tagRepository.findAllByOutfitIdAndIdsIn(currentOutfit.getId(), removeTagIds)
+				: new ArrayList<Tag>();
 
 		if(addTagIds != null && addTags.size() != addTagIds.size()) {
 			throw new EntityNotFoundException("One or more tags not found in add list");
@@ -257,9 +256,6 @@ public class OutfitService {
 		for(Tag tag : addTags) {
 			if(currentOutfit.getTags().contains(tag)) {
 				throw new IllegalArgumentException("One or more tags already in outfit");
-			}
-			if(removeTags.contains(tag)) {
-				throw new IllegalArgumentException("One or more tags in both add and remove lists");
 			}
 		}
 

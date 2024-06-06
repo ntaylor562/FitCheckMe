@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentCreateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentTagUpdateRequestDTO;
-import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentURLUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateImagesRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.Garment.GarmentUpdateRequestDTO;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
@@ -109,26 +107,6 @@ public class GarmentService {
 		}
 		return this.garmentRepository.findByUser_UsernameIgnoreCase(username).stream().map(garment -> GarmentRequestDTO.toDTO(garment)).toList();
 	}
-	
-	/**
-	 * Validates the input URLs for a garment. If the number of URLs exceeds the maximum limit or if a URL is too long, an exception is thrown.
-	 * 
-	 * @param garment The garment object.
-	 * @param addURLs The list of URLs to be added.
-	 * @param removeURLs The list of URLs to be removed.
-	 * @throws IllegalArgumentException If the number of URLs exceeds the maximum limit or if a URL is too long.
-	 */
-	private void validateURLInput(Garment garment, Set<String> addURLs, Set<String> removeURLs) throws IllegalArgumentException {
-		if(addURLs.size() + garment.getURLs().size() - removeURLs.size() > this.maxURLsPerGarment) {
-			throw new IllegalArgumentException(String.format("Too many URLs provided when creating a garment, must be at most %d URLs", this.maxURLsPerGarment));
-		}
-
-		for(String url : addURLs) {
-			if(url.length() > maxGarmentURLLength) {
-				throw new IllegalArgumentException(String.format("Garment URL %s too long, must be at most %d characters", url, this.maxGarmentURLLength));
-			}
-		}
-	}
 
 	@Transactional
 	private GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, User user) throws EntityNotFoundException, IllegalArgumentException {
@@ -186,8 +164,8 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public GarmentRequestDTO updateGarment(GarmentUpdateRequestDTO garment, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException{
-		if(garment.garmentName().length() > this.maxGarmentNameLength) {
+	public GarmentRequestDTO updateGarment(GarmentUpdateRequestDTO garment, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+		if(garment.garmentName() != null && garment.garmentName().length() > this.maxGarmentNameLength) {
 			throw new IllegalArgumentException(String.format("Garment name too long, must be at most %d characters", this.maxGarmentNameLength));
 		}
 
@@ -197,17 +175,71 @@ public class GarmentService {
 			throw new IllegalArgumentException("User does not have permission to edit this garment");
 		}
 
-		currentGarment.setName(garment.garmentName());
+		if(garment.garmentName() != null && !garment.garmentName().equals(currentGarment.getName())) {
+			currentGarment.setName(garment.garmentName());
+		}
+		if((garment.addURLs() != null && !garment.addURLs().isEmpty()) || (garment.removeURLs() != null && !garment.removeURLs().isEmpty())) {
+			this.editURLs(currentGarment, garment.addURLs(), garment.removeURLs(), userDetails);
+		}
+		if((garment.addTagIds() != null && !garment.addTagIds().isEmpty()) || (garment.removeTagIds() != null && !garment.removeTagIds().isEmpty())) {
+			this.editTags(currentGarment, garment.addTagIds(), garment.removeTagIds(), userDetails);
+		}
 
-		garmentRepository.save(currentGarment);
-		return GarmentRequestDTO.toDTO(currentGarment);
+		if ((garment.garmentName() != null && !garment.garmentName().equals(currentGarment.getName()))
+				|| (garment.addURLs() != null && !garment.addURLs().isEmpty())
+				|| (garment.removeURLs() != null && !garment.removeURLs().isEmpty())
+				|| (garment.addTagIds() != null && !garment.addTagIds().isEmpty())
+				|| (garment.removeTagIds() != null && !garment.removeTagIds().isEmpty())) {
+			return GarmentRequestDTO.toDTO(garmentRepository.save(currentGarment));
+		} else {
+			return GarmentRequestDTO.toDTO(currentGarment);
+		}
 	}
 
 	@Transactional
-	public GarmentRequestDTO updateGarmentImages(GarmentUpdateImagesRequestDTO updateDTO, CustomUserDetails userDetails) {
-		Garment currentGarment = this.garmentRepository.findById(updateDTO.garmentId()).orElseThrow(() -> new EntityNotFoundException(String.format("Garment not found with ID: %s", String.valueOf(updateDTO.garmentId()))));
-
+	private void editTags(Garment currentGarment, Set<Integer> addTagIds, Set<Integer> removeTagIds, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		if(currentGarment.getUser().getId() != userDetails.getUserId()) {
+			throw new IllegalArgumentException("User does not have permission to edit this garment");
+		}
+
+		List<Tag> addTags = addTagIds != null && !addTagIds.isEmpty()
+				? tagRepository.findAllById(addTagIds)
+				: new ArrayList<Tag>();
+		List<Tag> removeTags = removeTagIds != null && !removeTagIds.isEmpty()
+				? tagRepository.findAllByGarmentIdAndIdsIn(currentGarment.getId(), removeTagIds)
+				: new ArrayList<Tag>();
+
+		if (addTagIds != null && addTags.size() != addTagIds.size()) {
+			throw new EntityNotFoundException("One or more tags not found in add list");
+		}
+		if (removeTagIds != null && removeTags.size() != removeTagIds.size()) {
+			throw new EntityNotFoundException("One or more tags not found in remove list");
+		}
+
+		for (Tag tag : addTags) {
+			if (currentGarment.getTags().contains(tag)) {
+				throw new IllegalArgumentException("One or more tags already in garment");
+			}
+		}
+
+		if(currentGarment.getTags().size() + addTags.size() - removeTags.size() > this.maxTagsPerGarment) {
+			throw new IllegalArgumentException(String.format("Too many tags provided when updating a garment, must be at most %d tags", this.maxTagsPerGarment));
+		}
+
+		currentGarment.addTag(addTags);
+		currentGarment.removeTag(removeTags);
+		
+		this.garmentRepository.save(currentGarment);
+	}
+
+	@Transactional
+	public GarmentRequestDTO updateGarmentImages(GarmentUpdateImagesRequestDTO updateDTO,
+			CustomUserDetails userDetails) {
+		Garment currentGarment = this.garmentRepository.findById(updateDTO.garmentId())
+				.orElseThrow(() -> new EntityNotFoundException(
+						String.format("Garment not found with ID: %s", String.valueOf(updateDTO.garmentId()))));
+
+		if (currentGarment.getUser().getId() != userDetails.getUserId()) {
 			throw new AccessDeniedException("User does not have permission to edit this garment");
 		}
 
@@ -233,18 +265,20 @@ public class GarmentService {
 			}
 			if (updateDTO.removeImageIds() != null && !updateDTO.removeImageIds().isEmpty()) {
 				for (Integer imageId : updateDTO.removeImageIds()) {
-					garmentImageRepository.deleteByGarment_GarmentIdAndImage_ImageFileId(currentGarment.getId(), imageId);
-					if(!currentGarment.removeImage(imageId)) {
-						throw new EntityNotFoundException(String.format("Image not found in garment with ID: %s", String.valueOf(imageId)));
+					garmentImageRepository.deleteByGarment_GarmentIdAndImage_ImageFileId(currentGarment.getId(),
+							imageId);
+					if (!currentGarment.removeImage(imageId)) {
+						throw new EntityNotFoundException(
+								String.format("Image not found in garment with ID: %s", String.valueOf(imageId)));
 					}
 				}
 			}
 		}
-		
-		if(updateDTO.addImageIds() != null && updateDTO.removeImageIds() != null) {
+
+		if (updateDTO.addImageIds() != null && updateDTO.removeImageIds() != null) {
 			Set<Integer> intersection = new HashSet<>(updateDTO.addImageIds());
 			intersection.retainAll(updateDTO.removeImageIds());
-			if(!intersection.isEmpty()) {
+			if (!intersection.isEmpty()) {
 				throw new IllegalArgumentException("Image IDs cannot be in both add and remove lists");
 			}
 		}
@@ -253,47 +287,35 @@ public class GarmentService {
 	}
 
 	@Transactional
-	public void editTags(GarmentTagUpdateRequestDTO garmentUpdate, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
-		Garment garment = this.getGarment(garmentUpdate.garmentId());
-
-		if(garment.getUser().getId() != userDetails.getUserId()) {
+	private void editURLs(Garment currentGarment, Set<String> addURLs, Set<String> removeURLs, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+		if(currentGarment.getUser().getId() != userDetails.getUserId()) {
 			throw new IllegalArgumentException("User does not have permission to edit this garment");
 		}
-
-		List<Tag> addTags = new ArrayList<Tag>();
-		List<Tag> removeTags = new ArrayList<Tag>();
-
-		for(int id : garmentUpdate.addTagIds()) {
-			addTags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
-		}
-		for(int id : garmentUpdate.removeTagIds()) {
-			removeTags.add(tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Tag not found with ID: %s", String.valueOf(id)))));
-		}
-
-		if(garment.getTags().size() + garmentUpdate.addTagIds().size() - garmentUpdate.removeTagIds().size() > this.maxTagsPerGarment) {
-			throw new IllegalArgumentException(String.format("Too many tags provided when updating a garment, must be at most %d tags", this.maxTagsPerGarment));
-		}
-
-		garment.addTag(addTags);
-		garment.removeTag(removeTags);
 		
-		garmentRepository.save(garment);
-	}
-
-	@Transactional
-	public void editURLs(GarmentURLUpdateRequestDTO garmentUpdate, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
-		Garment garment = this.getGarment(garmentUpdate.garmentId());
-
-		if(garment.getUser().getId() != userDetails.getUserId()) {
-			throw new IllegalArgumentException("User does not have permission to edit this garment");
+		if(!currentGarment.getURLs().containsAll(removeURLs)) {
+			throw new IllegalArgumentException("One or more URLs not in garment");
 		}
 
-		this.validateURLInput(garment, garmentUpdate.addURLs(), garmentUpdate.removeURLs());
+		for (String url : addURLs) {
+			if (url.length() > maxGarmentURLLength) {
+				throw new IllegalArgumentException(String.format(
+						"Garment URL %s too long, must be at most %d characters", url, this.maxGarmentURLLength));
+			}
 
-		garment.addURL(garmentUpdate.addURLs());
-		garment.removeURL(garmentUpdate.removeURLs());
+			if(currentGarment.getURLs().contains(url)) {
+				throw new IllegalArgumentException("One or more URLs already in garment");
+			}
+		}
 
-		garmentRepository.save(garment);
+		if (addURLs.size() + currentGarment.getURLs().size() - removeURLs.size() > this.maxURLsPerGarment) {
+			throw new IllegalArgumentException(String.format(
+					"Too many URLs provided when creating a garment, must be at most %d URLs", this.maxURLsPerGarment));
+		}
+
+		currentGarment.addURL(addURLs);
+		currentGarment.removeURL(removeURLs);
+
+		garmentRepository.save(currentGarment);
 	}
 
 	@Transactional

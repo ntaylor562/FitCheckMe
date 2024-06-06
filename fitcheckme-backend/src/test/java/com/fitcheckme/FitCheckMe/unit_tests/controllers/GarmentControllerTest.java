@@ -194,7 +194,7 @@ public class GarmentControllerTest {
 	@Test
 	public void testUpdateGarment() throws Exception {
 		GarmentUpdateRequestDTO requestDTO = new GarmentUpdateRequestDTO(this.garment1.getId(),
-				this.garment1.getName());
+				this.garment1.getName(), Set.of(), Set.of(), Set.of(), Set.of());
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/garment/edit")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -211,7 +211,7 @@ public class GarmentControllerTest {
 	@Test
 	public void testUpdateGarmentAndExpectEntityNotFoundException() throws Exception {
 		GarmentUpdateRequestDTO requestDTO = new GarmentUpdateRequestDTO(this.garment1.getId(),
-				this.garment1.getName());
+				this.garment1.getName(), Set.of(), Set.of(), Set.of(), Set.of());
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.when(garmentService.updateGarment(any(GarmentUpdateRequestDTO.class), any(CustomUserDetails.class)))
 				.thenThrow(EntityNotFoundException.class);
@@ -224,7 +224,7 @@ public class GarmentControllerTest {
 	@Test
 	public void testUpdateGarmentAndExpectIllegalArgumentException() throws Exception {
 		GarmentUpdateRequestDTO requestDTO = new GarmentUpdateRequestDTO(this.garment1.getId(),
-				this.garment1.getName());
+				this.garment1.getName(), Set.of(), Set.of(), Set.of(), Set.of());
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.when(garmentService.updateGarment(any(GarmentUpdateRequestDTO.class), any(CustomUserDetails.class)))
 				.thenThrow(IllegalArgumentException.class);

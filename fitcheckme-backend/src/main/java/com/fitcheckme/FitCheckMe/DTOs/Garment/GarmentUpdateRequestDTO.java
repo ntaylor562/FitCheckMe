@@ -1,11 +1,15 @@
 package com.fitcheckme.FitCheckMe.DTOs.Garment;
 
-import jakarta.validation.constraints.NotBlank;
+import java.util.Set;
+
 import jakarta.validation.constraints.NotNull;
 
 public record GarmentUpdateRequestDTO(
 	@NotNull
 	Integer garmentId,
-	@NotBlank
-	String garmentName
+	String garmentName,
+	Set<String> addURLs,
+	Set<String> removeURLs,
+	Set<Integer> addTagIds,
+	Set<Integer> removeTagIds
 ) {}

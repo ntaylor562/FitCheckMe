@@ -19,8 +19,8 @@ public interface GarmentRepository extends JpaRepository<Garment, Integer> {
 	List<Garment> findByGarmentTags_TagId(Integer tagId);
 
 	@Query("SELECT g FROM Outfit o JOIN o.garments g WHERE o.id = :outfitId AND g.id IN :garmentIds")
-	List<Garment> findAllByOutfitIdAndId(@Param("garmentIds") Iterable<Integer> garmentIds,
-			@Param("outfitId") Integer outfitId);
+	List<Garment> findAllByOutfitIdAndIdsIn(@Param("outfitId") Integer outfitId,
+			@Param("garmentIds") Iterable<Integer> garmentIds);
 
 	@Modifying
 	@Query(value = "DELETE FROM app.outfit_garment WHERE garment_id = ?1", nativeQuery = true)

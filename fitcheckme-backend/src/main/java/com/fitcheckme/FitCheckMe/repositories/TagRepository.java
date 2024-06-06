@@ -15,6 +15,12 @@ public interface TagRepository extends JpaRepository<Tag, Integer>{
 	Optional<Tag> findByTagNameIgnoreCase(String tagName);
 	List<Tag> findAllByOrderByIdAsc();
 
+	@Query("SELECT t FROM Outfit o JOIN o.outfitTags t WHERE o.id = :outfitId AND t.id IN :tagIds")
+	List<Tag> findAllByOutfitIdAndIdsIn(Integer outfitId, Iterable<Integer> tagIds);
+
+	@Query("SELECT t FROM Garment g JOIN g.garmentTags t WHERE g.id = :garmentId AND t.id IN :tagIds")
+	List<Tag> findAllByGarmentIdAndIdsIn(Integer garmentId, Iterable<Integer> tagIds);
+
 	@Modifying
 	@Query(value = "DELETE FROM app.garment_tag WHERE tag_id = ?1", nativeQuery = true)
 	void deleteGarmentTags(Integer tagId);

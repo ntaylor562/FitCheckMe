@@ -106,7 +106,7 @@ public class OutfitService {
 		if(!userRepository.existsById(userId)) {
 			throw new EntityNotFoundException(String.format("User not found with ID: %s", String.valueOf(userId)));
 		}
-		return this.outfitRepository.findByUserId(userId).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
+		return this.outfitRepository.findByUserIdOrderByIdAsc(userId).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
 	public List<OutfitRequestDTO> getUserOutfits(String username) throws EntityNotFoundException {
@@ -114,7 +114,7 @@ public class OutfitService {
 		if(!userRepository.existsByUsernameIgnoreCase(username)) {
 			throw new EntityNotFoundException(String.format("User not found with username: %s", username));
 		}
-		return this.outfitRepository.findByUser_UsernameIgnoreCase(username).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
+		return this.outfitRepository.findByUser_UsernameIgnoreCaseOrderByIdAsc(username).stream().map(outfit -> OutfitRequestDTO.toDTO(outfit)).toList();
 	}
 
 	@Transactional

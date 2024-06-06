@@ -12,7 +12,11 @@ import com.fitcheckme.FitCheckMe.models.Garment;
 public interface GarmentRepository extends JpaRepository<Garment, Integer> {
 	List<Garment> findByUserId(Integer userId);
 
+	List<Garment> findByUserIdOrderByIdAsc(Integer userId);
+
 	List<Garment> findByUser_UsernameIgnoreCase(String username);
+
+	List<Garment> findByUser_UsernameIgnoreCaseOrderByIdAsc(String username);
 
 	List<Garment> findAllByOrderByIdAsc();
 

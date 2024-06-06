@@ -166,14 +166,14 @@ public class GarmentServiceTest {
 		Mockito.when(garment2.getId()).thenReturn(2);
 
 		Mockito.when(userRepository.existsById(1)).thenReturn(true);
-		Mockito.when(garmentRepository.findByUserId(1)).thenReturn(List.of(garment1, garment2));
+		Mockito.when(garmentRepository.findByUserIdOrderByIdAsc(1)).thenReturn(List.of(garment1, garment2));
 
 		List<GarmentRequestDTO> result = garmentService.getUserGarments(user1.getId());
 		assertThat(result).hasSize(2)
 				.allMatch(garment -> garment.getClass().equals(GarmentRequestDTO.class));
 
 		Mockito.verify(userRepository, Mockito.times(1)).existsById(any());
-		Mockito.verify(garmentRepository, Mockito.times(1)).findByUserId(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findByUserIdOrderByIdAsc(any());
 	}
 
 	@Test
@@ -182,13 +182,13 @@ public class GarmentServiceTest {
 		Mockito.when(user1.getId()).thenReturn(1);
 
 		Mockito.when(userRepository.existsById(1)).thenReturn(true);
-		Mockito.when(garmentRepository.findByUserId(1)).thenReturn(List.of());
+		Mockito.when(garmentRepository.findByUserIdOrderByIdAsc(1)).thenReturn(List.of());
 
 		List<GarmentRequestDTO> result = garmentService.getUserGarments(user1.getId());
 		assertThat(result).isEmpty();
 
 		Mockito.verify(userRepository, Mockito.times(1)).existsById(any());
-		Mockito.verify(garmentRepository, Mockito.times(1)).findByUserId(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findByUserIdOrderByIdAsc(any());
 	}
 
 	@Test
@@ -199,7 +199,7 @@ public class GarmentServiceTest {
 				.withMessage("User not found with ID: 1");
 
 		Mockito.verify(userRepository, Mockito.times(1)).existsById(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findByUserId(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findByUserIdOrderByIdAsc(any());
 	}
 
 	@Test
@@ -211,7 +211,7 @@ public class GarmentServiceTest {
 		Mockito.when(garment2.getId()).thenReturn(2);
 
 		Mockito.when(userRepository.existsByUsernameIgnoreCase(user1.getUsername())).thenReturn(true);
-		Mockito.when(garmentRepository.findByUser_UsernameIgnoreCase(user1.getUsername()))
+		Mockito.when(garmentRepository.findByUser_UsernameIgnoreCaseOrderByIdAsc(user1.getUsername()))
 				.thenReturn(List.of(garment1, garment2));
 
 		List<GarmentRequestDTO> result = garmentService.getUserGarments(user1.getUsername());
@@ -219,7 +219,7 @@ public class GarmentServiceTest {
 				.allMatch(garment -> garment.getClass().equals(GarmentRequestDTO.class));
 
 		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
-		Mockito.verify(garmentRepository, Mockito.times(1)).findByUser_UsernameIgnoreCase(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findByUser_UsernameIgnoreCaseOrderByIdAsc(any());
 	}
 
 	@Test
@@ -227,13 +227,13 @@ public class GarmentServiceTest {
 		User user1 = Mockito.spy(new User("user1", "user1@test.com", "password1", null, null));
 
 		Mockito.when(userRepository.existsByUsernameIgnoreCase(user1.getUsername())).thenReturn(true);
-		Mockito.when(garmentRepository.findByUser_UsernameIgnoreCase(user1.getUsername())).thenReturn(List.of());
+		Mockito.when(garmentRepository.findByUser_UsernameIgnoreCaseOrderByIdAsc(user1.getUsername())).thenReturn(List.of());
 
 		List<GarmentRequestDTO> result = garmentService.getUserGarments(user1.getUsername());
 		assertThat(result).isEmpty();
 
 		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
-		Mockito.verify(garmentRepository, Mockito.times(1)).findByUser_UsernameIgnoreCase(any());
+		Mockito.verify(garmentRepository, Mockito.times(1)).findByUser_UsernameIgnoreCaseOrderByIdAsc(any());
 	}
 
 	@Test
@@ -244,7 +244,7 @@ public class GarmentServiceTest {
 				.withMessage("User not found with username: user1");
 
 		Mockito.verify(userRepository, Mockito.times(1)).existsByUsernameIgnoreCase(any());
-		Mockito.verify(garmentRepository, Mockito.never()).findByUser_UsernameIgnoreCase(any());
+		Mockito.verify(garmentRepository, Mockito.never()).findByUser_UsernameIgnoreCaseOrderByIdAsc(any());
 	}
 
 	@Test

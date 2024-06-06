@@ -5,21 +5,33 @@ import { useAuth } from "../contexts/AuthContext";
 import { TagsProvider } from "../contexts/TagsContext";
 import EditOutfit from "../components/EditOutfit";
 import { useEffect, useState } from "react";
-import { getUserOutfits } from "../backend/Application";
+import { getUserGarments, getUserOutfits } from "../backend/Application";
+import GarmentCard from "../components/GarmentCard";
 
 
 export default function Testing() {
 	const { isAuthenticated, isLoading, currentUser, login, logout } = useAuth();
 	const [userOutfits, setUserOutfits] = useState(null);
+	const [userGarments, setUserGarments] = useState(null);
 
 	useEffect(() => {
-		if (isAuthenticated && userOutfits === null) {
-			fetchUserOutfits();
+		if (isAuthenticated) {
+			if (userOutfits === null) {
+				fetchUserOutfits();
+			}
+			if (userGarments === null) {
+				fetchUserGarments();
+			}
 		}
+
 	}, [isAuthenticated])
 
 	const fetchUserOutfits = async () => {
 		setUserOutfits(await getUserOutfits());
+	}
+
+	const fetchUserGarments = async () => {
+		setUserGarments(await getUserGarments());
 	}
 
 	const handleCreateOutfit = async () => {
@@ -41,7 +53,10 @@ export default function Testing() {
 									{isAuthenticated && <Button colorScheme="red" onClick={async () => { logout() }}>Logout</Button>}
 									{isAuthenticated && <CreateOutfit handleCreateOutfit={handleCreateOutfit} numExistingOutfits={userOutfits !== null ? userOutfits.length : 0} />}
 								</HStack>
-								{isAuthenticated && userOutfits !== null && userOutfits.length > 0 && userOutfits.map((outfit) => <EditOutfit key={outfit.outfitId} outfit={outfit} handleOutfitUpdate={fetchUserOutfits} />)}
+								{isAuthenticated && userOutfits !== null && userOutfits.length > 0 && <>
+									{userOutfits[0].garments.length > 0 && <GarmentCard garment={userGarments[userGarments.length - 1]} size="sm" />}
+									{userOutfits.map((outfit) => <EditOutfit key={outfit.outfitId} outfit={outfit} handleOutfitUpdate={fetchUserOutfits} />)}
+								</>}
 							</>
 					}
 					<Button colorScheme="gray" onClick={() => auth_refresh()}>Refresh token</Button>

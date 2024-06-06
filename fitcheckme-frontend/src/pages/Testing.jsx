@@ -1,4 +1,4 @@
-import { Box, Button, Heading, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, Button, Flex, Heading, HStack, Text, VStack } from "@chakra-ui/react"
 import CreateOutfit from "./CreateOutfit";
 import { auth_refresh } from "../backend/Auth";
 import { useAuth } from "../contexts/AuthContext";
@@ -39,7 +39,7 @@ export default function Testing() {
 	}
 
 	return (
-		<Box>
+		<Box className="subpage">
 			<TagsProvider>
 				<Heading>Testing</Heading>
 				<Text>This is a test page.</Text>
@@ -54,8 +54,15 @@ export default function Testing() {
 									{isAuthenticated && <CreateOutfit handleCreateOutfit={handleCreateOutfit} numExistingOutfits={userOutfits !== null ? userOutfits.length : 0} />}
 								</HStack>
 								{isAuthenticated && userOutfits !== null && userOutfits.length > 0 && <>
-									{userOutfits[0].garments.length > 0 && <GarmentCard garment={userGarments[userGarments.length - 1]} size="sm" />}
-									{userOutfits.map((outfit) => <EditOutfit key={outfit.outfitId} outfit={outfit} handleOutfitUpdate={fetchUserOutfits} />)}
+									<Heading size="lg">Garments:</Heading>
+									<Flex flexWrap="wrap">
+										{userGarments.map((garment) => <Box key={garment.garmentId} m="10px"><GarmentCard garment={garment} handleGarmentUpdate={fetchUserGarments} size="sm" isOwner/></Box>)}
+									</Flex>
+
+									<Heading size="lg">Outfits:</Heading>
+									<Flex flexWrap="wrap">
+										{userOutfits.map((outfit) => <Box key={outfit.outfitId} m="10px"><EditOutfit outfit={outfit} handleOutfitUpdate={fetchUserOutfits} /></Box>)}
+									</Flex>
 								</>}
 							</>
 					}

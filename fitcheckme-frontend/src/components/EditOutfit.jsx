@@ -1,4 +1,4 @@
-import { Button, Container, Flex, FormControl, FormLabel, Input, InputGroup, InputRightAddon, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Select, VStack, useDisclosure, useTheme, useToast } from "@chakra-ui/react";
+import { Box, Button, FormControl, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, VStack, useDisclosure, useToast } from "@chakra-ui/react";
 import { useTags } from "../contexts/TagsContext"
 import { useState } from "react";
 import { MultiSelect } from "chakra-multiselect";
@@ -70,7 +70,7 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 	const handleDeleteImages = (imagesToDelete) => {
 		setFilesToDelete([...filesToDelete, ...imagesToDelete]);
 		const newShownImages = new Set(shownImages);
-		for(let image of imagesToDelete) {
+		for (let image of imagesToDelete) {
 			newShownImages.delete(image);
 		}
 		setShownImages(newShownImages);
@@ -90,7 +90,7 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 		const removeTagIds = Array.from(existingTagIds).filter((tagId) => !formTagIds.has(tagId));
 
 		try {
-			if (JSON.stringify({ ...formValues, files: [] }) !== JSON.stringify(defaultFormValues)) {
+			if (JSON.stringify(formValues) !== JSON.stringify(defaultFormValues)) {
 				await editOutfit(
 					outfit.outfitId,
 					outfit.outfitName === formValues.outfitName ? null : formValues.outfitName,
@@ -119,57 +119,41 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 					})
 			}
 
-			if (filesToUpload.length !== 0) {
-				await uploadImages(filesToUpload)
-					.then(async (response) => {
-						if (!response.ok) {
-							const contentType = response.headers.get("content-type");
-							const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
-							toast({
-								title: editedOutfit ? 'Successfully edited outfit details but failed uploading images.' : 'Error adding images',
-								description: message,
-								status: 'error',
-								duration: 5000,
-								isClosable: true,
-							})
-							throw new Error(message);
-						} else {
-							return response;
-						}
-					})
-					.then((res) => {
-						if (!res.ok) {
-							throw new Error("Failed to upload image");
-						}
-						return res.json();
-					})
-					.then(async (res) => {
-						await editOutfitImages(outfit.outfitId, res.map((image) => image.fileId), [])
-							.then(async (response) => {
-								if (!response.ok) {
-									const contentType = response.headers.get("content-type");
-									const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
-									toast({
-										title: editedOutfit ? 'Successfully edited outfit details but failed uploading images.' : 'Error adding images',
-										description: message,
-										status: 'error',
-										duration: 5000,
-										isClosable: true,
-									})
-									throw new Error(message);
-								}
-							})
-					})
-			}
+			if (filesToUpload.length !== 0 || filesToDelete.length !== 0) {
+				let addImageIds = []
+				if (filesToUpload.length !== 0) {
+					addImageIds = (await uploadImages(filesToUpload)
+						.then(async (response) => {
+							if (!response.ok) {
+								const contentType = response.headers.get("content-type");
+								const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
+								toast({
+									title: editedOutfit ? 'Successfully edited outfit details but failed uploading images.' : 'Error adding images',
+									description: message,
+									status: 'error',
+									duration: 5000,
+									isClosable: true,
+								})
+								throw new Error(message);
+							} else {
+								return response;
+							}
+						})
+						.then((res) => {
+							if (!res.ok) {
+								throw new Error("Failed to upload image");
+							}
+							return res.json();
+						})).map((image) => image.fileId);
+				}
 
-			if (filesToDelete.length !== 0) {
-				await editOutfitImages(outfit.outfitId, [], filesToDelete.map((image) => image.fileId))
+				await editOutfitImages(outfit.outfitId, addImageIds, filesToDelete.map((image) => image.fileId))
 					.then(async (response) => {
 						if (!response.ok) {
 							const contentType = response.headers.get("content-type");
 							const message = contentType && contentType.includes("application/json") ? (await response.json()).message : await response.text();
 							toast({
-								title: editedOutfit ? 'Successfully edited outfit details but failed deleting images.' : 'Error deleting images',
+								title: editedOutfit ? 'Successfully edited outfit details but failed editing images.' : 'Error editing images',
 								description: message,
 								status: 'error',
 								duration: 5000,
@@ -181,63 +165,63 @@ export default function EditOutfit({ outfit, handleOutfitUpdate }) {
 			}
 
 			toast({
-				title: 'Outfit updated.',
-				status: 'success',
-				duration: 5000,
-				isClosable: true,
-			})
-			handleOutfitUpdate();
-			onClose();
-		} catch (error) {
-			console.error(error);
-		}
+			title: 'Outfit updated.',
+			status: 'success',
+			duration: 5000,
+			isClosable: true,
+		})
+		handleOutfitUpdate();
+		onClose();
+	} catch (error) {
+		console.error(error);
 	}
+}
 
-	return (
-		<>
-			<Container _hover={{ cursor: "pointer" }} onClick={handleOpen} >
-				<OutfitCard outfit={outfit} size={"lg"} />
-			</Container>
+return (
+	<>
+		<Box _hover={{ cursor: "pointer" }} onClick={handleOpen}>
+			<OutfitCard outfit={outfit} size={"lg"} />
+		</Box>
 
-			<Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
-				<ModalOverlay />
-				<ModalContent>
-					<ModalHeader>Edit Outfit</ModalHeader>
-					<ModalCloseButton />
-					<ModalBody>
-						<VStack>
-							<FormControl>
-								<FormLabel>Outfit Name</FormLabel>
-								<Input required type='text' name='outfitName' value={formValues.outfitName} onChange={handleFormChange} />
-							</FormControl>
-							<FormControl>
-								<FormLabel>Outfit Description</FormLabel>
-								<Input required type='text' name='outfitDesc' value={formValues.outfitDesc} onChange={handleFormChange} />
-							</FormControl>
-							<FormControl>
-								<FormLabel>Tags</FormLabel>
-								<MultiSelect
-									name='tags'
-									value={formValues.tags}
-									onChange={handleMultiSelectChange}
-									options={tags.map((tag) => { return { value: `${tag.tagId}`, label: toTitleCase(tag.tagName) } })}
-									placeholder='Select tags'
-								/>
-							</FormControl>
-							<GarmentSelector selectedGarments={formValues.garments} handleGarmentSelect={handleGarmentSelect} />
-							<FormControl>
-								<FormLabel>Images</FormLabel>
-								<EditImages images={shownImages} handleUploadFileChange={handleUploadFileChange} handleDeleteImages={handleDeleteImages} />
-							</FormControl>
-						</VStack>
-					</ModalBody>
-					<ModalFooter>
-						<Button onClick={handleSubmit} colorScheme='green' mr={3}>Edit</Button>
-						<Button variant='ghost' onClick={onClose}>Cancel</Button>
-					</ModalFooter>
-				</ModalContent>
-			</Modal>
-		</>
-	)
+		<Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+			<ModalOverlay />
+			<ModalContent>
+				<ModalHeader>Edit Outfit</ModalHeader>
+				<ModalCloseButton />
+				<ModalBody>
+					<VStack>
+						<FormControl>
+							<FormLabel>Outfit Name</FormLabel>
+							<Input required type='text' name='outfitName' value={formValues.outfitName} onChange={handleFormChange} />
+						</FormControl>
+						<FormControl>
+							<FormLabel>Outfit Description</FormLabel>
+							<Input required type='text' name='outfitDesc' value={formValues.outfitDesc} onChange={handleFormChange} />
+						</FormControl>
+						<FormControl>
+							<FormLabel>Tags</FormLabel>
+							<MultiSelect
+								name='tags'
+								value={formValues.tags}
+								onChange={handleMultiSelectChange}
+								options={tags.map((tag) => { return { value: `${tag.tagId}`, label: toTitleCase(tag.tagName) } })}
+								placeholder='Select tags'
+							/>
+						</FormControl>
+						<GarmentSelector selectedGarments={formValues.garments} handleGarmentSelect={handleGarmentSelect} />
+						<FormControl>
+							<FormLabel>Images</FormLabel>
+							<EditImages images={shownImages} handleUploadFileChange={handleUploadFileChange} handleDeleteImages={handleDeleteImages} />
+						</FormControl>
+					</VStack>
+				</ModalBody>
+				<ModalFooter>
+					<Button onClick={handleSubmit} colorScheme='green' mr={3}>Edit</Button>
+					<Button variant='ghost' onClick={onClose}>Cancel</Button>
+				</ModalFooter>
+			</ModalContent>
+		</Modal>
+	</>
+)
 }
 

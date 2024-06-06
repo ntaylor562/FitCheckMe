@@ -1,12 +1,34 @@
-import { Card, CardBody, CardHeader, Heading, Image, Text, VStack } from "@chakra-ui/react";
+import { Card, CardBody, CardHeader, Heading, Icon, IconButton, Image, Menu, MenuButton, MenuItem, MenuList, Text, VStack, useDisclosure } from "@chakra-ui/react";
+import { IoEllipsisHorizontal } from "react-icons/io5";
 import { getImageSource } from "../utils/SourceGetter";
+import EditGarment from "./EditGarment";
 
 
-export default function GarmentCard({ garment, size="sm" }) {
+export default function GarmentCard({ isOwner = false, garment, size = "sm", handleGarmentUpdate = () => { } }) {
 	if (!garment) return null;
+
+	const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
 
 	return (
 		<Card size={size} variant='outline' borderRadius='3xl'>
+			<EditGarment garment={garment} handleGarmentUpdate={handleGarmentUpdate} isOpen={isEditOpen} handleClose={onEditClose} />
+			<Menu isLazy>
+				<MenuButton
+					size="lg"
+					as={IconButton}
+					aria-label="Garment card options"
+					icon={<Icon as={IoEllipsisHorizontal} />}
+					variant="ghost"
+					position="absolute"
+					top="5px"
+					right="5px"
+					borderRadius="full"
+				/>
+				<MenuList>
+					<MenuItem>Some other temp option</MenuItem>
+					{isOwner && <MenuItem onClick={onEditOpen}>Edit Garment</MenuItem>}
+				</MenuList>
+			</Menu>
 			<CardHeader>
 				<Heading size='md'>{garment.garmentName}</Heading>
 			</CardHeader>

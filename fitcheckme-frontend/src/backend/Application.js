@@ -46,6 +46,41 @@ export async function createGarment(garmentName, urls = [], tags = []) {
 		.then((response) => handleFetchException(response))
 }
 
+export async function editGarment(garmentId, garmentName, addURLs, removeURLs, addTagIds, removeTagIds) {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/garment/edit`, {
+		method: 'PUT',
+		credentials: 'include',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			garmentId: garmentId,
+			garmentName: garmentName,
+			addURLs: addURLs,
+			removeURLs: removeURLs,
+			addTagIds: addTagIds,
+			removeTagIds: removeTagIds
+		})
+	})
+		.then((response) => handleFetchException(response))
+}
+
+export async function editGarmentImages(garmentId, addImageIds, removeImageIds) {
+	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/garment/editimages`, {
+		method: 'PUT',
+		credentials: 'include',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			garmentId: garmentId,
+			addImageIds: addImageIds,
+			removeImageIds: removeImageIds
+		})
+	})
+		.then((response) => handleFetchException(response))
+}
+
 export async function createOutfit(outfitName, outfitDesc = "", tags = [], garments = []) {
 	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/outfit/create`, {
 		method: 'POST',

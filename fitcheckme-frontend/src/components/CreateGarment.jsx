@@ -5,11 +5,12 @@ import { MultiSelect } from "chakra-multiselect";
 import { toTitleCase } from "../utils/StringUtil";
 import { AddIcon, CloseIcon } from "@chakra-ui/icons";
 import { createGarment } from "../backend/Application";
+import TagInput from "./TagInput";
 
 
-export default function CreateGarment({addGarment}) {
+export default function CreateGarment({ addGarment, defaultName = ""}) {
 	const defaultFormValues = {
-		garmentName: "",
+		garmentName: defaultName,
 		url: "", //This is what's currently being typed into the URL box, not what is saved
 		tags: []
 	}
@@ -34,16 +35,10 @@ export default function CreateGarment({addGarment}) {
 		})
 	}
 
-	const handleURLSubmit = (e) => {
-		e.preventDefault();
-		if (formValues.url === "") return;
+	const handleAddURL = (url) => {
 		let newEnteredURLs = new Set(enteredURLs);
-		newEnteredURLs.add(formValues.url);
+		newEnteredURLs.add(url);
 		setEnteredURLs(newEnteredURLs);
-		setFormValues({
-			...formValues,
-			url: ""
-		})
 	}
 
 	const handleRemoveURL = (url) => {
@@ -61,7 +56,7 @@ export default function CreateGarment({addGarment}) {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		
+
 		await createGarment(formValues.garmentName, Array.from(enteredURLs), formValues.tags.map((tag) => parseInt(tag.value)))
 			.then(async (response) => {
 				if (!response.ok) {
@@ -100,30 +95,14 @@ export default function CreateGarment({addGarment}) {
 					<ModalCloseButton />
 					<ModalBody>
 						<VStack spacing={4}>
-							<FormControl>
+							<FormControl onChange={handleFormChange}>
 								<FormLabel>Garment Name</FormLabel>
-								<Input required type='text' name='garmentName' value={formValues.garmentName} onChange={handleFormChange} />
+								<Input type='text' name='garmentName' placeholder={defaultName} />
 							</FormControl>
 
 							<FormControl>
 								<FormLabel>URLs</FormLabel>
-								<VStack spacing={2}>
-									{Array.from(enteredURLs).map((url, index) => {
-										return (
-											<InputGroup key={index}>
-												<Input isDisabled type='text' value={url} />
-												<InputRightAddon p="0px"><Button colorScheme="red" borderLeftRadius="0px" onClick={() => handleRemoveURL(url)}><CloseIcon /></Button></InputRightAddon>
-											</InputGroup>
-										)
-									})
-									}
-									<InputGroup>
-										<Input type='text' name='url' onChange={handleFormChange} onKeyDown={(e) => e.key === "Enter" && handleURLSubmit(e)} value={formValues.url} />
-										<InputRightAddon bg="transparent" borderColor="inherit" borderLeft="0px" p="0px">
-											<Button variant="ghost" borderLeftRadius="0px" onClick={handleURLSubmit}><AddIcon /></Button>
-										</InputRightAddon>
-									</InputGroup>
-								</VStack>
+								<TagInput enteredValues={enteredURLs} handleAdd={handleAddURL} handleRemove={handleRemoveURL} />
 							</FormControl>
 
 							<FormControl>

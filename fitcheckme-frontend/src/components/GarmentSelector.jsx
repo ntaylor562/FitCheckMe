@@ -71,15 +71,19 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 					placeholder='Select tags'
 				/>
 			</FormControl>
-			{userGarments !== null && userGarments.length > 0 ?
-				<HStack w="100%" wrap="wrap">
-					{getSearchResults().map((garment) => {
-						return <GarmentCard key={garment.garmentId} garment={garment} selected={selectedGarments.has(garment.garmentId)} handleGarmentSelect={handleGarmentSelect} />
-					})}
-				</HStack>
-				: <></>
+			{userGarments !== null &&
+				<>
+					{userGarments.length !== 0 &&
+						<HStack w="100%" wrap="wrap">
+							{getSearchResults().map((garment) => {
+								return <GarmentCard key={garment.garmentId} garment={garment} selected={selectedGarments.has(garment.garmentId)} handleGarmentSelect={handleGarmentSelect} />
+							})}
+						</HStack>
+					}
+					<CreateGarment addGarment={(garment) => setUserGarments([...userGarments, garment])} defaultName={`Garment ${userGarments.length + 1}`} />
+				</>
 			}
-			<CreateGarment addGarment={(garment) => setUserGarments([...userGarments, garment])} />
+
 		</VStack>
 	</FormControl>
 

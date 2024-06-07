@@ -8,7 +8,7 @@ import { createGarment } from "../backend/Application";
 import TagInput from "./TagInput";
 
 
-export default function CreateGarment({ addGarment, defaultName = ""}) {
+export default function CreateGarment({ handleCreateGarment, defaultName = ""}) {
 	const defaultFormValues = {
 		garmentName: defaultName,
 		url: "", //This is what's currently being typed into the URL box, not what is saved
@@ -29,6 +29,12 @@ export default function CreateGarment({ addGarment, defaultName = ""}) {
 	}
 
 	const handleFormChange = (e) => {
+		if (e.target.name === "garmentName" && e.target.value === "") {
+			setFormValues({
+				...formValues,
+				[e.target.name]: defaultFormValues.garmentName
+			})
+		}
 		setFormValues({
 			...formValues,
 			[e.target.name]: e.target.value
@@ -79,7 +85,7 @@ export default function CreateGarment({ addGarment, defaultName = ""}) {
 						duration: 5000,
 						isClosable: true,
 					});
-					addGarment(await response.json());
+					handleCreateGarment(await response.json());
 				}
 			});
 	}
@@ -102,7 +108,7 @@ export default function CreateGarment({ addGarment, defaultName = ""}) {
 
 							<FormControl>
 								<FormLabel>URLs</FormLabel>
-								<TagInput enteredValues={enteredURLs} handleAdd={handleAddURL} handleRemove={handleRemoveURL} />
+								<TagInput enteredValues={enteredURLs} handleAdd={handleAddURL} handleRemove={handleRemoveURL} placeholder="Enter a store URL for the garment" />
 							</FormControl>
 
 							<FormControl>

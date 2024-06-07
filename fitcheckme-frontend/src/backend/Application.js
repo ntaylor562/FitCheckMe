@@ -39,7 +39,7 @@ export async function createGarment(garmentName, urls = [], tags = []) {
 		},
 		body: JSON.stringify({
 			garmentName: garmentName,
-			garmentURLs: urls,
+			urls: urls,
 			garmentTags: tags
 		})
 	})

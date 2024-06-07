@@ -8,11 +8,11 @@ import { useTags } from "../contexts/TagsContext";
 import FileUploadInput from "../components/FileUploadInput";
 import { uploadImages } from "../backend/FileService";
 
-export default function CreateOutfit({ numExistingOutfits = 0, handleCreateOutfit }) {
+export default function CreateOutfit({ handleCreateOutfit, defaultName = "" }) {
 	const { tags } = useTags();
 
 	const defaultFormValues = {
-		outfitName: `Outfit ${numExistingOutfits + 1}`,
+		outfitName: defaultName,
 		outfitDesc: "",
 		tags: [],
 		garments: new Set()
@@ -160,7 +160,7 @@ export default function CreateOutfit({ numExistingOutfits = 0, handleCreateOutfi
 								<Flex>
 									<FormControl onChange={handleChange}>
 										<FormLabel>Outfit name</FormLabel>
-										<Input placeholder={`Outfit ${numExistingOutfits + 1}`} name="outfitName" type="text" />
+										<Input placeholder={defaultName} name="outfitName" type="text" />
 									</FormControl>
 								</Flex>
 								<FormControl onChange={handleChange}>

@@ -7,6 +7,7 @@ import EditImages from "./EditImages";
 import { editGarment, editGarmentImages } from "../backend/Application";
 import { uploadImages } from "../backend/FileService";
 import { areSetsEqual } from "../utils/SetUtil";
+import TagInput from "./TagInput";
 
 
 export default function EditGarment({ garment, handleGarmentUpdate, isOpen, handleClose }) {
@@ -16,7 +17,7 @@ export default function EditGarment({ garment, handleGarmentUpdate, isOpen, hand
 
 	const defaultFormValues = {
 		garmentName: garment.garmentName,
-		urls: new Set(garment.garmentURLs),
+		urls: new Set(garment.urls),
 		tags: garment.garmentTags.map((tag) => { return { value: `${tag.tagId}`, label: toTitleCase(tag.tagName) } })
 	}
 
@@ -32,6 +33,24 @@ export default function EditGarment({ garment, handleGarmentUpdate, isOpen, hand
 			...formValues,
 			[e.target.name]: e.target.value
 		})
+	}
+
+	const handleAddURL = (url) => {
+		let newEnteredURLs = new Set(formValues.urls);
+		newEnteredURLs.add(url);
+		setFormValues({
+			...formValues,
+			urls: newEnteredURLs
+		});
+	}
+
+	const handleRemoveURL = (url) => {
+		let newEnteredURLs = new Set(formValues.urls);
+		newEnteredURLs.delete(url);
+		setFormValues({
+			...formValues,
+			urls: newEnteredURLs
+		});
 	}
 
 	const handleMultiSelectChange = (e) => {
@@ -58,7 +77,7 @@ export default function EditGarment({ garment, handleGarmentUpdate, isOpen, hand
 		e.preventDefault();
 
 		let editedGarment = false;
-		const existingURLs = new Set(garment.garmentURLs);
+		const existingURLs = new Set(garment.urls);
 		const existingTagIds = new Set(garment.garmentTags.map((tag) => tag.tagId));
 		const formTagIds = new Set(formValues.tags.map((tag) => parseInt(tag.value)));
 
@@ -165,6 +184,10 @@ export default function EditGarment({ garment, handleGarmentUpdate, isOpen, hand
 						<FormControl>
 							<FormLabel>Garment Name</FormLabel>
 							<Input required type='text' name='garmentName' value={formValues.garmentName} onChange={handleFormChange} />
+						</FormControl>
+						<FormControl>
+							<FormLabel>URLs</FormLabel>
+							<TagInput enteredValues={formValues.urls} handleAdd={handleAddURL} handleRemove={handleRemoveURL} placeholder="Enter a store URL for the garment" />
 						</FormControl>
 						<FormControl>
 							<FormLabel>Tags</FormLabel>

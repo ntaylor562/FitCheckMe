@@ -111,7 +111,7 @@ public class GarmentService {
 	@Transactional
 	private GarmentRequestDTO createGarment(GarmentCreateRequestDTO garment, User user) throws EntityNotFoundException, IllegalArgumentException {
 		String garmentName = garment.garmentName() != null ? garment.garmentName().strip() : "";
-		Set<String> garmentURLs = new HashSet<>(garment.garmentURLs().stream().map(url -> url.strip()).toList());
+		Set<String> garmentURLs = new HashSet<>(garment.urls().stream().map(url -> url.strip()).toList());
 		Set<Tag> tags = new HashSet<>();
 
 		if(garmentName.length() > this.maxGarmentNameLength) {
@@ -287,10 +287,13 @@ public class GarmentService {
 	}
 
 	@Transactional
-	private void editURLs(Garment currentGarment, Set<String> addURLs, Set<String> removeURLs, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
+	private void editURLs(Garment currentGarment, Set<String> addURLsInput, Set<String> removeURLsInput, CustomUserDetails userDetails) throws EntityNotFoundException, IllegalArgumentException {
 		if(currentGarment.getUser().getId() != userDetails.getUserId()) {
 			throw new IllegalArgumentException("User does not have permission to edit this garment");
 		}
+
+		Set<String> addURLs = addURLsInput != null ? addURLsInput.stream().map(url -> url.strip()).collect(Collectors.toSet()) : new HashSet<String>();
+		Set<String> removeURLs = removeURLsInput != null ? removeURLsInput.stream().map(url -> url.strip()).collect(Collectors.toSet()) : new HashSet<String>();
 		
 		if(!currentGarment.getURLs().containsAll(removeURLs)) {
 			throw new IllegalArgumentException("One or more URLs not in garment");

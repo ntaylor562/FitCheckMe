@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record GarmentCreateRequestDTO(
 		@NotBlank String garmentName,
-		Set<String> garmentURLs,
+		Set<String> urls,
 		Set<Integer> garmentTags) {
 
 	public static GarmentCreateRequestDTO toDTO(Garment garment) {

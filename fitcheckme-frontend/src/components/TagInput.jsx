@@ -3,7 +3,7 @@ import { Button, Input, InputGroup, InputRightAddon, VStack } from "@chakra-ui/r
 import { useState } from "react";
 
 
-export default function TagInput({ enteredValues, handleAdd, handleRemove }) {
+export default function TagInput({ enteredValues, handleAdd, handleRemove, placeholder = "" }) {
 	const [currentInput, setCurrentInput] = useState("");
 
 	const handleInputChange = (e) => {
@@ -29,7 +29,7 @@ export default function TagInput({ enteredValues, handleAdd, handleRemove }) {
 				)
 			})}
 			<InputGroup>
-				<Input type='text' onChange={handleInputChange} onKeyDown={(e) => e.key === "Enter" && handleSubmit(e)} value={currentInput} />
+				<Input type='text' placeholder={placeholder} onChange={handleInputChange} onKeyDown={(e) => e.key === "Enter" && handleSubmit(e)} value={currentInput} />
 				<InputRightAddon bg="transparent" borderColor="inherit" borderLeft="0px" p="0px">
 					<Button variant="ghost" borderLeftRadius="0px" onClick={handleSubmit}><AddIcon /></Button>
 				</InputRightAddon>

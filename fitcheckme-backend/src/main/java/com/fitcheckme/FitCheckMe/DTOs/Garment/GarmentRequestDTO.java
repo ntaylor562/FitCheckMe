@@ -22,7 +22,7 @@ public record GarmentRequestDTO(
 			garment.getUser().getId(),
 			garment.getURLs().stream().collect(Collectors.toSet()),
 			garment.getTags().stream().map(tag -> TagRequestDTO.toDTO(tag)).collect(Collectors.toSet()),
-			garment.getImages().stream().map(i -> new ImageRequestDTO(i.getImage().getUser().getId(), i.getImage().getId(), i.getImage().getImagePath())).collect(Collectors.toSet())
+			garment.getImages().stream().map(i -> ImageRequestDTO.toDTO(i.getImage())).collect(Collectors.toSet())
 		);
 	}
 }

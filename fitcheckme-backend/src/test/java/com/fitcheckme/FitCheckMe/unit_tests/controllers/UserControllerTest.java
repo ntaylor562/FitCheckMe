@@ -183,9 +183,9 @@ public class UserControllerTest {
 
 	@Test
 	public void testUpdateUserDetails() throws Exception {
-		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
+		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2", null);
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
-		UserRequestDTO updatedUser = new UserRequestDTO(1, "test_username2", "test bio 2");
+		UserRequestDTO updatedUser = new UserRequestDTO(1, "test_username2", "test bio 2", null);
 		Mockito.when(userService.updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(CustomUserDetails.class))).thenReturn(updatedUser);
 
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
@@ -203,7 +203,7 @@ public class UserControllerTest {
 
 	@Test
 	public void testUpdateUserDetailsAndExpectEntityNotFoundException() throws Exception {
-		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
+		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2", null);
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(EntityNotFoundException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
@@ -214,7 +214,7 @@ public class UserControllerTest {
 
 	@Test
 	public void testUpdateUserDetailsAndExpectIllegalArgumentsException() throws Exception {
-		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
+		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2", null);
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(IllegalArgumentException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
@@ -225,7 +225,7 @@ public class UserControllerTest {
 
 	@Test
 	public void testUpdateUserDetailsWithConflictingUsername() throws Exception {
-		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
+		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2", null);
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(DataIntegrityViolationException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")
@@ -236,7 +236,7 @@ public class UserControllerTest {
 
 	@Test
 	public void testUpdateUserDetailsAndExpectAccessDeniedException() throws Exception {
-		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2");
+		UserUpdateDetailsRequestDTO requestDTO = new UserUpdateDetailsRequestDTO(1, "test_username2", "test bio 2", null);
 		String requestBody = new ObjectMapper().writeValueAsString(requestDTO);
 		Mockito.doThrow(AccessDeniedException.class).when(userService).updateUserDetails(any(UserUpdateDetailsRequestDTO.class), any(CustomUserDetails.class));
 		mockMvc.perform(MockMvcRequestBuilders.put("/api/user/details")

@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
@@ -39,6 +40,15 @@ public class User {
 	@Column(name = "bio")
 	private String bio;
 
+	@OneToOne
+	@JoinTable(
+		name = "user_profile_image",
+		schema = "app",
+		joinColumns = @JoinColumn(name = "user_id", nullable = false),
+		inverseJoinColumns = @JoinColumn(name = "image_id", nullable = false)
+	)
+	private ImageFile profilePicture;
+
 	@ManyToMany
 	@JoinTable(
 		name = "user_role",
@@ -64,6 +74,7 @@ public class User {
 		this.password = password;
 		this.bio = bio;
 		this.roles = roles != null ? new HashSet<>(roles) : new HashSet<>();
+		this.profilePicture = null;
 	}
 
 	public Integer getId() {
@@ -84,6 +95,10 @@ public class User {
 
 	public String getBio() {
 		return this.bio;
+	}
+
+	public ImageFile getProfilePicture() {
+		return this.profilePicture;
 	}
 
 	public Set<Role> getRoles() {
@@ -112,6 +127,10 @@ public class User {
 
 	public void setBio(String bio) {
 		this.bio = bio;
+	}
+
+	public void setProfilePicture(ImageFile profilePicture) {
+		this.profilePicture = profilePicture;
 	}
 
 	public void setRoles(Collection<Role> roles) {

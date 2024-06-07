@@ -216,7 +216,7 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
 		login("new_test_user", "password");
 
 		ResponseEntity<Object> updateUserResponse = putCall("/api/user/details",
-				new UserUpdateDetailsRequestDTO(createdUser.getId(), "new_test_user_updated", "new bio"));
+				new UserUpdateDetailsRequestDTO(createdUser.getId(), "new_test_user_updated", "new bio", null));
 		UserRequestDTO updatedUser = getObjectFromResponse(updateUserResponse, UserRequestDTO.class);
 
 		User updatedUserEntity = userRepository.findById(createdUser.getId()).get();
@@ -239,7 +239,7 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
 		login("new_test_user", "password");
 
 		ResponseEntity<Object> updateUserResponse = putCall("/api/user/details",
-				new UserUpdateDetailsRequestDTO(createdUser.getId(), "test_user", "new bio"), true);
+				new UserUpdateDetailsRequestDTO(createdUser.getId(), "test_user", "new bio", null), true);
 
 		User newUserEntity = userRepository.findById(createdUser.getId()).get();
 

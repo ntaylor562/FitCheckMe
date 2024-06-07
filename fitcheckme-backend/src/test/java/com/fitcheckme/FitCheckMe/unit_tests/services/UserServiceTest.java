@@ -294,7 +294,7 @@ public class UserServiceTest {
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 		Mockito.when(userRepository.save(any(User.class))).thenReturn(user1);
 
-		UserRequestDTO result = userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2", null),
+		UserRequestDTO result = userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2", null, null),
 				userDetails);
 		assertThat(result).isNotNull();
 		assertThat(result.username()).isEqualTo("user2");
@@ -315,7 +315,7 @@ public class UserServiceTest {
 		Mockito.when(userRepository.existsByUsernameIgnoreCase("user2")).thenReturn(true);
 
 		assertThatExceptionOfType(DataIntegrityViolationException.class)
-				.isThrownBy(() -> userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2", null),
+				.isThrownBy(() -> userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2", null, null),
 						userDetails))
 				.withMessage("Username 'user2' is taken");
 
@@ -334,7 +334,7 @@ public class UserServiceTest {
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
 						.updateUserDetails(
-								new UserUpdateDetailsRequestDTO(1, "a".repeat(this.maxUsernameLength + 1), null),
+								new UserUpdateDetailsRequestDTO(1, "a".repeat(this.maxUsernameLength + 1), null, null),
 								userDetails))
 				.withMessage(String.format("Username name must be at most %d characters", this.maxUsernameLength));
 
@@ -354,7 +354,7 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, invalidUsername, null), userDetails))
+						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, invalidUsername, null, null), userDetails))
 				.withMessageContaining("Username must only contain ");
 
 		Mockito.verify(userRepository, Mockito.never()).existsByUsernameIgnoreCase(any());
@@ -375,7 +375,7 @@ public class UserServiceTest {
 		Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(user1));
 		Mockito.when(userRepository.save(any(User.class))).thenReturn(user1);
 
-		UserRequestDTO result = userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, null, "new bio"),
+		UserRequestDTO result = userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, null, "new bio", null),
 				userDetails);
 		assertThat(result).isNotNull();
 		assertThat(result.username()).isEqualTo("user1");
@@ -395,7 +395,7 @@ public class UserServiceTest {
 
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> userService
-						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, null, "a".repeat(this.maxBioLength + 1)),
+						.updateUserDetails(new UserUpdateDetailsRequestDTO(1, null, "a".repeat(this.maxBioLength + 1), null),
 								userDetails))
 				.withMessage(String.format("User bio must be at most %d characters", this.maxBioLength));
 
@@ -418,7 +418,7 @@ public class UserServiceTest {
 		Mockito.when(userRepository.existsByUsernameIgnoreCase("user2")).thenReturn(false);
 		Mockito.when(userRepository.save(any(User.class))).thenReturn(user1);
 
-		UserRequestDTO result = userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2", "new bio"),
+		UserRequestDTO result = userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2", "new bio", null),
 				userDetails);
 		assertThat(result).isNotNull();
 		assertThat(result.username()).isEqualTo("user2");
@@ -442,7 +442,7 @@ public class UserServiceTest {
 		Mockito.when(userRepository.existsByUsernameIgnoreCase("user2")).thenReturn(false);
 
 		assertThatExceptionOfType(AccessDeniedException.class)
-				.isThrownBy(() -> userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2", "new bio"),
+				.isThrownBy(() -> userService.updateUserDetails(new UserUpdateDetailsRequestDTO(1, "user2", "new bio", null),
 						userDetails))
 				.withMessage("User does not have permission to update details");
 

@@ -92,7 +92,7 @@ public class AuthServiceTest {
 
 		assertThat(result).isNotNull()
 				.isEqualTo(
-						new UserLoginReturnDTO(new UserRequestDTO(user1.getId(), user1.getUsername(), user1.getBio()),
+						new UserLoginReturnDTO(new UserRequestDTO(user1.getId(), user1.getUsername(), user1.getBio(), null),
 								"accessToken", "refreshToken"));
 		
 		verifyCommonAuthMethodCalls(Mockito.times(1));

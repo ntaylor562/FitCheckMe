@@ -34,10 +34,7 @@ public record OutfitRequestDTO(
 						garment.getTags().stream().map(t -> new TagRequestDTO(t.getId(), t.getName()))
 								.collect(Collectors.toSet()),
 						garment.getImages().stream()
-								.map(i -> new ImageRequestDTO(
-										i.getImage().getUser().getId(),
-										i.getImage().getId(),
-										i.getImage().getImagePath()))
+								.map(i -> ImageRequestDTO.toDTO(i.getImage()))
 								.collect(Collectors.toSet())))
 						.collect(Collectors.toSet()),
 				outfit.getImages().stream().map(i -> new ImageRequestDTO(i.getImage().getUser().getId(),

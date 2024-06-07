@@ -53,6 +53,11 @@ CREATE TABLE IF NOT EXISTS app.image_file(
 	image_creation_date TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS app.user_profile_image(
+	user_id INTEGER PRIMARY KEY REFERENCES community.user(user_id),
+	image_id INTEGER REFERENCES app.image_file(image_file_id)
+);
+
 CREATE TABLE IF NOT EXISTS app.outfit(
 	outfit_id SERIAL PRIMARY KEY,
 	user_id INTEGER REFERENCES community.user(user_id),

@@ -17,9 +17,11 @@ import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdateDetailsRequestDTO;
 import com.fitcheckme.FitCheckMe.DTOs.User.UserUpdatePasswordRequestDTO;
 import com.fitcheckme.FitCheckMe.auth.CustomUserDetails;
 import com.fitcheckme.FitCheckMe.models.Following;
+import com.fitcheckme.FitCheckMe.models.ImageFile;
 import com.fitcheckme.FitCheckMe.models.Role;
 import com.fitcheckme.FitCheckMe.models.User;
 import com.fitcheckme.FitCheckMe.repositories.GarmentRepository;
+import com.fitcheckme.FitCheckMe.repositories.ImageFileRepository;
 import com.fitcheckme.FitCheckMe.repositories.OutfitRepository;
 import com.fitcheckme.FitCheckMe.repositories.RefreshTokenRepository;
 import com.fitcheckme.FitCheckMe.repositories.RoleRepository;
@@ -47,14 +49,19 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final OutfitRepository outfitRepository;
 	private final GarmentRepository garmentRepository;
+	private final ImageFileRepository imageFileRepository;
 
-	public UserService(UserRepository userRepository, RoleRepository roleRepository, RefreshTokenRepository refreshTokenRepository, PasswordEncoder passwordEncoder, OutfitRepository outfitRepository, GarmentRepository garmentRepository) {
+	public UserService(UserRepository userRepository, RoleRepository roleRepository,
+			RefreshTokenRepository refreshTokenRepository, PasswordEncoder passwordEncoder,
+			OutfitRepository outfitRepository, GarmentRepository garmentRepository,
+			ImageFileRepository imageFileRepository) {
 		this.userRepository = userRepository;
 		this.roleRepository = roleRepository;
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.outfitRepository = outfitRepository;
 		this.garmentRepository = garmentRepository;
+		this.imageFileRepository = imageFileRepository;
 	}
 
 	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'USER_ADMIN')")
@@ -130,6 +137,15 @@ public class UserService {
 		}
 		if(user.bio() != null) {
 			currentUser.setBio(user.bio());
+		}
+		if (user.profilePictureId() != null) {
+			ImageFile image = imageFileRepository.findById(user.profilePictureId())
+					.orElseThrow(() -> new EntityNotFoundException(
+							String.format("Image not found with ID: %s", String.valueOf(user.profilePictureId()))));
+			if (image.getUser().getId() != userDetails.getUserId()) {
+				throw new AccessDeniedException("User does not have permission to update profile picture");
+			}
+			currentUser.setProfilePicture(image);
 		}
 		
 		return UserRequestDTO.toDTO(this.userRepository.save(currentUser));

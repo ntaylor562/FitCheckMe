@@ -58,8 +58,6 @@ export default function GarmentSelector({ handleCreateGarment = () => { }, selec
 		})
 	}
 
-	console.log(`Garment ${userGarments !== null && userGarments.length + 1}`);
-
 	return <FormControl>
 		<FormLabel>Garments</FormLabel>
 		<VStack w="100%" spacing={4}>

@@ -3,10 +3,11 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "../contexts/AuthContext";
 import FCMLogo from '../assets/fcm_logo.png'
+import { getImageSource } from "../utils/SourceGetter";
 
 
 export default function NavBar({ routes }) {
-	const { isAuthenticated, logout } = useAuth();
+	const { currentUser, isAuthenticated, logout } = useAuth();
 	const backgroundColor = useColorModeValue('gray.200', 'gray.700')
 	const navigate = useNavigate();
 	const toast = useToast();
@@ -36,7 +37,7 @@ export default function NavBar({ routes }) {
 		if (isAuthenticated) {
 			return <Menu>
 				<MenuButton>
-					<Avatar src="https://placehold.co/50x50" />
+					<Avatar src={currentUser !== null && currentUser.profilePicture !== null ? getImageSource(currentUser.profilePicture.fileName) : "https://placehold.co/50x50"} />
 				</MenuButton>
 				<MenuList>
 					<MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>

@@ -11,7 +11,7 @@ import EditImages from "./EditImages";
 import { areSetsEqual } from "../utils/SetUtil";
 
 
-export default function EditOutfit({ outfit, handleOutfitUpdate, isOpen, handleClose }) {
+export default function EditOutfit({ outfit, handleOutfitUpdate, handleCreateGarment = () => { }, isOpen, handleClose }) {
 	if (!outfit || !isOpen) return null;
 
 	const { tags } = useTags();
@@ -196,7 +196,7 @@ export default function EditOutfit({ outfit, handleOutfitUpdate, isOpen, handleC
 								placeholder='Select tags'
 							/>
 						</FormControl>
-						<GarmentSelector selectedGarments={formValues.garments} handleGarmentSelect={handleGarmentSelect} />
+						<GarmentSelector handleCreateGarment={handleCreateGarment} selectedGarments={formValues.garments} handleGarmentSelect={handleGarmentSelect} />
 						<FormControl>
 							<FormLabel>Images</FormLabel>
 							<EditImages images={shownImages} handleUploadFileChange={handleUploadFileChange} handleDeleteImages={handleDeleteImages} />

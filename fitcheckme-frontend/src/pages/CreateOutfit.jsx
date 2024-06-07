@@ -8,7 +8,7 @@ import { useTags } from "../contexts/TagsContext";
 import FileUploadInput from "../components/FileUploadInput";
 import { uploadImages } from "../backend/FileService";
 
-export default function CreateOutfit({ handleCreateOutfit, defaultName = "" }) {
+export default function CreateOutfit({ handleCreateOutfit = () => { }, handleCreateGarment = () => { }, defaultName = "" }) {
 	const { tags } = useTags();
 
 	const defaultFormValues = {
@@ -177,7 +177,7 @@ export default function CreateOutfit({ handleCreateOutfit, defaultName = "" }) {
 										placeholder='Select tags'
 									/>
 								</FormControl>
-								<GarmentSelector handleGarmentSelect={handleGarmentSelect} selectedGarments={formValues.garments} />
+								<GarmentSelector handleCreateGarment={handleCreateGarment} handleGarmentSelect={handleGarmentSelect} selectedGarments={formValues.garments} />
 								<FormControl>
 									<FormLabel>Images</FormLabel>
 									<FileUploadInput name="images" multiple accept=".png, .jpg, .jpeg" handleFileChange={handleUploadFileChange} />

@@ -22,10 +22,10 @@ export default function CreateGarment({ handleCreateGarment, defaultName = ""}) 
 
 	const toast = useToast();
 
-	const handleClose = () => {
+	const handleOpen = () => {
 		setFormValues({ ...defaultFormValues });
 		setEnteredURLs(new Set());
-		onClose();
+		onOpen();
 	}
 
 	const handleFormChange = (e) => {
@@ -77,7 +77,7 @@ export default function CreateGarment({ handleCreateGarment, defaultName = ""}) 
 					});
 				}
 				else {
-					handleClose();
+					onClose();
 					toast({
 						title: 'Garment created.',
 						description: "Your outfit has been created and can now be added to your outfit.",
@@ -92,9 +92,9 @@ export default function CreateGarment({ handleCreateGarment, defaultName = ""}) 
 
 	return (
 		<>
-			<Button alignSelf="baseline" colorScheme="pink" onClick={onOpen}>Create Garment</Button>
+			<Button alignSelf="baseline" colorScheme="pink" onClick={handleOpen}>Create Garment</Button>
 
-			<Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside">
+			<Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
 				<ModalOverlay />
 				<ModalContent>
 					<ModalHeader>Create Garment</ModalHeader>
@@ -125,7 +125,7 @@ export default function CreateGarment({ handleCreateGarment, defaultName = ""}) 
 					</ModalBody>
 					<ModalFooter>
 						<Button onClick={handleSubmit} colorScheme='green' mr={3}>Create</Button>
-						<Button variant='ghost' onClick={handleClose}>Cancel</Button>
+						<Button variant='ghost' onClick={onClose}>Cancel</Button>
 					</ModalFooter>
 				</ModalContent>
 			</Modal>

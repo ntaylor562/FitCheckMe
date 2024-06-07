@@ -49,7 +49,7 @@ export default function Testing() {
 									{isAuthenticated ?
 										<>
 											<Button colorScheme="red" onClick={async () => { logout() }}>Logout</Button>
-											{userOutfits !== null && <CreateOutfit handleCreateOutfit={fetchUserOutfits} defaultName={`Outfit ${userOutfits.length + 1}`} />}
+											{userOutfits !== null && <CreateOutfit handleCreateOutfit={fetchUserOutfits} handleCreateGarment={fetchUserGarments} defaultName={`Outfit ${userOutfits.length + 1}`} />}
 											{userGarments !== null && <CreateGarment handleCreateGarment={fetchUserGarments} defaultName={`Garment ${userGarments.length + 1}`} />}
 										</> :
 										<>
@@ -58,15 +58,15 @@ export default function Testing() {
 									}
 
 								</HStack>
-								{isAuthenticated && userOutfits !== null && userOutfits.length > 0 && <>
+								{isAuthenticated && <>
 									<Heading size="lg">Garments:</Heading>
 									<Flex flexWrap="wrap">
-										{userGarments.map((garment) => <Box key={garment.garmentId} m="10px"><GarmentCard garment={garment} handleGarmentUpdate={fetchUserGarments} isOwner /></Box>)}
+										{userGarments !== null && userGarments.map((garment) => <Box key={garment.garmentId} m="10px"><GarmentCard garment={garment} handleGarmentUpdate={fetchUserGarments} isOwner /></Box>)}
 									</Flex>
 
 									<Heading size="lg">Outfits:</Heading>
 									<Flex flexWrap="wrap">
-										{userOutfits.map((outfit) => <Box key={outfit.outfitId} m="10px"><OutfitCard outfit={outfit} handleOutfitUpdate={fetchUserOutfits} isOwner /></Box>)}
+										{userOutfits !== null && userOutfits.map((outfit) => <Box key={outfit.outfitId} m="10px"><OutfitCard outfit={outfit} handleOutfitUpdate={fetchUserOutfits} handleCreateGarment={fetchUserGarments} isOwner /></Box>)}
 									</Flex>
 								</>}
 							</>

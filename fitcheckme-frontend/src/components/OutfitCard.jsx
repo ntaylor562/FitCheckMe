@@ -4,14 +4,14 @@ import { IoEllipsisHorizontal } from "react-icons/io5";
 import EditOutfit from "./EditOutfit";
 
 
-export default function OutfitCard({ isOwner = false, outfit, handleOutfitUpdate = () => { } }) {
+export default function OutfitCard({ isOwner = false, outfit, handleOutfitUpdate = () => { }, handleCreateGarment = () => { } }) {
 	if (!outfit) return null;
 
 	const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
 
 	return (
 		<Card variant='outline' borderRadius='3xl'>
-			<EditOutfit outfit={outfit} handleOutfitUpdate={handleOutfitUpdate} isOpen={isEditOpen} handleClose={onEditClose} />
+			<EditOutfit outfit={outfit} handleOutfitUpdate={handleOutfitUpdate} handleCreateGarment={handleCreateGarment} isOpen={isEditOpen} handleClose={onEditClose} />
 			<Menu isLazy>
 				<MenuButton
 					size="lg"

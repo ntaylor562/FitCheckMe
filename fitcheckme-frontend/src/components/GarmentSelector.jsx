@@ -7,7 +7,7 @@ import CreateGarment from "./CreateGarment";
 import { getUserGarments } from "../backend/Application";
 
 
-export default function GarmentSelector({ selectedGarments, handleGarmentSelect }) {
+export default function GarmentSelector({ handleCreateGarment = () => { }, selectedGarments, handleGarmentSelect }) {
 	const defaultFormValues = {
 		search: "",
 		tags: []
@@ -58,6 +58,8 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 		})
 	}
 
+	console.log(`Garment ${userGarments !== null && userGarments.length + 1}`);
+
 	return <FormControl>
 		<FormLabel>Garments</FormLabel>
 		<VStack w="100%" spacing={4}>
@@ -80,7 +82,7 @@ export default function GarmentSelector({ selectedGarments, handleGarmentSelect 
 							})}
 						</HStack>
 					}
-					<CreateGarment addGarment={(garment) => setUserGarments([...userGarments, garment])} defaultName={`Garment ${userGarments.length + 1}`} />
+				<CreateGarment handleCreateGarment={(garment) => { setUserGarments([...userGarments, garment]); handleCreateGarment() }} defaultName={`Garment ${userGarments.length + 1}`} />
 				</>
 			}
 

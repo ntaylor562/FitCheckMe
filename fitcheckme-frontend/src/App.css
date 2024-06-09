@@ -17,3 +17,37 @@
 	justify-content: center;
 	align-items: center;
 }
+
+.hover-overlay-container {
+	position: relative;
+	width: fit-content;
+}
+
+.hover-overlay-subject {
+	opacity: 1;
+	display: block;
+	height: auto;
+	transition: .3s ease;
+	backface-visibility: hidden;
+}
+
+.hover-overlay-overlay {
+	transition: .3s ease;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	-ms-transform: translate(-50%, -50%);
+	text-align: center;
+}
+
+.hover-overlay-container:hover .hover-overlay-subject {
+	opacity: 0.3;
+}
+
+.hover-overlay-container:hover .hover-overlay-overlay {
+	opacity: 1;
+}

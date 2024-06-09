@@ -6,7 +6,7 @@ export default function ThemeToggle() {
 	const bgColor = useColorModeValue("gray.300", "gray.600")
 
 	return (
-		<Button pos="relative" bg="transparent" borderRadius="full" _hover={{bg: bgColor}} onClick={toggleColorMode}>
+		<Button pos="relative" variant="ghost" borderRadius="full" _hover={{bg: bgColor}} onClick={toggleColorMode}>
 			{colorMode === "light" ? <MoonIcon pos="absolute" /> : <SunIcon pos="absolute" />}
 		</Button>
 	)

@@ -1,9 +1,10 @@
 import { CheckIcon, CloseIcon, EditIcon } from '@chakra-ui/icons'
-import { Heading, Text, Image, Box, HStack, Button, Flex, Input, InputGroup, InputRightAddon, useToast } from '@chakra-ui/react'
+import { Heading, Text, Image, Box, HStack, Button, Flex, Input, InputGroup, InputRightAddon, useToast, Avatar } from '@chakra-ui/react'
 import { useState } from 'react';
 import { editUser } from '../backend/Application';
 import { useAuth } from '../contexts/AuthContext';
 import { getImageSource } from '../utils/SourceGetter';
+import HoverOverlay from '../components/HoverOverlay';
 
 export default function Profile({ user, isCurrentUser }) {
 	if (user === null) return isCurrentUser ? <div /> : <Text>Loading...</Text>
@@ -56,12 +57,20 @@ export default function Profile({ user, isCurrentUser }) {
 
 	return (
 		<div className="subpage profile-page">
-			<Image src={user.profilePicture !== null ? getImageSource(user.profilePicture.fileName) : 'https://placehold.co/500x500'} borderRadius='full' boxSize='150px' alt='profile-picture' />
+			<HoverOverlay
+				subject={<Avatar size="2xl" boxSize="200px" src={user.profilePicture !== null ? getImageSource(user.profilePicture.fileName) : 'https://placehold.co/500x500'} />}
+				overlay={
+					<Button position="relative" variant="ghost">
+						<EditIcon position="absolute" />
+					</Button>
+				}
+			/>
+
 			<Heading paddingBottom='10px'>{user.username}'s Profile</Heading>
 			<HStack spacing={2} alignItems="center" paddingBottom="10px">
 				{isCurrentUser && !editingBio && <Button pos="relative" onClick={() => setEditingBio(!editingBio)}><EditIcon pos="absolute" /></Button>}
 				{editingBio ?
-					<form style={{width: "100%"}} onSubmit={handleUpdateBio}>
+					<form style={{ width: "100%" }} onSubmit={handleUpdateBio}>
 						<InputGroup>
 							<Input autoFocus value={newBio} onChange={handleBioChange} onKeyDown={(e) => e.key === "Escape" && handleCancelUpdateBio()} />
 							<InputRightAddon p="0px" borderRadius="0px">

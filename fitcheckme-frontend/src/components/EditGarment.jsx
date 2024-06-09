@@ -11,8 +11,6 @@ import TagInput from "./TagInput";
 
 
 export default function EditGarment({ garment, handleGarmentUpdate, isOpen, handleClose }) {
-	if (!garment || !isOpen) return null;
-
 	const { tags } = useTags();
 
 	const defaultFormValues = {
@@ -27,6 +25,14 @@ export default function EditGarment({ garment, handleGarmentUpdate, isOpen, hand
 	const [shownImages, setShownImages] = useState(new Set(garment.images));
 
 	const toast = useToast();
+
+	const onClose = () => {
+		setFormValues({ ...defaultFormValues });
+		setFilesToUpload([]);
+		setFilesToDelete([]);
+		setShownImages(new Set(garment.images));
+		handleClose();
+	}
 
 	const handleFormChange = (e) => {
 		setFormValues({
@@ -135,12 +141,7 @@ export default function EditGarment({ garment, handleGarmentUpdate, isOpen, hand
 								return response;
 							}
 						})
-						.then((res) => {
-							if (!res.ok) {
-								throw new Error("Failed to upload image");
-							}
-							return res.json();
-						})).map((image) => image.fileId);
+						.then((res) => res.json())).map((image) => image.fileId);
 				}
 
 				await editGarmentImages(garment.garmentId, addImageIds, filesToDelete.map((image) => image.fileId))
@@ -167,14 +168,14 @@ export default function EditGarment({ garment, handleGarmentUpdate, isOpen, hand
 				isClosable: true,
 			})
 			handleGarmentUpdate();
-			handleClose();
+			onClose();
 		} catch (error) {
 			console.error(error);
 		}
 	}
 
 	return (
-		<Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside">
+		<Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
 			<ModalOverlay />
 			<ModalContent>
 				<ModalHeader>Edit Garment</ModalHeader>
@@ -207,7 +208,7 @@ export default function EditGarment({ garment, handleGarmentUpdate, isOpen, hand
 				</ModalBody>
 				<ModalFooter>
 					<Button onClick={handleSubmit} colorScheme='green' mr={3}>Edit</Button>
-					<Button variant='ghost' onClick={handleClose}>Cancel</Button>
+					<Button variant='ghost' onClick={onClose}>Cancel</Button>
 				</ModalFooter>
 			</ModalContent>
 		</Modal>

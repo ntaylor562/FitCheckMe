@@ -12,8 +12,6 @@ import { areSetsEqual } from "../utils/SetUtil";
 
 
 export default function EditOutfit({ outfit, handleOutfitUpdate, handleCreateGarment = () => { }, isOpen, handleClose }) {
-	if (!outfit || !isOpen) return null;
-
 	const { tags } = useTags();
 
 	const defaultFormValues = {
@@ -28,6 +26,14 @@ export default function EditOutfit({ outfit, handleOutfitUpdate, handleCreateGar
 	const [shownImages, setShownImages] = useState(new Set(outfit.images));
 
 	const toast = useToast();
+
+	const onClose = () => {
+		setFormValues({ ...defaultFormValues });
+		setFilesToUpload([]);
+		setFilesToDelete([]);
+		setShownImages(new Set(outfit.images));
+		handleClose();
+	}
 
 	const handleFormChange = (e) => {
 		setFormValues({
@@ -164,14 +170,14 @@ export default function EditOutfit({ outfit, handleOutfitUpdate, handleCreateGar
 				isClosable: true,
 			})
 			handleOutfitUpdate();
-			handleClose();
+			onClose();
 		} catch (error) {
 			console.error(error);
 		}
 	}
 
 	return (
-		<Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside">
+		<Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
 			<ModalOverlay />
 			<ModalContent>
 				<ModalHeader>Edit Outfit</ModalHeader>
@@ -205,7 +211,7 @@ export default function EditOutfit({ outfit, handleOutfitUpdate, handleCreateGar
 				</ModalBody>
 				<ModalFooter>
 					<Button onClick={handleSubmit} colorScheme='green' mr={3}>Edit</Button>
-					<Button variant='ghost' onClick={handleClose}>Cancel</Button>
+					<Button variant='ghost' onClick={onClose}>Cancel</Button>
 				</ModalFooter>
 			</ModalContent>
 		</Modal>

@@ -37,7 +37,7 @@ export default function NavBar({ routes }) {
 		if (isAuthenticated) {
 			return <Menu>
 				<MenuButton>
-					<Avatar src={currentUser !== null && currentUser.profilePicture !== null ? getImageSource(currentUser.profilePicture.fileName) : "https://placehold.co/50x50"} />
+					<Avatar src={currentUser !== null && currentUser.profilePicture !== null && getImageSource(currentUser.profilePicture.fileName)} />
 				</MenuButton>
 				<MenuList>
 					<MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>

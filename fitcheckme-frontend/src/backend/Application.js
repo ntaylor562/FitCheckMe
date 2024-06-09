@@ -134,7 +134,7 @@ export async function editOutfitImages(outfitId, addImageIds, removeImageIds) {
 		.then((response) => handleFetchException(response))
 }
 
-export async function editUser(userId, username, userBio) {
+export async function editUser(userId, username, userBio, imageId) {
 	return await FetchWithRefreshRetry(`${getEnvVariable("BACKEND_URL")}/api/user/details`, {
 		method: 'PUT',
 		credentials: 'include',
@@ -144,7 +144,8 @@ export async function editUser(userId, username, userBio) {
 		body: JSON.stringify({
 			userId: userId,
 			username: username,
-			bio: userBio
+			bio: userBio,
+			profilePictureId: imageId
 		})
 	})
 		.then((response) => handleFetchException(response))

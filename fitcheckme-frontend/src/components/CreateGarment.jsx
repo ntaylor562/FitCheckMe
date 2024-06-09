@@ -1,9 +1,8 @@
-import { Button, Flex, FormControl, FormLabel, Input, InputGroup, InputRightAddon, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Select, VStack, useDisclosure, useTheme, useToast } from "@chakra-ui/react";
+import { Button, FormControl, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, VStack, useDisclosure, useToast } from "@chakra-ui/react";
 import { useTags } from "../contexts/TagsContext"
 import { useState } from "react";
 import { MultiSelect } from "chakra-multiselect";
 import { toTitleCase } from "../utils/StringUtil";
-import { AddIcon, CloseIcon } from "@chakra-ui/icons";
 import { createGarment } from "../backend/Application";
 import TagInput from "./TagInput";
 
